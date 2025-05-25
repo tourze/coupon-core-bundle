@@ -1,0 +1,58 @@
+<?php
+
+namespace Tourze\CouponCoreBundle\Procedure\Category;
+
+use Carbon\Carbon;
+use Tourze\CouponCoreBundle\Repository\CategoryRepository;
+use Tourze\JsonRPC\Core\Attribute\MethodDoc;
+use Tourze\JsonRPC\Core\Attribute\MethodExpose;
+use Tourze\JsonRPC\Core\Attribute\MethodParam;
+use Tourze\JsonRPC\Core\Attribute\MethodTag;
+use Tourze\JsonRPC\Core\Procedure\BaseProcedure;
+
+#[MethodTag('优惠券模块')]
+#[MethodDoc('获取所有优惠券分类')]
+#[MethodExpose('GetCouponCategoryList')]
+class GetCouponCategoryList extends BaseProcedure
+{
+    #[MethodParam('上级分类ID')]
+    public int $parentId = 0;
+
+    public function __construct(
+        private readonly CategoryRepository $categoryRepository,
+    ) {
+    }
+
+    public function execute(): array
+    {
+        if ($this->parentId) {
+            $parent = $this->categoryRepository->find($this->parentId);
+        } else {
+            $parent = null;
+        }
+
+        $category = $this->categoryRepository->findBy([
+            'parent' => $parent,
+            'valid' => true,
+        ]);
+
+        $list = [];
+        $now = Carbon::now();
+        foreach ($category as $item) {
+            if ($item->getEndTime()) {
+                if ($now->gt($item->getEndTime())) {
+                    continue;
+                }
+            }
+            if ($item->getStartTime()) {
+                if ($now->lt($item->getStartTime())) {
+                    continue;
+                }
+            }
+
+            $list[] = $item->retrieveReadArray();
+        }
+
+        return $list;
+    }
+}

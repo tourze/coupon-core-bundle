@@ -1,0 +1,21 @@
+services:
+  # default configuration for services in *this* file
+  _defaults:
+    autowire: true      # Automatically injects dependencies in your services.
+    autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+
+  Tourze\CouponCoreBundle\Command\:
+    resource: '../../Command/'
+  Tourze\CouponCoreBundle\MessageHandler\:
+    resource: '../../MessageHandler/'
+  Tourze\CouponCoreBundle\Procedure\:
+    resource: '../../Procedure/'
+  Tourze\CouponCoreBundle\Repository\:
+    resource: '../../Repository/'
+  Tourze\CouponCoreBundle\Service\:
+    resource: '../../Service/'
+
+  # 默认参数初始化一个实例
+  CouponCode\CouponCode:
+    autowire: true
+    public: true
