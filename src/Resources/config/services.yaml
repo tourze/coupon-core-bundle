@@ -6,6 +6,10 @@ services:
 
   Tourze\CouponCoreBundle\Command\:
     resource: '../../Command/'
+  Tourze\CouponCoreBundle\Controller\:
+    resource: '../../Controller/'
+  Tourze\CouponCoreBundle\DataFixtures\:
+    resource: '../../DataFixtures/'
   Tourze\CouponCoreBundle\MessageHandler\:
     resource: '../../MessageHandler/'
   Tourze\CouponCoreBundle\Procedure\:
@@ -14,6 +18,11 @@ services:
     resource: '../../Repository/'
   Tourze\CouponCoreBundle\Service\:
     resource: '../../Service/'
+
+  # 条件处理器
+  Tourze\CouponCoreBundle\Handler\:
+    resource: '../../Handler/'
+    tags: ['coupon.condition_handler']
 
   # 默认参数初始化一个实例
   CouponCode\CouponCode:

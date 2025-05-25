@@ -40,7 +40,7 @@ interface TestUserInterface extends UserInterface
 /**
  * 用于测试的用户实现
  */
-class TestUser implements \CouponCoreBundle\Tests\Service\TestUserInterface
+class TestUser implements TestUserInterface
 {
     private Carbon $createTime;
     

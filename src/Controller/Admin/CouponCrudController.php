@@ -1,0 +1,302 @@
+<?php
+
+namespace Tourze\CouponCoreBundle\Controller\Admin;
+
+use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminAction;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
+use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
+use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\ImageField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
+use EasyCorp\Bundle\EasyAdminBundle\Filter\BooleanFilter;
+use EasyCorp\Bundle\EasyAdminBundle\Filter\DateTimeFilter;
+use EasyCorp\Bundle\EasyAdminBundle\Filter\EntityFilter;
+use EasyCorp\Bundle\EasyAdminBundle\Filter\TextFilter;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
+use Tourze\CouponCoreBundle\Entity\Coupon;
+use Tourze\CouponCoreBundle\Enum\ConditionScenario;
+use Tourze\CouponCoreBundle\Form\Type\ConditionType;
+use Tourze\CouponCoreBundle\Service\ConditionManagerService;
+
+/**
+ * 优惠券管理控制器
+ */
+class CouponCrudController extends AbstractCrudController
+{
+    public function __construct(
+        private readonly ConditionManagerService $conditionManager
+    ) {}
+
+    public static function getEntityFqcn(): string
+    {
+        return Coupon::class;
+    }
+
+    public function configureCrud(Crud $crud): Crud
+    {
+        return $crud
+            ->setEntityLabelInSingular('优惠券')
+            ->setEntityLabelInPlural('优惠券管理')
+            ->setPageTitle('index', '优惠券列表')
+            ->setPageTitle('new', '新建优惠券')
+            ->setPageTitle('edit', '编辑优惠券')
+            ->setPageTitle('detail', '优惠券详情')
+            ->setHelp('index', '管理系统中的所有优惠券，包括券码、条件、优惠信息等')
+            ->setDefaultSort(['id' => 'DESC'])
+            ->setSearchFields(['id', 'name', 'sn', 'remark'])
+            ->setFormThemes(['@CouponCore/admin/coupon/form_theme.html.twig', '@EasyAdmin/crud/form_theme.html.twig']);
+    }
+
+    public function configureActions(Actions $actions): Actions
+    {
+        return $actions
+            ->add(Crud::PAGE_INDEX, Action::DETAIL)
+            ->reorder(Crud::PAGE_INDEX, [Action::DETAIL, Action::EDIT, Action::DELETE])
+            ->update(Crud::PAGE_INDEX, Action::NEW, function (Action $action) {
+                return $action->setLabel('新建优惠券');
+            })
+            ->update(Crud::PAGE_INDEX, Action::EDIT, function (Action $action) {
+                return $action->setLabel('编辑');
+            })
+            ->update(Crud::PAGE_INDEX, Action::DELETE, function (Action $action) {
+                return $action->setLabel('删除');
+            })
+            ->update(Crud::PAGE_INDEX, Action::DETAIL, function (Action $action) {
+                return $action->setLabel('查看详情');
+            });
+    }
+
+    public function configureFields(string $pageName): iterable
+    {
+        // 基础信息Tab
+        yield FormField::addTab('基础信息')->setIcon('fa fa-info-circle');
+        
+        yield IdField::new('id', 'ID')
+            ->onlyOnIndex()
+            ->setMaxLength(9999);
+
+        yield TextField::new('sn', '唯一编码')
+            ->setRequired(false)
+            ->hideOnForm()
+            ->setHelp('系统自动生成的唯一编码');
+
+        yield TextField::new('name', '优惠券名称')
+            ->setRequired(true)
+            ->setMaxLength(255)
+            ->setColumns(12);
+
+        yield AssociationField::new('category', '分类')
+            ->setRequired(false)
+            ->autocomplete()
+            ->setColumns(6);
+
+        yield BooleanField::new('valid', '有效状态')
+            ->setRequired(false)
+            ->setColumns(6);
+
+        yield ImageField::new('iconImg', 'ICON图标')
+            ->setBasePath('/uploads')
+            ->setUploadDir('public/uploads')
+            ->setUploadedFileNamePattern('[year]/[month]/[day]/[contenthash].[extension]')
+            ->setRequired(false)
+            ->setColumns(6)
+            ->onlyOnForms();
+
+        yield ImageField::new('backImg', '列表背景')
+            ->setBasePath('/uploads')
+            ->setUploadDir('public/uploads')
+            ->setUploadedFileNamePattern('[year]/[month]/[day]/[contenthash].[extension]')
+            ->setRequired(false)
+            ->setColumns(6)
+            ->onlyOnForms();
+
+        yield TextareaField::new('remark', '备注')
+            ->setRequired(false)
+            ->setMaxLength(1000)
+            ->hideOnIndex()
+            ->setColumns(12);
+
+        yield TextareaField::new('useDesc', '使用说明')
+            ->setRequired(false)
+            ->hideOnIndex()
+            ->setColumns(12);
+
+        // 时间设置Tab
+        yield FormField::addTab('时间设置')->setIcon('fa fa-clock')->onlyOnForms();
+
+        yield IntegerField::new('expireDay', '领取后过期天数')
+            ->setRequired(false)
+            ->setColumns(6)
+            ->setHelp('用户领取后多少天过期，为空则不限制');
+
+        yield DateTimeField::new('startTime', '开始有效时间')
+            ->setRequired(false)
+            ->setColumns(6);
+
+        yield DateTimeField::new('endTime', '截止有效时间')
+            ->setRequired(false)
+            ->setColumns(6);
+
+        yield DateTimeField::new('startDateTime', '可用开始时间')
+            ->setRequired(false)
+            ->setColumns(6);
+
+        yield DateTimeField::new('endDateTime', '可用结束时间')
+            ->setRequired(false)
+            ->setColumns(6);
+
+        yield BooleanField::new('needActive', '是否需要激活')
+            ->setRequired(false)
+            ->setColumns(6);
+
+        yield IntegerField::new('activeValidDay', '激活后有效天数')
+            ->setRequired(false)
+            ->setColumns(6)
+            ->setHelp('激活后多少天内有效');
+
+        // 领取条件Tab
+        yield FormField::addTab('领取条件')->setIcon('fa fa-hand-paper')->onlyOnForms();
+        
+        yield CollectionField::new('requirementConditions', '领取条件')
+            ->setEntryType(ConditionType::class)
+            ->setFormTypeOptions([
+                'by_reference' => false,
+                'allow_add' => true,
+                'allow_delete' => true,
+                'prototype' => true,
+            ])
+            ->onlyOnForms()
+            ->setColumns(12);
+
+        // 使用条件Tab
+        yield FormField::addTab('使用条件')->setIcon('fa fa-shopping-cart')->onlyOnForms();
+        
+        yield CollectionField::new('satisfyConditions', '使用条件')
+            ->setEntryType(ConditionType::class)
+            ->setFormTypeOptions([
+                'by_reference' => false,
+                'allow_add' => true,
+                'allow_delete' => true,
+                'prototype' => true,
+            ])
+            ->onlyOnForms()
+            ->setColumns(12);
+
+        // 其他设置Tab
+        yield FormField::addTab('其他设置')->setIcon('fa fa-cogs')->onlyOnForms();
+
+        yield AssociationField::new('channels', '投放渠道')
+            ->setRequired(false)
+            ->autocomplete()
+            ->setFormTypeOption('multiple', true)
+            ->setColumns(12);
+
+        // 统计信息 (仅列表和详情)
+        if ($pageName !== Crud::PAGE_NEW && $pageName !== Crud::PAGE_EDIT) {
+            yield IntegerField::new('renderCodeCount', '券码数量')
+                ->onlyOnIndex()
+                ->formatValue(function ($value) {
+                    return number_format($value);
+                });
+
+            // 条件展示（仅详情页）
+            if ($pageName === Crud::PAGE_DETAIL) {
+                yield CollectionField::new('conditions', '所有条件')
+                    ->onlyOnDetail()
+                    ->setTemplatePath('@CouponCore/admin/coupon/conditions_detail.html.twig');
+            }
+
+            // 审计字段
+            yield TextField::new('createdBy', '创建人')
+                ->onlyOnDetail();
+
+            yield TextField::new('updatedBy', '更新人')
+                ->onlyOnDetail();
+
+            yield DateTimeField::new('createTime', '创建时间')
+                ->onlyOnDetail();
+
+            yield DateTimeField::new('updateTime', '更新时间')
+                ->onlyOnDetail();
+        }
+    }
+
+    public function configureFilters(Filters $filters): Filters
+    {
+        return $filters
+            ->add(TextFilter::new('name', '优惠券名称'))
+            ->add(TextFilter::new('sn', '唯一编码'))
+            ->add(EntityFilter::new('category', '分类'))
+            ->add(BooleanFilter::new('valid', '有效状态'))
+            ->add(BooleanFilter::new('needActive', '需要激活'))
+            ->add(DateTimeFilter::new('createTime', '创建时间'))
+            ->add(DateTimeFilter::new('updateTime', '更新时间'))
+            ->add(DateTimeFilter::new('startTime', '开始有效时间'))
+            ->add(DateTimeFilter::new('endTime', '截止有效时间'));
+    }
+
+    /**
+     * 获取条件类型的表单字段（AJAX接口）
+     */
+    #[AdminAction('condition-form-fields/{type}', 'condition_form_fields')]
+    public function getConditionFormFields(Request $request): JsonResponse
+    {
+        $type = $request->attributes->get('type');
+        $scenario = $request->query->get('scenario');
+
+        try {
+            $scenarioEnum = ConditionScenario::from($scenario);
+            $conditionTypes = $this->conditionManager->getAvailableConditionTypes($scenarioEnum);
+            
+            if (!isset($conditionTypes[$type])) {
+                return new JsonResponse(['success' => false, 'message' => '无效的条件类型']);
+            }
+
+            $conditionType = $conditionTypes[$type];
+            
+            return new JsonResponse([
+                'success' => true,
+                'data' => [
+                    'type' => $type,
+                    'label' => $conditionType['label'],
+                    'description' => $conditionType['description'],
+                    'formFields' => $conditionType['formFields'],
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return new JsonResponse(['success' => false, 'message' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * 获取可用条件类型列表（AJAX接口）
+     */
+    #[AdminAction('available-condition-types/{scenario}', 'available_condition_types')]
+    public function getAvailableConditionTypes(Request $request): JsonResponse
+    {
+        $scenario = $request->attributes->get('scenario');
+
+        try {
+            $scenarioEnum = ConditionScenario::from($scenario);
+            $conditionTypes = $this->conditionManager->getAvailableConditionTypes($scenarioEnum);
+            
+            return new JsonResponse([
+                'success' => true,
+                'data' => $conditionTypes
+            ]);
+        } catch (\Exception $e) {
+            return new JsonResponse(['success' => false, 'message' => $e->getMessage()]);
+        }
+    }
+} 

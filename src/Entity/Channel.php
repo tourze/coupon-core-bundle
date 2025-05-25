@@ -138,7 +138,7 @@ class Channel implements \Stringable, PlainArrayInterface, ApiArrayInterface, Ad
         $this->coupons = new ArrayCollection();
     }
 
-    public function __toString()
+    public function __toString(): string
     {
         return $this->title ?? '';
     }

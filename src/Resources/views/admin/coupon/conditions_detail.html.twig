@@ -1,0 +1,114 @@
+{% if value|length > 0 %}
+    <div class="conditions-detail">
+        <!-- 领取条件 -->
+        {% set requirementConditions = value|filter(c => c.scenario.value == 'requirement') %}
+        {% if requirementConditions|length > 0 %}
+            <div class="condition-group mb-4">
+                <h6 class="text-success mb-3">
+                    <i class="fa fa-hand-paper me-2"></i>
+                    领取条件 ({{ requirementConditions|length }} 个)
+                </h6>
+                <div class="row">
+                    {% for condition in requirementConditions %}
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h6 class="card-title mb-1">{{ condition.label }}</h6>
+                                        {% if condition.enabled %}
+                                            <span class="badge bg-success">启用</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">禁用</span>
+                                        {% endif %}
+                                    </div>
+                                    <p class="card-text text-muted small">
+                                        {{ condition.displayText ?? condition.type }}
+                                    </p>
+                                    {% if condition.remark %}
+                                        <div class="mt-2">
+                                            <small class="text-info">
+                                                <i class="fa fa-comment me-1"></i>
+                                                {{ condition.remark }}
+                                            </small>
+                                        </div>
+                                    {% endif %}
+                                    <div class="mt-2">
+                                        <small class="text-muted">
+                                            创建时间：{{ condition.createTime|date('Y-m-d H:i') }}
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- 使用条件 -->
+        {% set satisfyConditions = value|filter(c => c.scenario.value == 'satisfy') %}
+        {% if satisfyConditions|length > 0 %}
+            <div class="condition-group">
+                <h6 class="text-warning mb-3">
+                    <i class="fa fa-shopping-cart me-2"></i>
+                    使用条件 ({{ satisfyConditions|length }} 个)
+                </h6>
+                <div class="row">
+                    {% for condition in satisfyConditions %}
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h6 class="card-title mb-1">{{ condition.label }}</h6>
+                                        {% if condition.enabled %}
+                                            <span class="badge bg-success">启用</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">禁用</span>
+                                        {% endif %}
+                                    </div>
+                                    <p class="card-text text-muted small">
+                                        {{ condition.displayText ?? condition.type }}
+                                    </p>
+                                    {% if condition.remark %}
+                                        <div class="mt-2">
+                                            <small class="text-info">
+                                                <i class="fa fa-comment me-1"></i>
+                                                {{ condition.remark }}
+                                            </small>
+                                        </div>
+                                    {% endif %}
+                                    <div class="mt-2">
+                                        <small class="text-muted">
+                                            创建时间：{{ condition.createTime|date('Y-m-d H:i') }}
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+{% else %}
+    <div class="text-center py-4 text-muted">
+        <i class="fa fa-info-circle fa-2x mb-2"></i>
+        <p>暂无条件配置</p>
+    </div>
+{% endif %}
+
+<style>
+.conditions-detail .card {
+    border: 1px solid #e9ecef;
+    transition: box-shadow 0.15s ease-in-out;
+}
+
+.conditions-detail .card:hover {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.condition-group:not(:last-child) {
+    border-bottom: 1px solid #e9ecef;
+    padding-bottom: 1rem;
+}
+</style> 

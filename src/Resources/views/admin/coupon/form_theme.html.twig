@@ -1,0 +1,271 @@
+{% extends '@EasyAdmin/crud/form_theme.html.twig' %}
+
+{# Tab 布局处理 #}
+{% block form_start -%}
+    {{- parent() -}}
+    
+    {# 检查是否有Tab字段 #}
+    {% set has_tabs = false %}
+    {% set tab_fields = [] %}
+    {% for field in form %}
+        {% if field.vars.ea_field is defined and field.vars.ea_field.fieldFqcn == 'EasyCorp\\Bundle\\EasyAdminBundle\\Field\\FormField' %}
+            {% set has_tabs = true %}
+            {% set tab_fields = tab_fields|merge([field]) %}
+        {% endif %}
+    {% endfor %}
+    
+    {% if has_tabs %}
+        <ul class="nav nav-tabs mb-4" id="coupon-form-tabs" role="tablist">
+            {% for tab_field in tab_fields %}
+                {% set tab_name = tab_field.vars.label %}
+                {% set tab_id = tab_name|replace({' ': '_', '信息': 'info', '设置': 'settings', '条件': 'conditions'}) %}
+                {% set is_first_tab = loop.first %}
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link {{ is_first_tab ? 'active' : '' }}" 
+                            id="{{ tab_id }}-tab" 
+                            data-bs-toggle="tab" 
+                            data-bs-target="#{{ tab_id }}-content" 
+                            type="button" 
+                            role="tab">
+                        {% if tab_field.vars.ea_field.formTypeOption('icon') %}
+                            <i class="{{ tab_field.vars.ea_field.formTypeOption('icon') }} me-2"></i>
+                        {% endif %}
+                        {{ tab_name }}
+                    </button>
+                </li>
+            {% endfor %}
+        </ul>
+        
+        <div class="tab-content" id="coupon-form-tab-content">
+    {% endif %}
+{%- endblock form_start %}
+
+{% block form_end -%}
+    {# 检查是否有Tab字段 #}
+    {% set has_tabs = false %}
+    {% for field in form %}
+        {% if field.vars.ea_field is defined and field.vars.ea_field.fieldFqcn == 'EasyCorp\\Bundle\\EasyAdminBundle\\Field\\FormField' %}
+            {% set has_tabs = true %}
+        {% endif %}
+    {% endfor %}
+    
+    {% if has_tabs %}
+        </div> {# 关闭 tab-content #}
+    {% endif %}
+    
+    {{- parent() -}}
+    
+    {% if has_tabs %}
+        <style>
+            .nav-tabs {
+                border-bottom: 2px solid #dee2e6;
+                margin-bottom: 1.5rem;
+            }
+            
+            .nav-tabs .nav-link {
+                border: none;
+                color: #6c757d;
+                font-weight: 500;
+                padding: 0.75rem 1.5rem;
+            }
+            
+            .nav-tabs .nav-link.active {
+                color: #0d6efd;
+                border-bottom: 2px solid #0d6efd;
+                background: none;
+            }
+            
+            .nav-tabs .nav-link:hover {
+                border-color: transparent;
+                color: #0d6efd;
+            }
+            
+            .tab-content {
+                min-height: 400px;
+            }
+            
+            .tab-pane {
+                padding: 1.5rem 0;
+            }
+            
+            /* 条件集合样式 */
+            .collection-widget {
+                border: 1px solid #e9ecef;
+                border-radius: 0.375rem;
+                padding: 1rem;
+                background: #f8f9fa;
+            }
+            
+            .collection-item {
+                background: white;
+                border: 1px solid #dee2e6;
+                border-radius: 0.375rem;
+                margin-bottom: 1rem;
+                overflow: hidden;
+            }
+            
+            .collection-item:last-child {
+                margin-bottom: 0;
+            }
+            
+            .collection-item-header {
+                background: #f8f9fa;
+                padding: 0.75rem 1rem;
+                border-bottom: 1px solid #dee2e6;
+                font-weight: 500;
+            }
+            
+            .collection-item-body {
+                padding: 1rem;
+            }
+        </style>
+    {% endif %}
+{%- endblock form_end %}
+
+{# 处理Tab字段本身 #}
+{% block form_row -%}
+    {% if form.vars.ea_field is defined and form.vars.ea_field.fieldFqcn == 'EasyCorp\\Bundle\\EasyAdminBundle\\Field\\FormField' %}
+        {# FormField 用于Tab，创建tab pane #}
+        {% set tab_name = form.vars.label %}
+        {% set tab_id = tab_name|replace({' ': '_', '信息': 'info', '设置': 'settings', '条件': 'conditions'}) %}
+        {% set is_first_tab = loop is defined and loop.first %}
+        
+        <div class="tab-pane fade {{ is_first_tab ? 'show active' : '' }}" 
+             id="{{ tab_id }}-content" 
+             role="tabpanel">
+        </div>
+    {% else %}
+        {# 普通字段，找到它属于哪个tab #}
+        {% set tab_fields = [] %}
+        {% for field in form.parent %}
+            {% if field.vars.ea_field is defined and field.vars.ea_field.fieldFqcn == 'EasyCorp\\Bundle\\EasyAdminBundle\\Field\\FormField' %}
+                {% set tab_fields = tab_fields|merge([field.vars.label]) %}
+            {% endif %}
+        {% endfor %}
+        
+        {% if tab_fields|length > 0 %}
+            {# 有Tab布局，需要确定当前字段属于哪个tab #}
+            {% set current_tab_index = 0 %}
+            {% for field in form.parent %}
+                {% if field.vars.name == form.vars.name %}
+                    {# 找到当前字段，停止循环 #}
+                    {% set found_current_field = true %}
+                {% elseif field.vars.ea_field is defined and field.vars.ea_field.fieldFqcn == 'EasyCorp\\Bundle\\EasyAdminBundle\\Field\\FormField' %}
+                    {% if not (found_current_field is defined) %}
+                        {% set current_tab_index = current_tab_index + 1 %}
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+            
+            {% set tab_name = tab_fields[current_tab_index] ?? tab_fields[tab_fields|length - 1] %}
+            {% set tab_id = tab_name|replace({' ': '_', '信息': 'info', '设置': 'settings', '条件': 'conditions'}) %}
+            
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const field = document.getElementById('{{ form.vars.id }}');
+                    if (field) {
+                        const fieldRow = field.closest('.form-group, .mb-3, .row');
+                        const tabPane = document.getElementById('{{ tab_id }}-content');
+                        if (fieldRow && tabPane) {
+                            tabPane.appendChild(fieldRow);
+                        }
+                    }
+                });
+            </script>
+        {% endif %}
+        
+        {{- parent() -}}
+    {% endif %}
+{%- endblock form_row %}
+
+{# 集合字段特殊处理 #}
+{% block collection_widget -%}
+    <div class="collection-widget" data-prototype="{{ form.vars.prototype|e('html_attr') }}" data-widget-tags="{{ form.vars.attr['data-widget-tags']|default('')|e('html_attr') }}" data-widget-counter="{{ form|length }}">
+        {% if form|length > 0 %}
+            {% for item in form %}
+                <div class="collection-item">
+                    <div class="collection-item-header d-flex justify-content-between align-items-center">
+                        <span>条件 #{{ loop.index }}</span>
+                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeCollectionItem(this)">
+                            <i class="fa fa-trash"></i>
+                        </button>
+                    </div>
+                    <div class="collection-item-body">
+                        {{ form_widget(item) }}
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="text-center py-4 text-muted empty-collection">
+                <i class="fa fa-info-circle fa-2x mb-2"></i>
+                <p>暂无条件，点击下方按钮添加</p>
+            </div>
+        {% endif %}
+        
+        <div class="mt-3">
+            <button type="button" class="btn btn-primary btn-sm" onclick="addCollectionItem(this)">
+                <i class="fa fa-plus me-1"></i>
+                添加条件
+            </button>
+        </div>
+    </div>
+    
+    <script>
+        function addCollectionItem(button) {
+            const container = button.closest('.collection-widget');
+            const prototype = container.dataset.prototype;
+            let counter = parseInt(container.dataset.widgetCounter) || 0;
+            
+            const newItem = prototype.replace(/__name__/g, counter);
+            
+            const emptyState = container.querySelector('.empty-collection');
+            if (emptyState) {
+                emptyState.style.display = 'none';
+            }
+            
+            const buttonContainer = button.parentElement;
+            const itemDiv = document.createElement('div');
+            itemDiv.innerHTML = `
+                <div class="collection-item">
+                    <div class="collection-item-header d-flex justify-content-between align-items-center">
+                        <span>条件 #${counter + 1}</span>
+                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeCollectionItem(this)">
+                            <i class="fa fa-trash"></i>
+                        </button>
+                    </div>
+                    <div class="collection-item-body">
+                        ${newItem}
+                    </div>
+                </div>
+            `;
+            
+            buttonContainer.parentNode.insertBefore(itemDiv.firstElementChild, buttonContainer);
+            container.dataset.widgetCounter = counter + 1;
+        }
+        
+        function removeCollectionItem(button) {
+            if (confirm('确定要删除这个条件吗？')) {
+                const item = button.closest('.collection-item');
+                const container = button.closest('.collection-widget');
+                
+                item.remove();
+                
+                const remainingItems = container.querySelectorAll('.collection-item');
+                if (remainingItems.length === 0) {
+                    const emptyState = container.querySelector('.empty-collection');
+                    if (emptyState) {
+                        emptyState.style.display = 'block';
+                    }
+                }
+                
+                // 重新编号
+                remainingItems.forEach((item, index) => {
+                    const header = item.querySelector('.collection-item-header span');
+                    if (header) {
+                        header.textContent = `条件 #${index + 1}`;
+                    }
+                });
+            }
+        }
+    </script>
+{%- endblock collection_widget %} 

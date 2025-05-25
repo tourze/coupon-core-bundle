@@ -108,14 +108,20 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
     private Collection $requirements;
 
     /**
-     * TODO 有一个值得关注的问题，就是如果在优惠券发送过程中修改了这个使用条件，旧的优惠券怎么处理.
-     *
      * @var Collection<Satisfy>
      */
     #[Groups(['restful_read'])]
     #[FormField(title: '使用条件')]
     #[ORM\OneToMany(targetEntity: Satisfy::class, mappedBy: 'coupon', cascade: ['persist'], orphanRemoval: true)]
     private Collection $satisfies;
+
+    /**
+     * 新的条件系统 - 所有条件
+     * @var Collection<BaseCondition>
+     */
+    #[FormField(title: '条件管理')]
+    #[ORM\OneToMany(targetEntity: BaseCondition::class, mappedBy: 'coupon', cascade: ['persist'], orphanRemoval: true)]
+    private Collection $conditions;
 
     /**
      * @var Collection<Discount>
@@ -230,6 +236,7 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
         $this->couponChannels = new ArrayCollection();
         $this->channels = new ArrayCollection();
         $this->batches = new ArrayCollection();
+        $this->conditions = new ArrayCollection();
     }
 
     public function __toString(): string
@@ -822,5 +829,57 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
     public function getUpdateTime(): ?\DateTimeInterface
     {
         return $this->updateTime;
+    }
+
+    /**
+     * @return Collection<int, BaseCondition>
+     */
+    public function getConditions(): Collection
+    {
+        return $this->conditions;
+    }
+
+    /**
+     * 获取领取条件
+     * @return Collection<int, BaseCondition>
+     */
+    public function getRequirementConditions(): Collection
+    {
+        return $this->conditions->filter(function (BaseCondition $condition) {
+            return $condition->getScenario() === \Tourze\CouponCoreBundle\Enum\ConditionScenario::REQUIREMENT;
+        });
+    }
+
+    /**
+     * 获取使用条件
+     * @return Collection<int, BaseCondition>
+     */
+    public function getSatisfyConditions(): Collection
+    {
+        return $this->conditions->filter(function (BaseCondition $condition) {
+            return $condition->getScenario() === \Tourze\CouponCoreBundle\Enum\ConditionScenario::SATISFY;
+        });
+    }
+
+    public function addCondition(BaseCondition $condition): self
+    {
+        if (!$this->conditions->contains($condition)) {
+            $this->conditions->add($condition);
+            $condition->setCoupon($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCondition(BaseCondition $condition): self
+    {
+        if ($this->conditions->removeElement($condition)) {
+            // set the owning side to null (unless already changed)
+            if ($condition->getCoupon() === $this) {
+                $condition->setCoupon(null);
+            }
+        }
+
+        return $this;
     }
 }

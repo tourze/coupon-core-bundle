@@ -55,6 +55,7 @@
     "yiisoft/json": "^1.0"
   },
   "require-dev": {
+    "doctrine/doctrine-fixtures-bundle": "^3.6",
     "maglnet/composer-require-checker": "^4",
     "phpstan/phpstan": "^2.1",
     "phpunit/phpunit": "^10.0"

@@ -1,0 +1,142 @@
+{% extends '@EasyAdmin/layout.html.twig' %}
+
+{% block title %}条件管理{% endblock %}
+
+{% block content_title %}条件管理{% endblock %}
+
+{% block main %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">领取条件类型</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for type in requirementTypes %}
+                        <div class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ type.label }}</h6>
+                                <small class="text-muted">{{ type.type }}</small>
+                            </div>
+                            <p class="mb-1">{{ type.description }}</p>
+                            <button class="btn btn-sm btn-primary" onclick="showFormFields('{{ type.type }}', 'requirement')">
+                                查看字段配置
+                            </button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">使用条件类型</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for type in satisfyTypes %}
+                        <div class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ type.label }}</h6>
+                                <small class="text-muted">{{ type.type }}</small>
+                            </div>
+                            <p class="mb-1">{{ type.description }}</p>
+                            <button class="btn btn-sm btn-primary" onclick="showFormFields('{{ type.type }}', 'satisfy')">
+                                查看字段配置
+                            </button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 表单字段配置模态框 -->
+    <div class="modal fade" id="formFieldsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">表单字段配置</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="formFieldsContent">
+                        <!-- 动态内容 -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showFormFields(type, scenario) {
+    fetch(`{{ path('admin_condition_form_fields', {type: '__TYPE__'}) }}`.replace('__TYPE__', type))
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const content = document.getElementById('formFieldsContent');
+                content.innerHTML = renderFormFields(data.data);
+                
+                const modal = new bootstrap.Modal(document.getElementById('formFieldsModal'));
+                modal.show();
+            } else {
+                alert('获取表单字段失败: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('请求失败');
+        });
+}
+
+function renderFormFields(data) {
+    let html = `
+        <h6>${data.label}</h6>
+        <p class="text-muted">${data.description}</p>
+        <hr>
+        <h6>表单字段:</h6>
+        <div class="table-responsive">
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>字段名</th>
+                        <th>类型</th>
+                        <th>标签</th>
+                        <th>必填</th>
+                        <th>说明</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+    
+    data.formFields.forEach(field => {
+        html += `
+            <tr>
+                <td><code>${field.name}</code></td>
+                <td><span class="badge bg-info">${field.type}</span></td>
+                <td>${field.label}</td>
+                <td>${field.required ? '<span class="badge bg-danger">是</span>' : '<span class="badge bg-secondary">否</span>'}</td>
+                <td>${field.help || '-'}</td>
+            </tr>
+        `;
+    });
+    
+    html += `
+                </tbody>
+            </table>
+        </div>
+    `;
+    
+    return html;
+}
+</script>
+{% endblock %} 
