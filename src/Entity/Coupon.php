@@ -12,6 +12,7 @@ use Symfony\Component\Serializer\Attribute\Ignore;
 use Tourze\Arrayable\AdminArrayInterface;
 use Tourze\Arrayable\ApiArrayInterface;
 use Tourze\CouponContracts\CouponInterface;
+use Tourze\CouponCoreBundle\Enum\ConditionScenario;
 use Tourze\CouponCoreBundle\Repository\CouponRepository;
 use Tourze\DoctrineIndexedBundle\Attribute\IndexColumn;
 use Tourze\DoctrineIpBundle\Attribute\CreateIpColumn;
@@ -99,21 +100,6 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
     #[ListColumn]
     #[ORM\Column(type: Types::STRING, length: 255, nullable: true, options: ['comment' => '列表背景'])]
     private ?string $backImg = null;
-
-    /**
-     * @var Collection<Requirement>
-     */
-    #[FormField(title: '领取条件')]
-    #[ORM\OneToMany(targetEntity: Requirement::class, mappedBy: 'coupon', cascade: ['persist'], orphanRemoval: true)]
-    private Collection $requirements;
-
-    /**
-     * @var Collection<Satisfy>
-     */
-    #[Groups(['restful_read'])]
-    #[FormField(title: '使用条件')]
-    #[ORM\OneToMany(targetEntity: Satisfy::class, mappedBy: 'coupon', cascade: ['persist'], orphanRemoval: true)]
-    private Collection $satisfies;
 
     /**
      * 新的条件系统 - 所有条件
@@ -229,9 +215,7 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
     public function __construct()
     {
         $this->codes = new ArrayCollection();
-        $this->satisfies = new ArrayCollection();
         $this->discounts = new ArrayCollection();
-        $this->requirements = new ArrayCollection();
         $this->attributes = new ArrayCollection();
         $this->couponChannels = new ArrayCollection();
         $this->channels = new ArrayCollection();
@@ -380,36 +364,6 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
     }
 
     /**
-     * @return Collection<int, Satisfy>
-     */
-    public function getSatisfies(): Collection
-    {
-        return $this->satisfies;
-    }
-
-    public function addSatisfy(Satisfy $satisfy): self
-    {
-        if (!$this->satisfies->contains($satisfy)) {
-            $this->satisfies[] = $satisfy;
-            $satisfy->setCoupon($this);
-        }
-
-        return $this;
-    }
-
-    public function removeSatisfy(Satisfy $satisfy): self
-    {
-        if ($this->satisfies->removeElement($satisfy)) {
-            // set the owning side to null (unless already changed)
-            if ($satisfy->getCoupon() === $this) {
-                $satisfy->setCoupon(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
      * @return Collection<int, Discount>
      */
     public function getDiscounts(): Collection
@@ -455,36 +409,6 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
     public function renderCodeCount(): int
     {
         return $this->getCodes()->count();
-    }
-
-    /**
-     * @return Collection<int, Requirement>
-     */
-    public function getRequirements(): Collection
-    {
-        return $this->requirements;
-    }
-
-    public function addRequirement(Requirement $requirement): self
-    {
-        if (!$this->requirements->contains($requirement)) {
-            $this->requirements[] = $requirement;
-            $requirement->setCoupon($this);
-        }
-
-        return $this;
-    }
-
-    public function removeRequirement(Requirement $requirement): self
-    {
-        if ($this->requirements->removeElement($requirement)) {
-            // set the owning side to null (unless already changed)
-            if ($requirement->getCoupon() === $this) {
-                $requirement->setCoupon(null);
-            }
-        }
-
-        return $this;
     }
 
     public function getStartDateTime(): ?\DateTime
@@ -724,7 +648,6 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
             'expireDay' => $this->getExpireDay(),
             'iconImg' => $this->getIconImg(),
             'backImg' => $this->getBackImg(),
-            'satisfies' => $this->getSatisfies(),
             'discounts' => $this->getDiscounts(),
             'remark' => $this->getRemark(),
             'needActive' => $this->isNeedActive(),
@@ -737,16 +660,6 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
 
     public function retrieveApiArray(): array
     {
-        $requirements = [];
-        foreach ($this->getRequirements() as $requirement) {
-            $requirements[] = $requirement->retrieveApiArray();
-        }
-
-        $satisfies = [];
-        foreach ($this->getSatisfies() as $satisfy) {
-            $satisfies[] = $satisfy->retrieveApiArray();
-        }
-
         $discounts = [];
         foreach ($this->getDiscounts() as $discount) {
             $discounts[] = $discount->retrieveApiArray();
@@ -767,8 +680,6 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
             'name' => $this->getName(),
             'expireDay' => $this->getExpireDay(),
             'iconImg' => $this->getIconImg(),
-            'requirements' => $requirements,
-            'satisfies' => $satisfies,
             'discounts' => $discounts,
             'remark' => $this->getRemark(),
             'attributes' => $attributes,
@@ -846,7 +757,7 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
     public function getRequirementConditions(): Collection
     {
         return $this->conditions->filter(function (BaseCondition $condition) {
-            return $condition->getScenario() === \Tourze\CouponCoreBundle\Enum\ConditionScenario::REQUIREMENT;
+            return $condition->getScenario() === ConditionScenario::REQUIREMENT;
         });
     }
 
@@ -857,7 +768,7 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
     public function getSatisfyConditions(): Collection
     {
         return $this->conditions->filter(function (BaseCondition $condition) {
-            return $condition->getScenario() === \Tourze\CouponCoreBundle\Enum\ConditionScenario::SATISFY;
+            return $condition->getScenario() === ConditionScenario::SATISFY;
         });
     }
 

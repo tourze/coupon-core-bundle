@@ -10,6 +10,7 @@ use Tourze\CouponCoreBundle\Exception\CouponRequirementException;
 use Tourze\CouponCoreBundle\Exception\PickCodeNotFoundException;
 use Tourze\CouponCoreBundle\Repository\CodeRepository;
 use Tourze\CouponCoreBundle\Repository\CouponRepository;
+use Tourze\CouponCoreBundle\Service\ConditionManagerService;
 use Tourze\CouponCoreBundle\Service\CouponService;
 use Tourze\JsonRPC\Core\Attribute\MethodDoc;
 use Tourze\JsonRPC\Core\Attribute\MethodExpose;
@@ -35,6 +36,7 @@ class GatherCoupon extends LockableProcedure
         private readonly CouponService $codeService,
         private readonly NormalizerInterface $normalizer,
         private readonly Security $security,
+        private readonly ConditionManagerService $conditionManager,
     ) {
     }
 
@@ -51,7 +53,7 @@ class GatherCoupon extends LockableProcedure
 
         // 查找是否满足领取条件
         try {
-            $this->codeService->checkCouponRequirement($this->security->getUser(), $coupon);
+            $this->conditionManager->checkRequirements($coupon, $this->security->getUser());
         } catch (CouponRequirementException $exception) {
             throw new ApiException($exception->getMessage());
         }

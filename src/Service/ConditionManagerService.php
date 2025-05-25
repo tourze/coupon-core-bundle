@@ -2,10 +2,13 @@
 
 namespace Tourze\CouponCoreBundle\Service;
 
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Tourze\CouponCoreBundle\Entity\Coupon;
 use Tourze\CouponCoreBundle\Enum\ConditionScenario;
+use Tourze\CouponCoreBundle\Exception\CouponRequirementException;
 use Tourze\CouponCoreBundle\Exception\InvalidConditionConfigException;
 use Tourze\CouponCoreBundle\Interface\ConditionInterface;
 use Tourze\CouponCoreBundle\Interface\RequirementHandlerInterface;
@@ -22,7 +25,8 @@ class ConditionManagerService
 {
     public function __construct(
         private readonly ConditionHandlerFactory $handlerFactory,
-        private readonly EntityManagerInterface $entityManager
+        private readonly EntityManagerInterface $entityManager,
+        private readonly LoggerInterface $logger,
     ) {}
 
     /**
@@ -79,20 +83,27 @@ class ConditionManagerService
     public function checkRequirements(Coupon $coupon, UserInterface $user): bool
     {
         $requirements = $this->getRequirements($coupon);
-        
+
         foreach ($requirements as $requirement) {
             if (!$requirement->isEnabled()) {
                 continue;
             }
 
             $handler = $this->handlerFactory->getHandler($requirement->getType());
-            
             if (!$handler instanceof RequirementHandlerInterface) {
                 continue;
             }
 
-            if (!$handler->checkRequirement($requirement, $user, $coupon)) {
-                return false;
+            try {
+                if (!$handler->checkRequirement($requirement, $user, $coupon)) {
+                    return false;
+                }
+            } catch (CouponRequirementException $e) {
+                $this->logger->error('发生CouponRequirementException异常', [
+                    'exception' => $e,
+                ]);
+                // 重新抛出异常，保持原有的异常处理逻辑
+                throw $e;
             }
         }
 
@@ -172,36 +183,20 @@ class ConditionManagerService
     /**
      * 获取优惠券的领取条件
      * 
-     * @return RequirementInterface[]
+     * @return Collection<RequirementInterface>
      */
-    private function getRequirements(Coupon $coupon): array
+    private function getRequirements(Coupon $coupon): Collection
     {
-        // 这里需要根据实际的关联关系来获取条件
-        // 由于新的设计使用了JOINED继承，需要查询所有的BaseCondition
-        $qb = $this->entityManager->createQueryBuilder();
-        $qb->select('c')
-           ->from('Tourze\CouponCoreBundle\Entity\BaseCondition', 'c')
-           ->where('c.coupon = :coupon')
-           ->andWhere('c INSTANCE OF Tourze\CouponCoreBundle\Interface\RequirementInterface')
-           ->setParameter('coupon', $coupon);
-
-        return $qb->getQuery()->getResult();
+        return $coupon->getRequirementConditions();
     }
 
     /**
      * 获取优惠券的使用条件
      * 
-     * @return SatisfyInterface[]
+     * @return Collection<SatisfyInterface>
      */
-    private function getSatisfies(Coupon $coupon): array
+    private function getSatisfies(Coupon $coupon): Collection
     {
-        $qb = $this->entityManager->createQueryBuilder();
-        $qb->select('c')
-           ->from('Tourze\CouponCoreBundle\Entity\BaseCondition', 'c')
-           ->where('c.coupon = :coupon')
-           ->andWhere('c INSTANCE OF Tourze\CouponCoreBundle\Interface\SatisfyInterface')
-           ->setParameter('coupon', $coupon);
-
-        return $qb->getQuery()->getResult();
+        return $coupon->getSatisfyConditions();
     }
 }

@@ -14,7 +14,6 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Tourze\CouponCoreBundle\Entity\Code;
 use Tourze\CouponCoreBundle\Entity\Coupon;
 use Tourze\CouponCoreBundle\Entity\CouponStat;
-use Tourze\CouponCoreBundle\Enum\RequirementType;
 use Tourze\CouponCoreBundle\Event\CodeLockedEvent;
 use Tourze\CouponCoreBundle\Event\CodeNotFoundEvent;
 use Tourze\CouponCoreBundle\Event\CodeRedeemEvent;
@@ -24,7 +23,6 @@ use Tourze\CouponCoreBundle\Event\SendCodeEvent;
 use Tourze\CouponCoreBundle\Exception\CodeNotFoundException;
 use Tourze\CouponCoreBundle\Exception\CodeUsedException;
 use Tourze\CouponCoreBundle\Exception\CouponNotFoundException;
-use Tourze\CouponCoreBundle\Exception\CouponRequirementException;
 use Tourze\CouponCoreBundle\Exception\PickCodeNotFoundException;
 use Tourze\CouponCoreBundle\Repository\CodeRepository;
 use Tourze\CouponCoreBundle\Repository\CouponRepository;
@@ -44,6 +42,7 @@ class CouponService
         private readonly UrlGeneratorInterface $urlGenerator,
         private readonly CouponStatRepository $couponStatRepository,
         private readonly EntityManagerInterface $entityManager,
+        private readonly ConditionManagerService $conditionManager,
     ) {
     }
 
@@ -116,7 +115,7 @@ class CouponService
     public function pickCode(UserInterface $user, Coupon $coupon, bool $renewable = true): ?Code
     {
         // 判断领取条件是否满足
-        $this->checkCouponRequirement($user, $coupon);
+        $this->conditionManager->checkRequirements($coupon, $user);
 
         $code = $this->codeRepository->createQueryBuilder('a')
             ->where('a.coupon = :coupon AND a.valid = true AND a.owner IS NULL AND a.gatherTime IS NULL')
@@ -142,41 +141,6 @@ class CouponService
         }
 
         return $code;
-    }
-
-    // 查找是否满足领取条件
-    public function checkCouponRequirement(UserInterface $user, Coupon $coupon): bool
-    {
-        foreach ($coupon->getRequirements() as $requirement) {
-            if (RequirementType::REG_DAY_LT === $requirement->getType()) {
-                // 计算注册天数
-                $day = Carbon::now()->diff($user->getCreateTime())->days;
-                if ($day >= $requirement->getValue()) {
-                    throw new CouponRequirementException("注册天数需在{$requirement->getValue()}天内");
-                }
-            }
-
-            if (RequirementType::REG_DAY_GT === $requirement->getType()) {
-                // 计算注册天数
-                $day = Carbon::now()->diff($user->getCreateTime())->days;
-                if ($day < $requirement->getValue()) {
-                    throw new CouponRequirementException("注册天数需大于{$requirement->getValue()}天");
-                }
-            }
-
-            if (RequirementType::TOTAL_GATHER_COUNT === $requirement->getType()) {
-                // 该优惠券领取上限
-                $c = $this->codeRepository->count([
-                    'coupon' => $coupon,
-                    'owner' => $user,
-                ]);
-                if ($c > $requirement->getValue()) {
-                    throw new CouponRequirementException('已达到领取上限');
-                }
-            }
-        }
-
-        return true;
     }
 
     /**
