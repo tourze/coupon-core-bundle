@@ -6,11 +6,9 @@ use Carbon\Carbon;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
-use Tourze\CouponCoreBundle\Exception\CouponRequirementException;
 use Tourze\CouponCoreBundle\Exception\PickCodeNotFoundException;
 use Tourze\CouponCoreBundle\Repository\CodeRepository;
 use Tourze\CouponCoreBundle\Repository\CouponRepository;
-use Tourze\CouponCoreBundle\Service\ConditionManagerService;
 use Tourze\CouponCoreBundle\Service\CouponService;
 use Tourze\JsonRPC\Core\Attribute\MethodDoc;
 use Tourze\JsonRPC\Core\Attribute\MethodExpose;
@@ -19,6 +17,8 @@ use Tourze\JsonRPC\Core\Attribute\MethodTag;
 use Tourze\JsonRPC\Core\Exception\ApiException;
 use Tourze\JsonRPCLockBundle\Procedure\LockableProcedure;
 use Tourze\JsonRPCLogBundle\Attribute\Log;
+
+// use Tourze\CouponCoreBundle\Service\ConditionManagerService;
 
 #[MethodDoc('领取优惠券')]
 #[MethodTag('优惠券模块')]
@@ -36,7 +36,6 @@ class GatherCoupon extends LockableProcedure
         private readonly CouponService $codeService,
         private readonly NormalizerInterface $normalizer,
         private readonly Security $security,
-        private readonly ConditionManagerService $conditionManager,
     ) {
     }
 
@@ -51,12 +50,12 @@ class GatherCoupon extends LockableProcedure
 
         $user = $this->security->getUser();
 
-        // 查找是否满足领取条件
-        try {
-            $this->conditionManager->checkRequirements($coupon, $this->security->getUser());
-        } catch (CouponRequirementException $exception) {
-            throw new ApiException($exception->getMessage());
-        }
+        // TODO: 重新实现条件检查逻辑
+        // try {
+        //     $this->conditionManager->checkRequirements($coupon, $this->security->getUser());
+        // } catch (CouponRequirementException $exception) {
+        //     throw new ApiException($exception->getMessage());
+        // }
 
         try {
             $code = $this->codeService->pickCode($user, $coupon);

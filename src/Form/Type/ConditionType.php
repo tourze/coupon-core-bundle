@@ -9,7 +9,7 @@ use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Tourze\CouponCoreBundle\Entity\BaseCondition;
+use Tourze\ConditionSystemBundle\Entity\BaseCondition;
 
 /**
  * 条件表单类型

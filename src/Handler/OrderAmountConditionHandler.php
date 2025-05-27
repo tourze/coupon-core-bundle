@@ -2,22 +2,22 @@
 
 namespace Tourze\CouponCoreBundle\Handler;
 
-use Tourze\CouponCoreBundle\Entity\Coupon;
-use Tourze\CouponCoreBundle\Entity\OrderAmountSatisfy;
-use Tourze\CouponCoreBundle\Enum\ConditionScenario;
-use Tourze\CouponCoreBundle\Exception\CouponSatisfyException;
-use Tourze\CouponCoreBundle\Interface\ConditionInterface;
-use Tourze\CouponCoreBundle\Interface\SatisfyHandlerInterface;
-use Tourze\CouponCoreBundle\Interface\SatisfyInterface;
-use Tourze\CouponCoreBundle\ValueObject\ConditionContext;
-use Tourze\CouponCoreBundle\ValueObject\FormFieldFactory;
+use Tourze\ConditionSystemBundle\Enum\ConditionTrigger;
+use Tourze\ConditionSystemBundle\Handler\AbstractConditionHandler;
+use Tourze\ConditionSystemBundle\Interface\ConditionInterface;
+use Tourze\ConditionSystemBundle\Interface\SubjectInterface;
+use Tourze\ConditionSystemBundle\ValueObject\EvaluationContext;
+use Tourze\ConditionSystemBundle\ValueObject\EvaluationResult;
+use Tourze\ConditionSystemBundle\ValueObject\FormFieldFactory;
+use Tourze\ConditionSystemBundle\ValueObject\ValidationResult;
+use Tourze\CouponCoreBundle\Adapter\CouponSubject;
+use Tourze\CouponCoreBundle\Entity\OrderAmountCondition;
 use Tourze\CouponCoreBundle\ValueObject\OrderContext;
-use Tourze\CouponCoreBundle\ValueObject\ValidationResult;
 
 /**
  * 订单金额条件处理器
  */
-class OrderAmountSatisfyHandler implements SatisfyHandlerInterface
+class OrderAmountConditionHandler extends AbstractConditionHandler
 {
     public function getType(): string
     {
@@ -79,32 +79,36 @@ class OrderAmountSatisfyHandler implements SatisfyHandlerInterface
         return empty($errors) ? ValidationResult::success() : ValidationResult::failure($errors);
     }
 
-    public function createCondition(Coupon $coupon, array $config): ConditionInterface
+    public function createCondition(SubjectInterface $subject, array $config): ConditionInterface
     {
-        $satisfy = new OrderAmountSatisfy();
-        $satisfy->setCoupon($coupon);
-        $satisfy->setType($this->getType());
-        $satisfy->setLabel($this->getLabel());
-        $satisfy->setMinAmount((string) $config['minAmount']);
+        if (!$subject instanceof CouponSubject) {
+            throw new \InvalidArgumentException('主体必须是优惠券类型');
+        }
+
+        $condition = new OrderAmountCondition();
+        $condition->setCoupon($subject->getCoupon());
+        $condition->setType($this->getType());
+        $condition->setLabel($this->getLabel());
+        $condition->setMinAmount((string) $config['minAmount']);
         
         if (isset($config['maxAmount'])) {
-            $satisfy->setMaxAmount((string) $config['maxAmount']);
+            $condition->setMaxAmount((string) $config['maxAmount']);
         }
 
         if (isset($config['includeCategories'])) {
-            $satisfy->setIncludeCategories($config['includeCategories']);
+            $condition->setIncludeCategories($config['includeCategories']);
         }
 
         if (isset($config['excludeCategories'])) {
-            $satisfy->setExcludeCategories($config['excludeCategories']);
+            $condition->setExcludeCategories($config['excludeCategories']);
         }
 
-        return $satisfy;
+        return $condition;
     }
 
     public function updateCondition(ConditionInterface $condition, array $config): void
     {
-        if (!$condition instanceof OrderAmountSatisfy) {
+        if (!$condition instanceof OrderAmountCondition) {
             throw new \InvalidArgumentException('条件类型不匹配');
         }
 
@@ -114,44 +118,60 @@ class OrderAmountSatisfyHandler implements SatisfyHandlerInterface
         $condition->setExcludeCategories($config['excludeCategories'] ?? null);
     }
 
-    public function checkSatisfy(SatisfyInterface $satisfy, OrderContext $orderContext): bool
+    protected function doEvaluate(ConditionInterface $condition, EvaluationContext $context): EvaluationResult
     {
-        if (!$satisfy instanceof OrderAmountSatisfy) {
-            return false;
+        if (!$condition instanceof OrderAmountCondition) {
+            return EvaluationResult::fail(['条件类型不匹配']);
         }
 
-        $orderAmount = (float) $orderContext->getTotalAmount();
+        // 从上下文中获取订单信息
+        $payload = $context->getPayload();
+        if (!$payload instanceof OrderContext) {
+            return EvaluationResult::fail(['需要订单上下文信息']);
+        }
+
+        $orderAmount = (float) $payload->getTotalAmount();
 
         // 检查最低金额
-        if ($orderAmount < (float) $satisfy->getMinAmount()) {
-            throw new CouponSatisfyException("订单金额不足{$satisfy->getMinAmount()}元");
+        if ($orderAmount < (float) $condition->getMinAmount()) {
+            return EvaluationResult::fail([
+                "订单金额不足{$condition->getMinAmount()}元"
+            ]);
         }
 
         // 检查最高金额
-        if ($satisfy->getMaxAmount() && $orderAmount > (float) $satisfy->getMaxAmount()) {
-            throw new CouponSatisfyException("订单金额超过{$satisfy->getMaxAmount()}元");
+        if ($condition->getMaxAmount() && $orderAmount > (float) $condition->getMaxAmount()) {
+            return EvaluationResult::fail([
+                "订单金额超过{$condition->getMaxAmount()}元"
+            ]);
         }
 
         // 检查包含分类
-        if ($satisfy->getIncludeCategories()) {
-            if (!$orderContext->hasAnyCategory($satisfy->getIncludeCategories())) {
-                throw new CouponSatisfyException('订单不包含指定商品分类');
+        if ($condition->getIncludeCategories()) {
+            if (!$payload->hasAnyCategory($condition->getIncludeCategories())) {
+                return EvaluationResult::fail(['订单不包含指定商品分类']);
             }
         }
 
         // 检查排除分类
-        if ($satisfy->getExcludeCategories()) {
-            if ($orderContext->hasAnyCategory($satisfy->getExcludeCategories())) {
-                throw new CouponSatisfyException('订单包含不允许的商品分类');
+        if ($condition->getExcludeCategories()) {
+            if ($payload->hasAnyCategory($condition->getExcludeCategories())) {
+                return EvaluationResult::fail(['订单包含不允许的商品分类']);
             }
         }
 
-        return true;
+        return EvaluationResult::pass([
+            'order_amount' => $orderAmount,
+            'min_amount' => $condition->getMinAmount(),
+            'max_amount' => $condition->getMaxAmount(),
+            'include_categories' => $condition->getIncludeCategories(),
+            'exclude_categories' => $condition->getExcludeCategories(),
+        ]);
     }
 
     public function getDisplayText(ConditionInterface $condition): string
     {
-        if (!$condition instanceof OrderAmountSatisfy) {
+        if (!$condition instanceof OrderAmountCondition) {
             return '';
         }
 
@@ -172,13 +192,8 @@ class OrderAmountSatisfyHandler implements SatisfyHandlerInterface
         return $text;
     }
 
-    public function getSupportedScenarios(): array
+    public function getSupportedTriggers(): array
     {
-        return [ConditionScenario::SATISFY];
-    }
-
-    public function validate(ConditionInterface $condition, ConditionContext $context): ValidationResult
-    {
-        return ValidationResult::success();
+        return [ConditionTrigger::VALIDATION];
     }
 } 

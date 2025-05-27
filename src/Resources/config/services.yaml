@@ -22,7 +22,7 @@ services:
   # 条件处理器
   Tourze\CouponCoreBundle\Handler\:
     resource: '../../Handler/'
-    tags: ['coupon.condition_handler']
+    tags: ['condition_system.handler']
 
   # 默认参数初始化一个实例
   CouponCode\CouponCode:

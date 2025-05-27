@@ -2,7 +2,6 @@
 
 namespace Tourze\CouponCoreBundle\Controller\Admin;
 
-use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminAction;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
@@ -22,12 +21,10 @@ use EasyCorp\Bundle\EasyAdminBundle\Filter\BooleanFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\DateTimeFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\EntityFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\TextFilter;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
 use Tourze\CouponCoreBundle\Entity\Coupon;
-use Tourze\CouponCoreBundle\Enum\ConditionScenario;
 use Tourze\CouponCoreBundle\Form\Type\ConditionType;
-use Tourze\CouponCoreBundle\Service\ConditionManagerService;
+
+// use Tourze\CouponCoreBundle\Service\ConditionManagerService;
 
 /**
  * 优惠券管理控制器
@@ -35,7 +32,6 @@ use Tourze\CouponCoreBundle\Service\ConditionManagerService;
 class CouponCrudController extends AbstractCrudController
 {
     public function __construct(
-        private readonly ConditionManagerService $conditionManager
     ) {}
 
     public static function getEntityFqcn(): string
@@ -246,57 +242,22 @@ class CouponCrudController extends AbstractCrudController
             ->add(DateTimeFilter::new('endTime', '截止有效时间'));
     }
 
-    /**
-     * 获取条件类型的表单字段（AJAX接口）
-     */
-    #[AdminAction('condition-form-fields/{type}', 'condition_form_fields')]
-    public function getConditionFormFields(Request $request): JsonResponse
-    {
-        $type = $request->attributes->get('type');
-        $scenario = $request->query->get('scenario');
+    // TODO: 重新实现这些方法使用新的通用条件系统
+    // /**
+    //  * 获取条件类型的表单字段（AJAX接口）
+    //  */
+    // #[AdminAction('condition-form-fields/{type}', 'condition_form_fields')]
+    // public function getConditionFormFields(Request $request): JsonResponse
+    // {
+    //     // 需要重新实现
+    // }
 
-        try {
-            $scenarioEnum = ConditionScenario::from($scenario);
-            $conditionTypes = $this->conditionManager->getAvailableConditionTypes($scenarioEnum);
-            
-            if (!isset($conditionTypes[$type])) {
-                return new JsonResponse(['success' => false, 'message' => '无效的条件类型']);
-            }
-
-            $conditionType = $conditionTypes[$type];
-            
-            return new JsonResponse([
-                'success' => true,
-                'data' => [
-                    'type' => $type,
-                    'label' => $conditionType['label'],
-                    'description' => $conditionType['description'],
-                    'formFields' => $conditionType['formFields'],
-                ]
-            ]);
-        } catch (\Exception $e) {
-            return new JsonResponse(['success' => false, 'message' => $e->getMessage()]);
-        }
-    }
-
-    /**
-     * 获取可用条件类型列表（AJAX接口）
-     */
-    #[AdminAction('available-condition-types/{scenario}', 'available_condition_types')]
-    public function getAvailableConditionTypes(Request $request): JsonResponse
-    {
-        $scenario = $request->attributes->get('scenario');
-
-        try {
-            $scenarioEnum = ConditionScenario::from($scenario);
-            $conditionTypes = $this->conditionManager->getAvailableConditionTypes($scenarioEnum);
-            
-            return new JsonResponse([
-                'success' => true,
-                'data' => $conditionTypes
-            ]);
-        } catch (\Exception $e) {
-            return new JsonResponse(['success' => false, 'message' => $e->getMessage()]);
-        }
-    }
+    // /**
+    //  * 获取可用条件类型列表（AJAX接口）
+    //  */
+    // #[AdminAction('available-condition-types/{scenario}', 'available_condition_types')]
+    // public function getAvailableConditionTypes(Request $request): JsonResponse
+    // {
+    //     // 需要重新实现
+    // }
 } 

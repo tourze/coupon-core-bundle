@@ -4,21 +4,22 @@ namespace Tourze\CouponCoreBundle\Handler;
 
 use Carbon\Carbon;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Tourze\CouponCoreBundle\Entity\Coupon;
-use Tourze\CouponCoreBundle\Entity\RegisterDaysRequirement;
-use Tourze\CouponCoreBundle\Enum\ConditionScenario;
-use Tourze\CouponCoreBundle\Exception\CouponRequirementException;
-use Tourze\CouponCoreBundle\Interface\ConditionInterface;
-use Tourze\CouponCoreBundle\Interface\RequirementHandlerInterface;
-use Tourze\CouponCoreBundle\Interface\RequirementInterface;
-use Tourze\CouponCoreBundle\ValueObject\ConditionContext;
-use Tourze\CouponCoreBundle\ValueObject\FormFieldFactory;
-use Tourze\CouponCoreBundle\ValueObject\ValidationResult;
+use Tourze\ConditionSystemBundle\Enum\ConditionTrigger;
+use Tourze\ConditionSystemBundle\Handler\AbstractConditionHandler;
+use Tourze\ConditionSystemBundle\Interface\ConditionInterface;
+use Tourze\ConditionSystemBundle\Interface\SubjectInterface;
+use Tourze\ConditionSystemBundle\ValueObject\EvaluationContext;
+use Tourze\ConditionSystemBundle\ValueObject\EvaluationResult;
+use Tourze\ConditionSystemBundle\ValueObject\FormFieldFactory;
+use Tourze\ConditionSystemBundle\ValueObject\ValidationResult;
+use Tourze\CouponCoreBundle\Adapter\CouponSubject;
+use Tourze\CouponCoreBundle\Adapter\UserActor;
+use Tourze\CouponCoreBundle\Entity\RegisterDaysCondition;
 
 /**
  * 注册天数条件处理器
  */
-class RegisterDaysRequirementHandler implements RequirementHandlerInterface
+class RegisterDaysConditionHandler extends AbstractConditionHandler
 {
     public function getType(): string
     {
@@ -66,24 +67,28 @@ class RegisterDaysRequirementHandler implements RequirementHandlerInterface
         return empty($errors) ? ValidationResult::success() : ValidationResult::failure($errors);
     }
 
-    public function createCondition(Coupon $coupon, array $config): ConditionInterface
+    public function createCondition(SubjectInterface $subject, array $config): ConditionInterface
     {
-        $requirement = new RegisterDaysRequirement();
-        $requirement->setCoupon($coupon);
-        $requirement->setType($this->getType());
-        $requirement->setLabel($this->getLabel());
-        $requirement->setMinDays($config['minDays']);
-
-        if (isset($config['maxDays'])) {
-            $requirement->setMaxDays($config['maxDays']);
+        if (!$subject instanceof CouponSubject) {
+            throw new \InvalidArgumentException('主体必须是优惠券类型');
         }
 
-        return $requirement;
+        $condition = new RegisterDaysCondition();
+        $condition->setCoupon($subject->getCoupon());
+        $condition->setType($this->getType());
+        $condition->setLabel($this->getLabel());
+        $condition->setMinDays($config['minDays']);
+
+        if (isset($config['maxDays'])) {
+            $condition->setMaxDays($config['maxDays']);
+        }
+
+        return $condition;
     }
 
     public function updateCondition(ConditionInterface $condition, array $config): void
     {
-        if (!$condition instanceof RegisterDaysRequirement) {
+        if (!$condition instanceof RegisterDaysCondition) {
             throw new \InvalidArgumentException('条件类型不匹配');
         }
 
@@ -91,35 +96,48 @@ class RegisterDaysRequirementHandler implements RequirementHandlerInterface
         $condition->setMaxDays($config['maxDays'] ?? null);
     }
 
-    public function checkRequirement(RequirementInterface $requirement, UserInterface $user, Coupon $coupon): bool
+    protected function doEvaluate(ConditionInterface $condition, EvaluationContext $context): EvaluationResult
     {
-        if (!$requirement instanceof RegisterDaysRequirement) {
-            return false;
+        if (!$condition instanceof RegisterDaysCondition) {
+            return EvaluationResult::fail(['条件类型不匹配']);
         }
 
-        // 通过反射获取用户创建时间
+        $actor = $context->getActor();
+        if (!$actor instanceof UserActor) {
+            return EvaluationResult::fail(['执行者必须是用户类型']);
+        }
+
+        $user = $actor->getUser();
         $createTime = $this->getUserCreateTime($user);
 
         if (!$createTime) {
-            throw new CouponRequirementException('用户注册时间不存在');
+            return EvaluationResult::fail(['用户注册时间不存在']);
         }
 
         $registerDays = Carbon::now()->diff($createTime)->days;
 
-        if ($registerDays < $requirement->getMinDays()) {
-            throw new CouponRequirementException("需要注册满{$requirement->getMinDays()}天才能领取");
+        if ($registerDays < $condition->getMinDays()) {
+            return EvaluationResult::fail([
+                "需要注册满{$condition->getMinDays()}天才能领取"
+            ]);
         }
 
-        if ($requirement->getMaxDays() && $registerDays > $requirement->getMaxDays()) {
-            throw new CouponRequirementException("注册时间超过{$requirement->getMaxDays()}天无法领取");
+        if ($condition->getMaxDays() && $registerDays > $condition->getMaxDays()) {
+            return EvaluationResult::fail([
+                "注册时间超过{$condition->getMaxDays()}天无法领取"
+            ]);
         }
 
-        return true;
+        return EvaluationResult::pass([
+            'register_days' => $registerDays,
+            'min_days' => $condition->getMinDays(),
+            'max_days' => $condition->getMaxDays(),
+        ]);
     }
 
     public function getDisplayText(ConditionInterface $condition): string
     {
-        if (!$condition instanceof RegisterDaysRequirement) {
+        if (!$condition instanceof RegisterDaysCondition) {
             return '';
         }
 
@@ -131,14 +149,9 @@ class RegisterDaysRequirementHandler implements RequirementHandlerInterface
         return $text;
     }
 
-    public function getSupportedScenarios(): array
+    public function getSupportedTriggers(): array
     {
-        return [ConditionScenario::REQUIREMENT];
-    }
-
-    public function validate(ConditionInterface $condition, ConditionContext $context): ValidationResult
-    {
-        return ValidationResult::success();
+        return [ConditionTrigger::BEFORE_ACTION];
     }
 
     /**
@@ -167,4 +180,4 @@ class RegisterDaysRequirementHandler implements RequirementHandlerInterface
 
         return null;
     }
-}
+} 

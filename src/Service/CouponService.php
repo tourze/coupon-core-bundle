@@ -42,7 +42,6 @@ class CouponService
         private readonly UrlGeneratorInterface $urlGenerator,
         private readonly CouponStatRepository $couponStatRepository,
         private readonly EntityManagerInterface $entityManager,
-        private readonly ConditionManagerService $conditionManager,
     ) {
     }
 
@@ -114,8 +113,8 @@ class CouponService
      */
     public function pickCode(UserInterface $user, Coupon $coupon, bool $renewable = true): ?Code
     {
-        // 判断领取条件是否满足
-        $this->conditionManager->checkRequirements($coupon, $user);
+        // TODO: 重新实现条件检查逻辑
+        // $this->conditionManager->checkRequirements($coupon, $user);
 
         $code = $this->codeRepository->createQueryBuilder('a')
             ->where('a.coupon = :coupon AND a.valid = true AND a.owner IS NULL AND a.gatherTime IS NULL')

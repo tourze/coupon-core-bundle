@@ -3,21 +3,22 @@
 namespace Tourze\CouponCoreBundle\Handler;
 
 use Symfony\Component\Security\Core\User\UserInterface;
-use Tourze\CouponCoreBundle\Entity\Coupon;
-use Tourze\CouponCoreBundle\Entity\VipLevelRequirement;
-use Tourze\CouponCoreBundle\Enum\ConditionScenario;
-use Tourze\CouponCoreBundle\Exception\CouponRequirementException;
-use Tourze\CouponCoreBundle\Interface\ConditionInterface;
-use Tourze\CouponCoreBundle\Interface\RequirementHandlerInterface;
-use Tourze\CouponCoreBundle\Interface\RequirementInterface;
-use Tourze\CouponCoreBundle\ValueObject\ConditionContext;
-use Tourze\CouponCoreBundle\ValueObject\FormFieldFactory;
-use Tourze\CouponCoreBundle\ValueObject\ValidationResult;
+use Tourze\ConditionSystemBundle\Enum\ConditionTrigger;
+use Tourze\ConditionSystemBundle\Handler\AbstractConditionHandler;
+use Tourze\ConditionSystemBundle\Interface\ConditionInterface;
+use Tourze\ConditionSystemBundle\Interface\SubjectInterface;
+use Tourze\ConditionSystemBundle\ValueObject\EvaluationContext;
+use Tourze\ConditionSystemBundle\ValueObject\EvaluationResult;
+use Tourze\ConditionSystemBundle\ValueObject\FormFieldFactory;
+use Tourze\ConditionSystemBundle\ValueObject\ValidationResult;
+use Tourze\CouponCoreBundle\Adapter\CouponSubject;
+use Tourze\CouponCoreBundle\Adapter\UserActor;
+use Tourze\CouponCoreBundle\Entity\VipLevelCondition;
 
 /**
  * VIP等级条件处理器
  */
-class VipLevelRequirementHandler implements RequirementHandlerInterface
+class VipLevelConditionHandler extends AbstractConditionHandler
 {
     public function getType(): string
     {
@@ -72,28 +73,32 @@ class VipLevelRequirementHandler implements RequirementHandlerInterface
         return empty($errors) ? ValidationResult::success() : ValidationResult::failure($errors);
     }
 
-    public function createCondition(Coupon $coupon, array $config): ConditionInterface
+    public function createCondition(SubjectInterface $subject, array $config): ConditionInterface
     {
-        $requirement = new VipLevelRequirement();
-        $requirement->setCoupon($coupon);
-        $requirement->setType($this->getType());
-        $requirement->setLabel($this->getLabel());
-        $requirement->setMinLevel($config['minLevel']);
+        if (!$subject instanceof CouponSubject) {
+            throw new \InvalidArgumentException('主体必须是优惠券类型');
+        }
+
+        $condition = new VipLevelCondition();
+        $condition->setCoupon($subject->getCoupon());
+        $condition->setType($this->getType());
+        $condition->setLabel($this->getLabel());
+        $condition->setMinLevel($config['minLevel']);
         
         if (isset($config['maxLevel'])) {
-            $requirement->setMaxLevel($config['maxLevel']);
+            $condition->setMaxLevel($config['maxLevel']);
         }
 
         if (isset($config['allowedLevels'])) {
-            $requirement->setAllowedLevels($config['allowedLevels']);
+            $condition->setAllowedLevels($config['allowedLevels']);
         }
 
-        return $requirement;
+        return $condition;
     }
 
     public function updateCondition(ConditionInterface $condition, array $config): void
     {
-        if (!$condition instanceof VipLevelRequirement) {
+        if (!$condition instanceof VipLevelCondition) {
             throw new \InvalidArgumentException('条件类型不匹配');
         }
 
@@ -102,43 +107,59 @@ class VipLevelRequirementHandler implements RequirementHandlerInterface
         $condition->setAllowedLevels($config['allowedLevels'] ?? null);
     }
 
-    public function checkRequirement(RequirementInterface $requirement, UserInterface $user, Coupon $coupon): bool
+    protected function doEvaluate(ConditionInterface $condition, EvaluationContext $context): EvaluationResult
     {
-        if (!$requirement instanceof VipLevelRequirement) {
-            return false;
+        if (!$condition instanceof VipLevelCondition) {
+            return EvaluationResult::fail(['条件类型不匹配']);
         }
 
-        // 获取用户VIP等级
+        $actor = $context->getActor();
+        if (!$actor instanceof UserActor) {
+            return EvaluationResult::fail(['执行者必须是用户类型']);
+        }
+
+        $user = $actor->getUser();
         $userLevel = $this->getUserVipLevel($user);
 
         if ($userLevel === null) {
-            throw new CouponRequirementException('无法获取用户VIP等级');
+            return EvaluationResult::fail(['无法获取用户VIP等级']);
         }
 
         // 如果指定了允许的等级列表，优先使用
-        if ($requirement->getAllowedLevels()) {
-            if (!in_array($userLevel, $requirement->getAllowedLevels(), true)) {
-                throw new CouponRequirementException('用户VIP等级不在允许范围内');
+        if ($condition->getAllowedLevels()) {
+            if (!in_array($userLevel, $condition->getAllowedLevels(), true)) {
+                return EvaluationResult::fail(['用户VIP等级不在允许范围内']);
             }
-            return true;
+            return EvaluationResult::pass([
+                'user_level' => $userLevel,
+                'allowed_levels' => $condition->getAllowedLevels(),
+            ]);
         }
 
         // 检查最低等级
-        if ($userLevel < $requirement->getMinLevel()) {
-            throw new CouponRequirementException("需要VIP{$requirement->getMinLevel()}级以上才能领取");
+        if ($userLevel < $condition->getMinLevel()) {
+            return EvaluationResult::fail([
+                "需要VIP{$condition->getMinLevel()}级以上才能领取"
+            ]);
         }
 
         // 检查最高等级
-        if ($requirement->getMaxLevel() && $userLevel > $requirement->getMaxLevel()) {
-            throw new CouponRequirementException("VIP等级超过{$requirement->getMaxLevel()}级无法领取");
+        if ($condition->getMaxLevel() && $userLevel > $condition->getMaxLevel()) {
+            return EvaluationResult::fail([
+                "VIP等级超过{$condition->getMaxLevel()}级无法领取"
+            ]);
         }
 
-        return true;
+        return EvaluationResult::pass([
+            'user_level' => $userLevel,
+            'min_level' => $condition->getMinLevel(),
+            'max_level' => $condition->getMaxLevel(),
+        ]);
     }
 
     public function getDisplayText(ConditionInterface $condition): string
     {
-        if (!$condition instanceof VipLevelRequirement) {
+        if (!$condition instanceof VipLevelCondition) {
             return '';
         }
 
@@ -155,14 +176,9 @@ class VipLevelRequirementHandler implements RequirementHandlerInterface
         return $text;
     }
 
-    public function getSupportedScenarios(): array
+    public function getSupportedTriggers(): array
     {
-        return [ConditionScenario::REQUIREMENT];
-    }
-
-    public function validate(ConditionInterface $condition, ConditionContext $context): ValidationResult
-    {
-        return ValidationResult::success();
+        return [ConditionTrigger::BEFORE_ACTION];
     }
 
     /**

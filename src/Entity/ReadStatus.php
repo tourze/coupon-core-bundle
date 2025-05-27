@@ -94,6 +94,8 @@ class ReadStatus implements ApiArrayInterface
             'id' => $this->getId(),
             'createTime' => $this->getCreateTime()?->format('Y-m-d H:i:s'),
             'updateTime' => $this->getUpdateTime()?->format('Y-m-d H:i:s'),
+            'createdBy' => $this->getCreatedBy(),
+            'updatedBy' => $this->getUpdatedBy(),
         ];
     }
 

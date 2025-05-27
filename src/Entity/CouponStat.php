@@ -30,16 +30,16 @@ class CouponStat
     private string $couponId;
 
     #[ORM\Column(type: Types::INTEGER, options: ['comment' => '总数量', 'default' => 0])]
-    private int $totalNum;
+    private int $totalNum = 0;
 
     #[ORM\Column(type: Types::INTEGER, options: ['comment' => '已领取数量', 'default' => 0])]
-    private int $receivedNum;
+    private int $receivedNum = 0;
 
     #[ORM\Column(type: Types::INTEGER, options: ['comment' => '已使用数量', 'default' => 0])]
-    private int $usedNum;
+    private int $usedNum = 0;
 
     #[ORM\Column(type: Types::INTEGER, options: ['comment' => '已过期数量', 'default' => 0])]
-    private int $expiredNum;
+    private int $expiredNum = 0;
 
     #[Filterable]
     #[IndexColumn]

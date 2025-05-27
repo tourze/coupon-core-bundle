@@ -7,8 +7,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use Tourze\ConditionSystemBundle\Service\ConditionManagerService;
 use Tourze\CouponCoreBundle\Entity\Coupon;
-use Tourze\CouponCoreBundle\Service\ConditionManagerService;
 
 /**
  * 条件API控制器
@@ -65,18 +65,14 @@ class ConditionController extends AbstractController
     public function show(int $id): JsonResponse
     {
         try {
-            $condition = $this->entityManager->getRepository('Tourze\CouponCoreBundle\Entity\BaseCondition')->find($id);
+            $condition = $this->entityManager->getRepository('Tourze\ConditionSystemBundle\Entity\BaseCondition')->find($id);
             if (!$condition) {
                 return new JsonResponse(['success' => false, 'message' => '条件不存在'], 404);
             }
 
-            $conditionData = $condition->toArray();
-            $conditionData['displayText'] = $this->conditionManager->getConditionDisplayText($condition);
-            $conditionData['scenario'] = $condition->getScenario()->value;
-
             return new JsonResponse([
                 'success' => true,
-                'data' => $conditionData,
+                'data' => $condition->toArray(),
             ]);
         } catch (\Exception $e) {
             return new JsonResponse([
@@ -95,7 +91,7 @@ class ConditionController extends AbstractController
         try {
             $data = json_decode($request->getContent(), true);
 
-            $condition = $this->entityManager->getRepository('Tourze\CouponCoreBundle\Entity\BaseCondition')->find($id);
+            $condition = $this->entityManager->getRepository('Tourze\ConditionSystemBundle\Entity\BaseCondition')->find($id);
             if (!$condition) {
                 return new JsonResponse(['success' => false, 'message' => '条件不存在'], 404);
             }
@@ -109,19 +105,11 @@ class ConditionController extends AbstractController
                 $condition->setRemark($data['remark']);
             }
 
-            // 处理配置更新
-            if (isset($data['config'])) {
-                $this->conditionManager->updateCondition($condition, $data['config']);
-            }
-
             $this->entityManager->flush();
-
-            $conditionData = $condition->toArray();
-            $conditionData['displayText'] = $this->conditionManager->getConditionDisplayText($condition);
 
             return new JsonResponse([
                 'success' => true,
-                'data' => $conditionData,
+                'data' => $condition->toArray(),
             ]);
         } catch (\Exception $e) {
             return new JsonResponse([
@@ -138,12 +126,12 @@ class ConditionController extends AbstractController
     public function delete(int $id): JsonResponse
     {
         try {
-            $condition = $this->entityManager->getRepository('Tourze\CouponCoreBundle\Entity\BaseCondition')->find($id);
+            $condition = $this->entityManager->getRepository('Tourze\ConditionSystemBundle\Entity\BaseCondition')->find($id);
             if (!$condition) {
                 return new JsonResponse(['success' => false, 'message' => '条件不存在'], 404);
             }
 
-            $this->conditionManager->deleteCondition($condition);
+            $this->entityManager->remove($condition);
             $this->entityManager->flush();
 
             return new JsonResponse(['success' => true]);
@@ -169,9 +157,7 @@ class ConditionController extends AbstractController
 
             $conditions = [];
             foreach ($coupon->getConditions() as $condition) {
-                $conditionData = $condition->toArray();
-                $conditionData['displayText'] = $this->conditionManager->getConditionDisplayText($condition);
-                $conditions[] = $conditionData;
+                $conditions[] = $condition->toArray();
             }
 
             return new JsonResponse([

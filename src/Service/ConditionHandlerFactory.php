@@ -3,8 +3,8 @@
 namespace Tourze\CouponCoreBundle\Service;
 
 use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
-use Tourze\CouponCoreBundle\Exception\ConditionHandlerNotFoundException;
-use Tourze\CouponCoreBundle\Interface\ConditionHandlerInterface;
+use Tourze\ConditionSystemBundle\Exception\ConditionHandlerNotFoundException;
+use Tourze\ConditionSystemBundle\Interface\ConditionHandlerInterface;
 
 /**
  * 条件处理器工厂
@@ -16,7 +16,7 @@ class ConditionHandlerFactory
      */
     private array $handlers = [];
 
-    public function __construct(#[TaggedIterator('coupon.condition_handler')] iterable $handlers)
+    public function __construct(#[TaggedIterator('condition_system.handler')] iterable $handlers)
     {
         foreach ($handlers as $handler) {
             assert($handler instanceof ConditionHandlerInterface);

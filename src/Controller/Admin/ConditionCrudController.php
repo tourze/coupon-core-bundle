@@ -13,7 +13,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
-use Tourze\CouponCoreBundle\Entity\BaseCondition;
+use Tourze\ConditionSystemBundle\Entity\BaseCondition;
 use Tourze\CouponCoreBundle\Service\ConditionHandlerFactory;
 
 /**

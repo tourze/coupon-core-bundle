@@ -11,8 +11,8 @@ use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Serializer\Attribute\Ignore;
 use Tourze\Arrayable\AdminArrayInterface;
 use Tourze\Arrayable\ApiArrayInterface;
+use Tourze\ConditionSystemBundle\Entity\BaseCondition;
 use Tourze\CouponContracts\CouponInterface;
-use Tourze\CouponCoreBundle\Enum\ConditionScenario;
 use Tourze\CouponCoreBundle\Repository\CouponRepository;
 use Tourze\DoctrineIndexedBundle\Attribute\IndexColumn;
 use Tourze\DoctrineIpBundle\Attribute\CreateIpColumn;
@@ -103,10 +103,10 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
 
     /**
      * 新的条件系统 - 所有条件
-     * @var Collection<BaseCondition>
+     * @var Collection<\Tourze\ConditionSystemBundle\Entity\BaseCondition>
      */
     #[FormField(title: '条件管理')]
-    #[ORM\OneToMany(targetEntity: BaseCondition::class, mappedBy: 'coupon', cascade: ['persist'], orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: \Tourze\ConditionSystemBundle\Entity\BaseCondition::class, mappedBy: 'coupon', cascade: ['persist'], orphanRemoval: true)]
     private Collection $conditions;
 
     /**
@@ -750,47 +750,48 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
         return $this->conditions;
     }
 
-    /**
-     * 获取领取条件
-     * @return Collection<int, BaseCondition>
-     */
-    public function getRequirementConditions(): Collection
-    {
-        return $this->conditions->filter(function (BaseCondition $condition) {
-            return $condition->getScenario() === ConditionScenario::REQUIREMENT;
-        });
-    }
+    // TODO: 重新实现这些方法使用新的通用条件系统
+    // /**
+    //  * 获取领取条件
+    //  * @return Collection<int, BaseCondition>
+    //  */
+    // public function getRequirementConditions(): Collection
+    // {
+    //     return $this->conditions->filter(function (BaseCondition $condition) {
+    //         return $condition->getScenario() === ConditionScenario::REQUIREMENT;
+    //     });
+    // }
 
-    /**
-     * 获取使用条件
-     * @return Collection<int, BaseCondition>
-     */
-    public function getSatisfyConditions(): Collection
-    {
-        return $this->conditions->filter(function (BaseCondition $condition) {
-            return $condition->getScenario() === ConditionScenario::SATISFY;
-        });
-    }
+    // /**
+    //  * 获取使用条件
+    //  * @return Collection<int, BaseCondition>
+    //  */
+    // public function getSatisfyConditions(): Collection
+    // {
+    //     return $this->conditions->filter(function (BaseCondition $condition) {
+    //         return $condition->getScenario() === ConditionScenario::SATISFY;
+    //     });
+    // }
 
-    public function addCondition(BaseCondition $condition): self
-    {
-        if (!$this->conditions->contains($condition)) {
-            $this->conditions->add($condition);
-            $condition->setCoupon($this);
-        }
+    // public function addCondition(BaseCondition $condition): self
+    // {
+    //     if (!$this->conditions->contains($condition)) {
+    //         $this->conditions->add($condition);
+    //         $condition->setCoupon($this);
+    //     }
 
-        return $this;
-    }
+    //     return $this;
+    // }
 
-    public function removeCondition(BaseCondition $condition): self
-    {
-        if ($this->conditions->removeElement($condition)) {
-            // set the owning side to null (unless already changed)
-            if ($condition->getCoupon() === $this) {
-                $condition->setCoupon(null);
-            }
-        }
+    // public function removeCondition(BaseCondition $condition): self
+    // {
+    //     if ($this->conditions->removeElement($condition)) {
+    //         // set the owning side to null (unless already changed)
+    //         if ($condition->getCoupon() === $this) {
+    //             $condition->setCoupon(null);
+    //         }
+    //     }
 
-        return $this;
-    }
+    //     return $this;
+    // }
 }

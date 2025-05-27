@@ -37,6 +37,7 @@
     "tourze/arrayable": "0.0.*",
     "tourze/benifit-bundle": "0.0.*",
     "tourze/bundle-dependency": "0.0.*",
+    "tourze/condition-system-bundle": "0.0.*",
     "tourze/coupon-contracts": "0.0.*",
     "tourze/doctrine-async-bundle": "^0.0.6",
     "tourze/doctrine-helper": "0.0.*",
@@ -65,7 +66,8 @@
   "require-dev": {
     "maglnet/composer-require-checker": "^4",
     "phpstan/phpstan": "^2.1",
-    "phpunit/phpunit": "^10.0"
+    "phpunit/phpunit": "^10.0",
+    "symfony/phpunit-bridge": "^6.4"
   },
   "autoload": {
     "psr-4": {
