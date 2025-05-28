@@ -6,7 +6,7 @@ use Symfony\Bundle\FrameworkBundle\Routing\AttributeRouteControllerLoader;
 use Symfony\Component\Config\Loader\Loader;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use Symfony\Component\Routing\RouteCollection;
-use Tourze\CouponCoreBundle\Controller\Admin\DynamicConditionController;
+use Tourze\CouponCoreBundle\Controller\Api\ConditionController;
 use Tourze\RoutingAutoLoaderBundle\Service\RoutingAutoLoaderInterface;
 
 #[AutoconfigureTag('routing.loader')]
@@ -33,7 +33,7 @@ class AttributeControllerLoader extends Loader implements RoutingAutoLoaderInter
     public function autoload(): RouteCollection
     {
         $collection = new RouteCollection();
-        $collection->addCollection($this->controllerLoader->load(DynamicConditionController::class));
+        $collection->addCollection($this->controllerLoader->load(ConditionController::class));
         return $collection;
     }
 }
