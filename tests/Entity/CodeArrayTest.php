@@ -34,6 +34,18 @@ class CodeArrayTest extends TestCase
             ->method('retrieveApiArray')
             ->willReturn(['id' => 2, 'name' => 'Test Channel']);
         
+        /** @var Channel&\PHPUnit\Framework\MockObject\MockObject $gatherChannel */
+        $gatherChannel = $this->createMock(Channel::class);
+        $gatherChannel->expects($this->once())
+            ->method('retrieveApiArray')
+            ->willReturn(['id' => 3, 'name' => 'Mobile App']);
+        
+        /** @var Channel&\PHPUnit\Framework\MockObject\MockObject $useChannel */
+        $useChannel = $this->createMock(Channel::class);
+        $useChannel->expects($this->once())
+            ->method('retrieveApiArray')
+            ->willReturn(['id' => 4, 'name' => 'WeChat Mini']);
+        
         /** @var UserInterface&\PHPUnit\Framework\MockObject\MockObject $owner */
         $owner = $this->createMock(UserInterface::class);
         $owner->expects($this->once())
@@ -52,8 +64,8 @@ class CodeArrayTest extends TestCase
         $idProperty->setValue($this->code, 123);
         
         $this->code->setSn('TEST_CODE_12345');
-        $this->code->setGatherChannel('mobile_app');
-        $this->code->setUseChannel('wechat_mini');
+        $this->code->setGatherChannel($gatherChannel);
+        $this->code->setUseChannel($useChannel);
         $this->code->setConsumeCount(3);
         $this->code->setValid(true);
         $this->code->setLocked(false);
@@ -72,8 +84,8 @@ class CodeArrayTest extends TestCase
         $expected = [
             'id' => 123,
             'sn' => 'TEST_CODE_12345',
-            'gather_channel' => 'mobile_app',
-            'use_channel' => 'wechat_mini',
+            'gather_channel' => ['id' => 3, 'name' => 'Mobile App'],
+            'use_channel' => ['id' => 4, 'name' => 'WeChat Mini'],
             'consume_count' => 3,
             'valid' => true,
             'locked' => false,
@@ -108,6 +120,18 @@ class CodeArrayTest extends TestCase
             ->method('retrieveApiArray')
             ->willReturn(['id' => 2, 'name' => 'Test Channel']);
         
+        /** @var Channel&\PHPUnit\Framework\MockObject\MockObject $gatherChannel */
+        $gatherChannel = $this->createMock(Channel::class);
+        $gatherChannel->expects($this->once())
+            ->method('retrieveApiArray')
+            ->willReturn(['id' => 3, 'name' => 'Mobile App']);
+        
+        /** @var Channel&\PHPUnit\Framework\MockObject\MockObject $useChannel */
+        $useChannel = $this->createMock(Channel::class);
+        $useChannel->expects($this->once())
+            ->method('retrieveApiArray')
+            ->willReturn(['id' => 4, 'name' => 'WeChat Mini']);
+        
         /** @var UserInterface&\PHPUnit\Framework\MockObject\MockObject $owner */
         $owner = $this->createMock(UserInterface::class);
         $owner->expects($this->once())
@@ -127,8 +151,8 @@ class CodeArrayTest extends TestCase
         $idProperty->setValue($this->code, 123);
         
         $this->code->setSn('TEST_CODE_12345');
-        $this->code->setGatherChannel('mobile_app');
-        $this->code->setUseChannel('wechat_mini');
+        $this->code->setGatherChannel($gatherChannel);
+        $this->code->setUseChannel($useChannel);
         $this->code->setConsumeCount(3);
         $this->code->setValid(true);
         $this->code->setLocked(false);
@@ -151,8 +175,8 @@ class CodeArrayTest extends TestCase
         $expected = [
             'id' => 123,
             'sn' => 'TEST_CODE_12345',
-            'gather_channel' => 'mobile_app',
-            'use_channel' => 'wechat_mini',
+            'gather_channel' => ['id' => 3, 'name' => 'Mobile App'],
+            'use_channel' => ['id' => 4, 'name' => 'WeChat Mini'],
             'consume_count' => 3,
             'valid' => true,
             'locked' => false,

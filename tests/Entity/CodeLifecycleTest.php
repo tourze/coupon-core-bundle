@@ -4,6 +4,7 @@ namespace Tourze\CouponCoreBundle\Tests\Entity;
 
 use DateTime;
 use PHPUnit\Framework\TestCase;
+use Tourze\CouponCoreBundle\Entity\Channel;
 use Tourze\CouponCoreBundle\Entity\Code;
 use Tourze\CouponCoreBundle\Entity\Coupon;
 
@@ -18,6 +19,7 @@ class CodeLifecycleTest extends TestCase
     
     public function test_code_lifecycle_generation(): void
     {
+        /** @var Coupon&\PHPUnit\Framework\MockObject\MockObject $coupon */
         $coupon = $this->createMock(Coupon::class);
         $coupon->method('isValid')->willReturn(true);
         
@@ -33,24 +35,29 @@ class CodeLifecycleTest extends TestCase
     
     public function test_code_lifecycle_gathering(): void
     {
+        /** @var Coupon&\PHPUnit\Framework\MockObject\MockObject $coupon */
         $coupon = $this->createMock(Coupon::class);
         $coupon->method('isValid')->willReturn(true);
+        
+        /** @var Channel&\PHPUnit\Framework\MockObject\MockObject $gatherChannel */
+        $gatherChannel = $this->createMock(Channel::class);
         
         $this->code->setCoupon($coupon);
         $this->code->setSn('LIFECYCLE_TEST_CODE');
         $this->code->setValid(true);
-        $this->code->setGatherChannel('mobile_app');
+        $this->code->setGatherChannel($gatherChannel);
         $this->code->setGatherTime(new DateTime());
         $this->code->setExpireTime(new DateTime('+30 days'));
         
         $this->assertTrue($this->code->isValid());
         $this->assertNotNull($this->code->getGatherTime());
         $this->assertNotNull($this->code->getExpireTime());
-        $this->assertEquals('mobile_app', $this->code->getGatherChannel());
+        $this->assertSame($gatherChannel, $this->code->getGatherChannel());
     }
     
     public function test_code_lifecycle_activation(): void
     {
+        /** @var Coupon&\PHPUnit\Framework\MockObject\MockObject $coupon */
         $coupon = $this->createMock(Coupon::class);
         $coupon->method('isValid')->willReturn(true);
         
@@ -69,24 +76,29 @@ class CodeLifecycleTest extends TestCase
     
     public function test_code_lifecycle_usage(): void
     {
+        /** @var Coupon&\PHPUnit\Framework\MockObject\MockObject $coupon */
         $coupon = $this->createMock(Coupon::class);
         $coupon->method('isValid')->willReturn(true);
+        
+        /** @var Channel&\PHPUnit\Framework\MockObject\MockObject $useChannel */
+        $useChannel = $this->createMock(Channel::class);
         
         $this->code->setCoupon($coupon);
         $this->code->setSn('LIFECYCLE_TEST_CODE');
         $this->code->setValid(true);
-        $this->code->setUseChannel('wechat_mini');
+        $this->code->setUseChannel($useChannel);
         $this->code->setUseTime(new DateTime());
         $this->code->setConsumeCount(1);
         
         $this->assertTrue($this->code->isValid());
         $this->assertNotNull($this->code->getUseTime());
-        $this->assertEquals('wechat_mini', $this->code->getUseChannel());
+        $this->assertSame($useChannel, $this->code->getUseChannel());
         $this->assertEquals(1, $this->code->getConsumeCount());
     }
     
     public function test_code_lifecycle_expiration(): void
     {
+        /** @var Coupon&\PHPUnit\Framework\MockObject\MockObject $coupon */
         $coupon = $this->createMock(Coupon::class);
         $coupon->method('isValid')->willReturn(true);
         
@@ -103,10 +115,10 @@ class CodeLifecycleTest extends TestCase
     public function test_multiple_consume_scenario(): void
     {
         // 测试多次消费场景（为未来功能预留）
+        /** @var Coupon&\PHPUnit\Framework\MockObject\MockObject $coupon */
         $coupon = $this->createMock(Coupon::class);
         $coupon->method('isValid')->willReturn(true);
         
-        /** @var Coupon $coupon */
         $this->code->setCoupon($coupon);
         $this->code->setValid(true);
         $this->code->setConsumeCount(3);

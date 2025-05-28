@@ -4,6 +4,7 @@ namespace Tourze\CouponCoreBundle\Tests\Entity;
 
 use DateTime;
 use PHPUnit\Framework\TestCase;
+use Tourze\CouponCoreBundle\Entity\Channel;
 use Tourze\CouponCoreBundle\Entity\Code;
 
 class CodeBasicTest extends TestCase
@@ -29,13 +30,17 @@ class CodeBasicTest extends TestCase
         $this->code->setSn('TEST_CODE_12345');
         $this->assertEquals('TEST_CODE_12345', $this->code->getSn());
         
-        // 测试领取渠道
-        $this->code->setGatherChannel('mobile_app');
-        $this->assertEquals('mobile_app', $this->code->getGatherChannel());
+        // 测试领取渠道 - 现在需要使用 Channel 实体
+        /** @var Channel&\PHPUnit\Framework\MockObject\MockObject $gatherChannel */
+        $gatherChannel = $this->createMock(Channel::class);
+        $this->code->setGatherChannel($gatherChannel);
+        $this->assertSame($gatherChannel, $this->code->getGatherChannel());
         
-        // 测试使用渠道
-        $this->code->setUseChannel('wechat_mini');
-        $this->assertEquals('wechat_mini', $this->code->getUseChannel());
+        // 测试使用渠道 - 现在需要使用 Channel 实体
+        /** @var Channel&\PHPUnit\Framework\MockObject\MockObject $useChannel */
+        $useChannel = $this->createMock(Channel::class);
+        $this->code->setUseChannel($useChannel);
+        $this->assertSame($useChannel, $this->code->getUseChannel());
         
         // 测试核销次数
         $this->code->setConsumeCount(3);

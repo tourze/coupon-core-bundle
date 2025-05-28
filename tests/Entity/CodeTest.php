@@ -43,10 +43,16 @@ class CodeTest extends TestCase
     
     public function testBasicFunctionality(): void
     {
+        // 创建渠道实体用于测试
+        /** @var Channel&\PHPUnit\Framework\MockObject\MockObject $gatherChannel */
+        $gatherChannel = $this->createMock(Channel::class);
+        /** @var Channel&\PHPUnit\Framework\MockObject\MockObject $useChannel */
+        $useChannel = $this->createMock(Channel::class);
+        
         // 测试基础属性
         $this->code->setSn('TEST_CODE_12345');
-        $this->code->setGatherChannel('mobile_app');
-        $this->code->setUseChannel('wechat_mini');
+        $this->code->setGatherChannel($gatherChannel);
+        $this->code->setUseChannel($useChannel);
         $this->code->setConsumeCount(3);
         $this->code->setValid(true);
         $this->code->setLocked(false);
@@ -55,8 +61,8 @@ class CodeTest extends TestCase
         $this->code->setRemark('测试备注信息');
         
         $this->assertEquals('TEST_CODE_12345', $this->code->getSn());
-        $this->assertEquals('mobile_app', $this->code->getGatherChannel());
-        $this->assertEquals('wechat_mini', $this->code->getUseChannel());
+        $this->assertSame($gatherChannel, $this->code->getGatherChannel());
+        $this->assertSame($useChannel, $this->code->getUseChannel());
         $this->assertEquals(3, $this->code->getConsumeCount());
         $this->assertTrue($this->code->isValid());
         $this->assertFalse($this->code->isLocked());
@@ -131,6 +137,12 @@ class CodeTest extends TestCase
     
     public function testCodeLifecycle(): void
     {
+        // 创建渠道实体用于测试
+        /** @var Channel&\PHPUnit\Framework\MockObject\MockObject $gatherChannel */
+        $gatherChannel = $this->createMock(Channel::class);
+        /** @var Channel&\PHPUnit\Framework\MockObject\MockObject $useChannel */
+        $useChannel = $this->createMock(Channel::class);
+        
         // 测试完整的生命周期
         $this->code->setCoupon($this->coupon);
         $this->code->setSn('LIFECYCLE_TEST');
@@ -138,13 +150,13 @@ class CodeTest extends TestCase
         $this->code->setCreateTime(new DateTime());
         $this->code->setGatherTime(new DateTime());
         $this->code->setExpireTime(new DateTime('+30 days'));
-        $this->code->setGatherChannel('mobile_app');
+        $this->code->setGatherChannel($gatherChannel);
         $this->code->setOwner($this->owner);
         $this->code->setNeedActive(true);
         $this->code->setActive(true);
         $this->code->setActiveTime(new DateTime());
         $this->code->setUseTime(new DateTime());
-        $this->code->setUseChannel('wechat_mini');
+        $this->code->setUseChannel($useChannel);
         $this->code->setConsumeCount(1);
         
         $this->assertEquals(CodeStatus::USED, $this->code->getStatus());
@@ -172,13 +184,21 @@ class CodeTest extends TestCase
     
     public function testArrayOutput(): void
     {
+        // 创建渠道实体用于测试
+        /** @var Channel&\PHPUnit\Framework\MockObject\MockObject $gatherChannel */
+        $gatherChannel = $this->createMock(Channel::class);
+        $gatherChannel->method('retrieveApiArray')->willReturn(['id' => 5, 'name' => 'API Test Channel']);
+        /** @var Channel&\PHPUnit\Framework\MockObject\MockObject $useChannel */
+        $useChannel = $this->createMock(Channel::class);
+        $useChannel->method('retrieveApiArray')->willReturn(['id' => 6, 'name' => 'API Use Channel']);
+        
         $this->code->setCoupon($this->coupon);
         $this->code->setChannel($this->channel);
         $this->code->setOwner($this->owner);
         $this->code->setReadStatus($this->readStatus);
         $this->code->setSn('API_TEST_CODE');
-        $this->code->setGatherChannel('api_test');
-        $this->code->setUseChannel('api_use');
+        $this->code->setGatherChannel($gatherChannel);
+        $this->code->setUseChannel($useChannel);
         $this->code->setValid(true);
         $this->code->setLocked(false);
         $this->code->setGatherTime(new DateTime('2024-01-01 10:00:00'));
@@ -188,8 +208,8 @@ class CodeTest extends TestCase
         $apiArray = $this->code->retrieveApiArray();
         $this->assertIsArray($apiArray);
         $this->assertEquals('API_TEST_CODE', $apiArray['sn']);
-        $this->assertEquals('api_test', $apiArray['gather_channel']);
-        $this->assertEquals('api_use', $apiArray['use_channel']);
+        $this->assertEquals(['id' => 5, 'name' => 'API Test Channel'], $apiArray['gather_channel']);
+        $this->assertEquals(['id' => 6, 'name' => 'API Use Channel'], $apiArray['use_channel']);
         
         $adminArray = $this->code->retrieveAdminArray();
         $this->assertIsArray($adminArray);
@@ -201,13 +221,13 @@ class CodeTest extends TestCase
     {
         // 测试空值
         $this->code->setSn('');
-        $this->code->setGatherChannel('');
-        $this->code->setUseChannel('');
+        $this->code->setGatherChannel(null);
+        $this->code->setUseChannel(null);
         $this->code->setRemark('');
         
         $this->assertEquals('', $this->code->getSn());
-        $this->assertEquals('', $this->code->getGatherChannel());
-        $this->assertEquals('', $this->code->getUseChannel());
+        $this->assertNull($this->code->getGatherChannel());
+        $this->assertNull($this->code->getUseChannel());
         $this->assertEquals('', $this->code->getRemark());
         
         // 测试特殊字符

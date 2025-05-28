@@ -135,21 +135,6 @@ class ChannelCrudController extends AbstractCrudController
             ->setTemplatePath('admin/channel/coupons.html.twig')
             ->setHelp('可在此渠道投放的优惠券列表');
 
-        // 统计字段
-        yield TextField::new('codesCount', '券码数量')
-            ->onlyOnIndex()
-            ->formatValue(function ($value, $entity) {
-                return number_format($entity->getCodes()->count());
-            })
-            ->setHelp('通过此渠道发放的券码总数');
-
-        yield TextField::new('couponsCount', '优惠券数量')
-            ->onlyOnIndex()
-            ->formatValue(function ($value, $entity) {
-                return number_format($entity->getCoupons()->count());
-            })
-            ->setHelp('可在此渠道投放的优惠券总数');
-
         // 审计字段
         yield TextField::new('createdBy', '创建人')
             ->onlyOnDetail();
@@ -177,14 +162,11 @@ class ChannelCrudController extends AbstractCrudController
     }
 
     /**
-     * 优化列表查询，预加载关联数据用于统计
+     * 优化列表查询
      */
     public function createIndexQueryBuilder(SearchDto $searchDto, EntityDto $entityDto, FieldCollection $fields, FilterCollection $filters): QueryBuilder
     {
         return parent::createIndexQueryBuilder($searchDto, $entityDto, $fields, $filters)
-            ->leftJoin('entity.codes', 'codes')
-            ->leftJoin('entity.coupons', 'coupons')
-            ->groupBy('entity.id')
             ->orderBy('entity.id', 'DESC');
     }
-} 
+}

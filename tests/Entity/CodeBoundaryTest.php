@@ -51,15 +51,11 @@ class CodeBoundaryTest extends TestCase
     public function test_empty_string_values(): void
     {
         $this->code->setSn('');
-        $this->code->setGatherChannel('');
-        $this->code->setUseChannel('');
         $this->code->setRemark('');
         $this->code->setCreatedBy('');
         $this->code->setUpdatedBy('');
         
         $this->assertEquals('', $this->code->getSn());
-        $this->assertEquals('', $this->code->getGatherChannel());
-        $this->assertEquals('', $this->code->getUseChannel());
         $this->assertEquals('', $this->code->getRemark());
         $this->assertEquals('', $this->code->getCreatedBy());
         $this->assertEquals('', $this->code->getUpdatedBy());
@@ -83,13 +79,9 @@ class CodeBoundaryTest extends TestCase
         $longString = str_repeat('A', 1000);
         
         $this->code->setSn($longString);
-        $this->code->setGatherChannel($longString);
-        $this->code->setUseChannel($longString);
         $this->code->setRemark($longString);
         
         $this->assertEquals($longString, $this->code->getSn());
-        $this->assertEquals($longString, $this->code->getGatherChannel());
-        $this->assertEquals($longString, $this->code->getUseChannel());
         $this->assertEquals($longString, $this->code->getRemark());
     }
     
@@ -98,15 +90,11 @@ class CodeBoundaryTest extends TestCase
         $specialString = '特殊字符测试!@#$%^&*()_+-=[]{}|;:,.<>?/~`';
         
         $this->code->setSn($specialString);
-        $this->code->setGatherChannel($specialString);
-        $this->code->setUseChannel($specialString);
         $this->code->setRemark($specialString);
         $this->code->setCreatedBy($specialString);
         $this->code->setUpdatedBy($specialString);
         
         $this->assertEquals($specialString, $this->code->getSn());
-        $this->assertEquals($specialString, $this->code->getGatherChannel());
-        $this->assertEquals($specialString, $this->code->getUseChannel());
         $this->assertEquals($specialString, $this->code->getRemark());
         $this->assertEquals($specialString, $this->code->getCreatedBy());
         $this->assertEquals($specialString, $this->code->getUpdatedBy());
