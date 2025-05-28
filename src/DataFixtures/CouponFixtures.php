@@ -150,4 +150,4 @@ class CouponFixtures extends Fixture implements DependentFixtureInterface
             ChannelFixtures::class,
         ];
     }
-} 
+}

@@ -73,7 +73,7 @@ class CouponCrudController extends AbstractCrudController
     {
         // 基础信息Tab
         yield FormField::addTab('基础信息')->setIcon('fa fa-info-circle');
-        
+
         yield IdField::new('id', 'ID')
             ->onlyOnIndex()
             ->setMaxLength(9999);
@@ -202,4 +202,4 @@ class CouponCrudController extends AbstractCrudController
             ->add(DateTimeFilter::new('startTime', '开始有效时间'))
             ->add(DateTimeFilter::new('endTime', '截止有效时间'));
     }
-} 
+}

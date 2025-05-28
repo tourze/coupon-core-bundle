@@ -25,7 +25,6 @@ use Tourze\EasyAdmin\Attribute\Column\ListColumn;
 use Tourze\EasyAdmin\Attribute\Field\FormField;
 use Tourze\EasyAdmin\Attribute\Filter\Filterable;
 use Tourze\EasyAdmin\Attribute\Permission\AsPermission;
-use Yiisoft\Json\Json;
 
 #[AsPermission(title: '券码管理')]
 #[Exportable]
@@ -57,11 +56,19 @@ class Code implements \Stringable, AdminArrayInterface, ApiArrayInterface, CodeI
     #[ORM\Column(type: Types::STRING, length: 100, unique: true, options: ['comment' => '券码'])]
     private ?string $sn = null;
 
-    #[ORM\Column(type: Types::STRING, length: 100, nullable: true, options: ['comment' => '领取渠道'])]
-    private ?string $gatherChannel = null;
+    #[Filterable(label: '领取渠道')]
+    #[ListColumn(title: '领取渠道')]
+    #[ExportColumn(title: '领取渠道')]
+    #[ORM\ManyToOne(targetEntity: Channel::class, fetch: 'EXTRA_LAZY')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?Channel $gatherChannel = null;
 
-    #[ORM\Column(length: 40, nullable: true, options: ['comment' => '使用渠道'])]
-    private ?string $useChannel = null;
+    #[Filterable(label: '使用渠道')]
+    #[ListColumn(title: '使用渠道')]
+    #[ExportColumn(title: '使用渠道')]
+    #[ORM\ManyToOne(targetEntity: Channel::class, fetch: 'EXTRA_LAZY')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?Channel $useChannel = null;
 
     #[ListColumn(sorter: true)]
     #[ExportColumn(title: '领取时间')]
@@ -185,6 +192,13 @@ class Code implements \Stringable, AdminArrayInterface, ApiArrayInterface, CodeI
         return $this->id;
     }
 
+    public function setId(?int $id): self
+    {
+        $this->id = $id;
+
+        return $this;
+    }
+
     public function getCoupon(): ?Coupon
     {
         return $this->coupon;
@@ -257,12 +271,12 @@ class Code implements \Stringable, AdminArrayInterface, ApiArrayInterface, CodeI
         return $this;
     }
 
-    public function getGatherChannel(): ?string
+    public function getGatherChannel(): ?Channel
     {
         return $this->gatherChannel;
     }
 
-    public function setGatherChannel(?string $gatherChannel): self
+    public function setGatherChannel(?Channel $gatherChannel): self
     {
         $this->gatherChannel = $gatherChannel;
 
@@ -284,12 +298,15 @@ class Code implements \Stringable, AdminArrayInterface, ApiArrayInterface, CodeI
     /**
      * @throws \JsonException
      */
-    public function getQrcodeLink(): string
+    public function getQrcodeLink(): array
     {
-        return Json::encode([
+        $data = [
             'code' => $this->getSn(),
-            't' => time(),
-        ]);
+            'sn' => $this->getSn(),
+            't' => time() + 86400 * 30,
+        ];
+
+        return $data;
     }
 
     public function getRemark(): ?string
@@ -353,12 +370,12 @@ class Code implements \Stringable, AdminArrayInterface, ApiArrayInterface, CodeI
         return $this;
     }
 
-    public function getUseChannel(): ?string
+    public function getUseChannel(): ?Channel
     {
         return $this->useChannel;
     }
 
-    public function setUseChannel(?string $useChannel): self
+    public function setUseChannel(?Channel $useChannel): self
     {
         $this->useChannel = $useChannel;
 
@@ -392,50 +409,46 @@ class Code implements \Stringable, AdminArrayInterface, ApiArrayInterface, CodeI
         return $this->channel;
     }
 
-    public function setChannel(?Channel $channel): void
+    public function setChannel(?Channel $channel): self
     {
         $this->channel = $channel;
-    }
 
-    public function retrieveAdminArray(): array
-    {
-        return [
-            'id' => $this->getId(),
-            'createTime' => $this->getCreateTime()?->format('Y-m-d H:i:s'),
-            'updateTime' => $this->getUpdateTime()?->format('Y-m-d H:i:s'),
-            'valid' => $this->isValid(),
-            'sn' => $this->getSn(),
-            'owner' => $this->getOwner()?->retrieveApiArray(),
-            'coupon' => $this->getCoupon()?->retrieveAdminArray(),
-            'gatherChannel' => $this->getGatherChannel(),
-            'useChannel' => $this->getUseChannel(),
-            'gatherTime' => $this->getGatherTime()?->format('Y-m-d H:i:s'),
-            'expireTime' => $this->getExpireTime()?->format('Y-m-d H:i:s'),
-            'useTime' => $this->getUseTime()?->format('Y-m-d H:i:s'),
-            'locked' => $this->isLocked(),
-        ];
+        return $this;
     }
 
     public function retrieveApiArray(): array
     {
         return [
             'id' => $this->getId(),
-            'createTime' => $this->getCreateTime()?->format('Y-m-d H:i:s'),
-            'updateTime' => $this->getUpdateTime()?->format('Y-m-d H:i:s'),
-            'expireTime' => $this->getExpireTime()?->format('Y-m-d H:i:s'),
-            'useTime' => $this->getUseTime()?->format('Y-m-d H:i:s'),
-            'activeTime' => $this->getActiveTime()?->format('Y-m-d H:i:s'),
+            'sn' => $this->getSn(),
+            'gather_channel' => $this->getGatherChannel()?->retrieveApiArray(),
+            'use_channel' => $this->getUseChannel()?->retrieveApiArray(),
+            'consume_count' => $this->getConsumeCount(),
+            'valid' => $this->isValid(),
+            'locked' => $this->isLocked(),
+            'need_active' => $this->isNeedActive(),
+            'active' => $this->isActive(),
+            'gather_time' => $this->getGatherTime()?->format('Y-m-d H:i:s'),
+            'expire_time' => $this->getExpireTime()?->format('Y-m-d H:i:s'),
+            'use_time' => $this->getUseTime()?->format('Y-m-d H:i:s'),
+            'active_time' => $this->getActiveTime()?->format('Y-m-d H:i:s'),
+            'remark' => $this->getRemark(),
+            'status' => $this->getStatus()->value,
             'coupon' => $this->getCoupon()?->retrieveApiArray(),
             'channel' => $this->getChannel()?->retrieveApiArray(),
-            'owner' => $this->getOwner()?->retrieveApiArray(),
-            'sn' => $this->getSn(),
-            'gatherChannel' => $this->getGatherChannel(),
-            'useChannel' => $this->getUseChannel(),
-            'remark' => $this->getRemark(),
-            'needActive' => $this->isNeedActive(),
-            'active' => $this->isActive(),
-            'status' => $this->getStatus()->value,
+            'owner' => $this->getOwner()?->getUserIdentifier(),
+            'read_status' => $this->getReadStatus()?->retrieveApiArray(),
         ];
+    }
+
+    public function retrieveAdminArray(): array
+    {
+        return array_merge($this->retrieveApiArray(), [
+            'created_by' => $this->getCreatedBy(),
+            'updated_by' => $this->getUpdatedBy(),
+            'create_time' => $this->getCreateTime()?->format('Y-m-d H:i:s'),
+            'update_time' => $this->getUpdateTime()?->format('Y-m-d H:i:s'),
+        ]);
     }
 
     public function getReadStatus(): ?ReadStatus
