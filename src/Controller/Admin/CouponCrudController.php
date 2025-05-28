@@ -9,7 +9,6 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
@@ -22,9 +21,6 @@ use EasyCorp\Bundle\EasyAdminBundle\Filter\DateTimeFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\EntityFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\TextFilter;
 use Tourze\CouponCoreBundle\Entity\Coupon;
-use Tourze\CouponCoreBundle\Form\Type\ConditionType;
-
-// use Tourze\CouponCoreBundle\Service\ConditionManagerService;
 
 /**
  * 优惠券管理控制器
@@ -161,34 +157,6 @@ class CouponCrudController extends AbstractCrudController
             ->setColumns(6)
             ->setHelp('激活后多少天内有效');
 
-        // 领取条件Tab
-        yield FormField::addTab('领取条件')->setIcon('fa fa-hand-paper')->onlyOnForms();
-        
-        yield CollectionField::new('requirementConditions', '领取条件')
-            ->setEntryType(ConditionType::class)
-            ->setFormTypeOptions([
-                'by_reference' => false,
-                'allow_add' => true,
-                'allow_delete' => true,
-                'prototype' => true,
-            ])
-            ->onlyOnForms()
-            ->setColumns(12);
-
-        // 使用条件Tab
-        yield FormField::addTab('使用条件')->setIcon('fa fa-shopping-cart')->onlyOnForms();
-        
-        yield CollectionField::new('satisfyConditions', '使用条件')
-            ->setEntryType(ConditionType::class)
-            ->setFormTypeOptions([
-                'by_reference' => false,
-                'allow_add' => true,
-                'allow_delete' => true,
-                'prototype' => true,
-            ])
-            ->onlyOnForms()
-            ->setColumns(12);
-
         // 其他设置Tab
         yield FormField::addTab('其他设置')->setIcon('fa fa-cogs')->onlyOnForms();
 
@@ -205,13 +173,6 @@ class CouponCrudController extends AbstractCrudController
                 ->formatValue(function ($value) {
                     return number_format($value);
                 });
-
-            // 条件展示（仅详情页）
-            if ($pageName === Crud::PAGE_DETAIL) {
-                yield CollectionField::new('conditions', '所有条件')
-                    ->onlyOnDetail()
-                    ->setTemplatePath('@CouponCore/admin/coupon/conditions_detail.html.twig');
-            }
 
             // 审计字段
             yield TextField::new('createdBy', '创建人')
@@ -241,23 +202,4 @@ class CouponCrudController extends AbstractCrudController
             ->add(DateTimeFilter::new('startTime', '开始有效时间'))
             ->add(DateTimeFilter::new('endTime', '截止有效时间'));
     }
-
-    // TODO: 重新实现这些方法使用新的通用条件系统
-    // /**
-    //  * 获取条件类型的表单字段（AJAX接口）
-    //  */
-    // #[AdminAction('condition-form-fields/{type}', 'condition_form_fields')]
-    // public function getConditionFormFields(Request $request): JsonResponse
-    // {
-    //     // 需要重新实现
-    // }
-
-    // /**
-    //  * 获取可用条件类型列表（AJAX接口）
-    //  */
-    // #[AdminAction('available-condition-types/{scenario}', 'available_condition_types')]
-    // public function getAvailableConditionTypes(Request $request): JsonResponse
-    // {
-    //     // 需要重新实现
-    // }
 } 

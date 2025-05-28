@@ -6,7 +6,6 @@ use Carbon\Carbon;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Serializer\Attribute\Ignore;
 use Tourze\Arrayable\AdminArrayInterface;
 use Tourze\Arrayable\ApiArrayInterface;
@@ -19,8 +18,6 @@ use Tourze\DoctrineTimestampBundle\Attribute\UpdateTimeColumn;
 use Tourze\DoctrineTrackBundle\Attribute\TrackColumn;
 use Tourze\DoctrineUserBundle\Attribute\CreatedByColumn;
 use Tourze\DoctrineUserBundle\Attribute\UpdatedByColumn;
-use Tourze\EasyAdmin\Attribute\Action\Creatable;
-use Tourze\EasyAdmin\Attribute\Action\Deletable;
 use Tourze\EasyAdmin\Attribute\Action\Exportable;
 use Tourze\EasyAdmin\Attribute\Column\BoolColumn;
 use Tourze\EasyAdmin\Attribute\Column\ExportColumn;
@@ -31,32 +28,24 @@ use Tourze\EasyAdmin\Attribute\Permission\AsPermission;
 use Yiisoft\Json\Json;
 
 #[AsPermission(title: '券码管理')]
-#[Deletable]
-#[Creatable]
 #[Exportable]
 #[ORM\Entity(repositoryClass: CodeRepository::class)]
 #[ORM\Table(name: 'coupon_code', options: ['comment' => '券码'])]
 class Code implements \Stringable, AdminArrayInterface, ApiArrayInterface, CodeInterface
 {
-    #[Groups(['restful_read'])]
-    #[ListColumn]
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: Types::INTEGER, options: ['comment' => '码ID'])]
     private ?int $id = 0;
 
     #[Filterable(label: '优惠券', inputWidth: 200)]
-    #[FormField]
-    #[Groups(['restful_read'])]
     #[ListColumn(title: '优惠券')]
     #[ExportColumn(title: '优惠券')]
     #[ORM\ManyToOne(targetEntity: Coupon::class, inversedBy: 'codes')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Coupon $coupon = null;
 
-    #[FormField]
     #[Filterable(label: '渠道')]
-    #[Groups(['restful_read'])]
     #[ListColumn(title: '渠道')]
     #[ExportColumn(title: '渠道')]
     #[ORM\ManyToOne(targetEntity: Channel::class, inversedBy: 'channels')]
@@ -64,27 +53,16 @@ class Code implements \Stringable, AdminArrayInterface, ApiArrayInterface, CodeI
     private ?Channel $channel = null;
 
     #[TrackColumn]
-    #[FormField]
-    #[Filterable]
-    #[Groups(['restful_read'])]
-    #[ListColumn]
     #[ExportColumn(title: '券码')]
     #[ORM\Column(type: Types::STRING, length: 100, unique: true, options: ['comment' => '券码'])]
     private ?string $sn = null;
 
-    #[FormField]
-    #[Filterable]
-    #[ListColumn]
-    #[Groups(['restful_read'])]
     #[ORM\Column(type: Types::STRING, length: 100, nullable: true, options: ['comment' => '领取渠道'])]
     private ?string $gatherChannel = null;
 
-    #[ListColumn]
-    #[Groups(['restful_read'])]
     #[ORM\Column(length: 40, nullable: true, options: ['comment' => '使用渠道'])]
     private ?string $useChannel = null;
 
-    #[Groups(['restful_read'])]
     #[ListColumn(sorter: true)]
     #[ExportColumn(title: '领取时间')]
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '领取时间'])]
@@ -93,13 +71,11 @@ class Code implements \Stringable, AdminArrayInterface, ApiArrayInterface, CodeI
     /**
      * 必须在过期时间内才能使用喔.
      */
-    #[Groups(['restful_read'])]
     #[ListColumn(sorter: true)]
     #[ExportColumn(title: '过期时间')]
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '过期时间'])]
     private ?\DateTimeInterface $expireTime = null;
 
-    #[Groups(['restful_read'])]
     #[ListColumn(sorter: true)]
     #[ExportColumn(title: '使用时间')]
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '使用时间'])]
@@ -117,19 +93,15 @@ class Code implements \Stringable, AdminArrayInterface, ApiArrayInterface, CodeI
     #[ORM\Column(type: Types::INTEGER, nullable: true, options: ['default' => 1, 'comment' => '核销次数'])]
     private ?int $consumeCount = null;
 
-    #[Groups(['restful_read'])]
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $remark = null;
 
-    #[Groups(['restful_read'])]
     #[ORM\Column(type: Types::BOOLEAN, nullable: true, options: ['comment' => '是否需要激活'])]
     private ?bool $needActive = null;
 
-    #[Groups(['restful_read'])]
     #[ORM\Column(nullable: true, options: ['comment' => '是否已激活'])]
     private ?bool $active = null;
 
-    #[Groups(['restful_read'])]
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '激活时间'])]
     private ?\DateTimeInterface $activeTime = null;
 
@@ -158,18 +130,12 @@ class Code implements \Stringable, AdminArrayInterface, ApiArrayInterface, CodeI
     #[ORM\Column(nullable: true, options: ['comment' => '更新人'])]
     private ?string $updatedBy = null;
 
-    #[Filterable]
     #[IndexColumn]
-    #[ListColumn(order: 98, sorter: true)]
-    #[ExportColumn]
     #[CreateTimeColumn]
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '创建时间'])]
     private ?\DateTimeInterface $createTime = null;
 
     #[UpdateTimeColumn]
-    #[ListColumn(order: 99, sorter: true)]
-    #[Filterable]
-    #[ExportColumn]
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '更新时间'])]
     private ?\DateTimeInterface $updateTime = null;
 
@@ -318,7 +284,6 @@ class Code implements \Stringable, AdminArrayInterface, ApiArrayInterface, CodeI
     /**
      * @throws \JsonException
      */
-    #[Groups(['restful_read'])]
     public function getQrcodeLink(): string
     {
         return Json::encode([
@@ -339,7 +304,6 @@ class Code implements \Stringable, AdminArrayInterface, ApiArrayInterface, CodeI
         return $this;
     }
 
-    #[Groups(['restful_read'])]
     public function getValidPeriodText(): ?string
     {
         if (!$this->getExpireTime()) {
@@ -401,7 +365,6 @@ class Code implements \Stringable, AdminArrayInterface, ApiArrayInterface, CodeI
         return $this;
     }
 
-    #[Groups(['restful_read'])]
     public function getStatus(): CodeStatus
     {
         if ($this->getUseTime()) {

@@ -95,9 +95,6 @@ class IntegrationTestKernel extends Kernel
         $services = $container->services();
         $services->alias('test.condition_manager', 'Tourze\ConditionSystemBundle\Service\ConditionManagerService')
             ->public();
-        
-        $services->alias('test.condition_handler_factory', 'Tourze\ConditionSystemBundle\Service\ConditionHandlerFactory')
-            ->public();
     }
 
     public function getCacheDir(): string

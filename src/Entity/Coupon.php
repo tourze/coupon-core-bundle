@@ -7,11 +7,9 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Serializer\Attribute\Ignore;
 use Tourze\Arrayable\AdminArrayInterface;
 use Tourze\Arrayable\ApiArrayInterface;
-use Tourze\ConditionSystemBundle\Entity\BaseCondition;
 use Tourze\CouponContracts\CouponInterface;
 use Tourze\CouponCoreBundle\Repository\CouponRepository;
 use Tourze\DoctrineIndexedBundle\Attribute\IndexColumn;
@@ -23,39 +21,23 @@ use Tourze\DoctrineTimestampBundle\Attribute\UpdateTimeColumn;
 use Tourze\DoctrineTrackBundle\Attribute\TrackColumn;
 use Tourze\DoctrineUserBundle\Attribute\CreatedByColumn;
 use Tourze\DoctrineUserBundle\Attribute\UpdatedByColumn;
-use Tourze\EasyAdmin\Attribute\Action\Creatable;
-use Tourze\EasyAdmin\Attribute\Action\Deletable;
-use Tourze\EasyAdmin\Attribute\Action\Editable;
 use Tourze\EasyAdmin\Attribute\Column\BoolColumn;
-use Tourze\EasyAdmin\Attribute\Column\ExportColumn;
 use Tourze\EasyAdmin\Attribute\Column\ListColumn;
-use Tourze\EasyAdmin\Attribute\Column\PictureColumn;
 use Tourze\EasyAdmin\Attribute\Field\FormField;
-use Tourze\EasyAdmin\Attribute\Field\ImagePickerField;
-use Tourze\EasyAdmin\Attribute\Filter\Filterable;
-use Tourze\EasyAdmin\Attribute\Filter\Keyword;
 use Tourze\EasyAdmin\Attribute\Permission\AsPermission;
 use Tourze\EnumExtra\Itemable;
 use Tourze\ResourceManageBundle\Model\ResourceIdentity;
 
 #[AsPermission(title: '优惠券')]
-#[Deletable]
-#[Editable]
-#[Creatable]
 #[ORM\Entity(repositoryClass: CouponRepository::class)]
 #[ORM\Table(name: 'coupon_main', options: ['comment' => '优惠券'])]
 class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInterface, BenefitResource, ResourceIdentity, CouponInterface
 {
-    #[ListColumn(order: -1)]
-    #[ExportColumn]
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: Types::INTEGER, options: ['comment' => 'ID'])]
     private ?int $id = 0;
 
-    #[Filterable]
-    #[ListColumn]
-    #[Groups(['restful_read'])]
     #[SnowflakeColumn]
     #[ORM\Column(type: Types::STRING, length: 100, unique: true, options: ['comment' => '唯一编码'])]
     private ?string $sn = null;
@@ -73,69 +55,40 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
     private Collection $codes;
 
     #[FormField(span: 12)]
-    #[Keyword]
-    #[Groups(['restful_read'])]
-    #[ListColumn]
     #[ORM\Column(type: Types::STRING, length: 255, options: ['comment' => '名称'])]
     private ?string $name = null;
 
-    #[FormField(span: 6)]
-    #[Groups(['restful_read'])]
     #[ListColumn(sorter: true)]
     #[ORM\Column(type: Types::INTEGER, nullable: true, options: ['comment' => '领取后过期天数'])]
     private ?int $expireDay = null;
 
-    #[ImagePickerField]
-    #[PictureColumn]
     #[FormField(span: 5)]
-    #[Groups(['restful_read'])]
-    #[ListColumn]
     #[ORM\Column(type: Types::STRING, length: 255, nullable: true, options: ['comment' => 'ICON图标'])]
     private ?string $iconImg = null;
 
-    #[ImagePickerField]
-    #[PictureColumn]
     #[FormField(span: 5)]
-    #[Groups(['restful_read'])]
-    #[ListColumn]
     #[ORM\Column(type: Types::STRING, length: 255, nullable: true, options: ['comment' => '列表背景'])]
     private ?string $backImg = null;
-
-    /**
-     * 新的条件系统 - 所有条件
-     * @var Collection<\Tourze\ConditionSystemBundle\Entity\BaseCondition>
-     */
-    #[FormField(title: '条件管理')]
-    #[ORM\OneToMany(targetEntity: \Tourze\ConditionSystemBundle\Entity\BaseCondition::class, mappedBy: 'coupon', cascade: ['persist'], orphanRemoval: true)]
-    private Collection $conditions;
 
     /**
      * @var Collection<Discount>
      */
     #[FormField(title: '优惠信息')]
-    #[Groups(['restful_read'])]
     #[ORM\OneToMany(targetEntity: Discount::class, mappedBy: 'coupon', cascade: ['persist'], fetch: 'EXTRA_LAZY', orphanRemoval: true)]
     private Collection $discounts;
 
-    #[FormField]
-    #[Keyword]
-    #[Groups(['restful_read'])]
     #[ORM\Column(type: Types::TEXT, nullable: true, options: ['comment' => '备注'])]
     private ?string $remark = null;
 
-    #[Groups(['restful_read'])]
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '可用开始时间'])]
     private ?\DateTime $startDateTime = null;
 
-    #[Groups(['restful_read'])]
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '可用结束时间'])]
     private ?\DateTime $endDateTime = null;
 
-    #[FormField(span: 6)]
     #[ORM\Column(type: Types::BOOLEAN, nullable: true, options: ['comment' => '是否需要激活'])]
     private ?bool $needActive = null;
 
-    #[FormField(span: 6)]
     #[ORM\Column(nullable: true, options: ['comment' => '激活后有效天数'])]
     private ?int $activeValidDay = null;
 
@@ -143,11 +96,9 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
      * @var Collection<Attribute>
      */
     #[FormField(title: '属性')]
-    #[Groups(['restful_read'])]
     #[ORM\OneToMany(targetEntity: Attribute::class, mappedBy: 'coupon', cascade: ['persist'], fetch: 'EXTRA_LAZY', orphanRemoval: true, indexBy: 'name')]
     private Collection $attributes;
 
-    #[FormField]
     #[ORM\Column(type: Types::TEXT, nullable: true, options: ['comment' => '使用说明'])]
     private ?string $useDesc = null;
 
@@ -163,13 +114,9 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
     #[ORM\OneToMany(targetEntity: Batch::class, mappedBy: 'coupon')]
     private Collection $batches;
 
-    #[FormField]
-    #[Groups(['restful_read', 'admin_curd'])]
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '开始有效时间'])]
     private ?\DateTimeInterface $startTime = null;
 
-    #[FormField]
-    #[Groups(['restful_read', 'admin_curd'])]
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '截止有效时间'])]
     private ?\DateTimeInterface $endTime = null;
 
@@ -197,18 +144,12 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
     #[ORM\Column(length: 128, nullable: true, options: ['comment' => '更新时IP'])]
     private ?string $updatedFromIp = null;
 
-    #[Filterable]
     #[IndexColumn]
-    #[ListColumn(order: 98, sorter: true)]
-    #[ExportColumn]
     #[CreateTimeColumn]
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '创建时间'])]
     private ?\DateTimeInterface $createTime = null;
 
     #[UpdateTimeColumn]
-    #[ListColumn(order: 99, sorter: true)]
-    #[Filterable]
-    #[ExportColumn]
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '更新时间'])]
     private ?\DateTimeInterface $updateTime = null;
 
@@ -220,7 +161,6 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
         $this->couponChannels = new ArrayCollection();
         $this->channels = new ArrayCollection();
         $this->batches = new ArrayCollection();
-        $this->conditions = new ArrayCollection();
     }
 
     public function __toString(): string
@@ -741,57 +681,4 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
     {
         return $this->updateTime;
     }
-
-    /**
-     * @return Collection<int, BaseCondition>
-     */
-    public function getConditions(): Collection
-    {
-        return $this->conditions;
-    }
-
-    // TODO: 重新实现这些方法使用新的通用条件系统
-    // /**
-    //  * 获取领取条件
-    //  * @return Collection<int, BaseCondition>
-    //  */
-    // public function getRequirementConditions(): Collection
-    // {
-    //     return $this->conditions->filter(function (BaseCondition $condition) {
-    //         return $condition->getScenario() === ConditionScenario::REQUIREMENT;
-    //     });
-    // }
-
-    // /**
-    //  * 获取使用条件
-    //  * @return Collection<int, BaseCondition>
-    //  */
-    // public function getSatisfyConditions(): Collection
-    // {
-    //     return $this->conditions->filter(function (BaseCondition $condition) {
-    //         return $condition->getScenario() === ConditionScenario::SATISFY;
-    //     });
-    // }
-
-    // public function addCondition(BaseCondition $condition): self
-    // {
-    //     if (!$this->conditions->contains($condition)) {
-    //         $this->conditions->add($condition);
-    //         $condition->setCoupon($this);
-    //     }
-
-    //     return $this;
-    // }
-
-    // public function removeCondition(BaseCondition $condition): self
-    // {
-    //     if ($this->conditions->removeElement($condition)) {
-    //         // set the owning side to null (unless already changed)
-    //         if ($condition->getCoupon() === $this) {
-    //             $condition->setCoupon(null);
-    //         }
-    //     }
-
-    //     return $this;
-    // }
 }

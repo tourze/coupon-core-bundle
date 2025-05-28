@@ -18,7 +18,6 @@ use Tourze\JsonRPC\Core\Exception\ApiException;
 use Tourze\JsonRPCLockBundle\Procedure\LockableProcedure;
 use Tourze\JsonRPCLogBundle\Attribute\Log;
 
-// use Tourze\CouponCoreBundle\Service\ConditionManagerService;
 
 #[MethodDoc('领取优惠券')]
 #[MethodTag('优惠券模块')]
