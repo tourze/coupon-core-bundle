@@ -40,7 +40,7 @@
     "tourze/bundle-dependency": "0.0.*",
     "tourze/condition-system-bundle": "0.0.*",
     "tourze/coupon-contracts": "0.0.*",
-    "tourze/doctrine-async-bundle": "^0.0.6",
+    "tourze/doctrine-async-bundle": "0.1.*",
     "tourze/doctrine-helper": "0.0.*",
     "tourze/doctrine-indexed-bundle": "0.0.*",
     "tourze/doctrine-ip-bundle": "0.0.*",
