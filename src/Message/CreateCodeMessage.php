@@ -2,7 +2,7 @@
 
 namespace Tourze\CouponCoreBundle\Message;
 
-use Tourze\Symfony\Async\Message\AsyncMessageInterface;
+use Tourze\AsyncContracts\AsyncMessageInterface;
 
 class CreateCodeMessage implements AsyncMessageInterface
 {
