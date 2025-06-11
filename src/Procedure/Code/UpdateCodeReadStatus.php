@@ -9,7 +9,7 @@ use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Tourze\CouponCoreBundle\Entity\ReadStatus;
 use Tourze\CouponCoreBundle\Repository\CodeRepository;
-use Tourze\DoctrineAsyncBundle\Service\DoctrineService;
+use Tourze\DoctrineDirectInsertBundle\Service\DirectInsertService;
 use Tourze\JsonRPC\Core\Attribute\MethodDoc;
 use Tourze\JsonRPC\Core\Attribute\MethodExpose;
 use Tourze\JsonRPC\Core\Attribute\MethodTag;
@@ -26,7 +26,7 @@ class UpdateCodeReadStatus extends LockableProcedure
 {
     public function __construct(
         private readonly CodeRepository $codeRepository,
-        private readonly DoctrineService $doctrineService,
+        private readonly DirectInsertService $directInsertService,
         private readonly Security $security,
         private readonly LoggerInterface $logger,
     ) {
@@ -46,7 +46,7 @@ class UpdateCodeReadStatus extends LockableProcedure
             try {
                 $readStatus = new ReadStatus();
                 $readStatus->setCode($code);
-                $this->doctrineService->directInsert($readStatus);
+                $this->directInsertService->directInsert($readStatus);
             } catch (UniqueConstraintViolationException $exception) {
                 $this->logger->warning('更新券码被查看情况时发现重复数据', [
                     'code' => $code,
