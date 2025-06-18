@@ -15,18 +15,11 @@ use Tourze\CouponCoreBundle\Repository\ChannelRepository;
 use Tourze\DoctrineIndexedBundle\Attribute\IndexColumn;
 use Tourze\DoctrineRandomBundle\Attribute\RandomStringColumn;
 use Tourze\DoctrineSnowflakeBundle\Service\SnowflakeIdGenerator;
-use Tourze\DoctrineTimestampBundle\Attribute\CreateTimeColumn;
-use Tourze\DoctrineTimestampBundle\Attribute\UpdateTimeColumn;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
 use Tourze\DoctrineTrackBundle\Attribute\TrackColumn;
 use Tourze\DoctrineUserBundle\Attribute\CreatedByColumn;
 use Tourze\DoctrineUserBundle\Attribute\UpdatedByColumn;
-use Tourze\EasyAdmin\Attribute\Column\BoolColumn;
-use Tourze\EasyAdmin\Attribute\Column\ListColumn;
-use Tourze\EasyAdmin\Attribute\Field\FormField;
-use Tourze\EasyAdmin\Attribute\Permission\AsPermission;
 
-#[AsPermission(title: '渠道')]
 #[ORM\Entity(repositoryClass: ChannelRepository::class)]
 #[ORM\Table(name: 'coupon_channel', options: ['comment' => '渠道'])]
 class Channel implements \Stringable, PlainArrayInterface, ApiArrayInterface, AdminArrayInterface
@@ -43,21 +36,18 @@ class Channel implements \Stringable, PlainArrayInterface, ApiArrayInterface, Ad
 
     #[RandomStringColumn(length: 10)]
     #[Groups(['admin_curd'])]
-    #[FormField(title: '编码', order: -1)]
     #[ORM\Column(type: Types::STRING, length: 100, unique: true, nullable: true, options: ['comment' => '编码'])]
     private ?string $code = null;
 
     #[ORM\Column(type: Types::STRING, length: 100, nullable: true, options: ['comment' => '描述'])]
     private ?string $remark = null;
 
-    #[FormField(span: 5)]
     #[ORM\Column(type: Types::STRING, length: 500, nullable: true, options: ['comment' => 'logo'])]
     private ?string $logo = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true, options: ['comment' => '跳转链接'])]
     private ?string $redirectUrl = null;
 
-    #[FormField(span: 16)]
     #[ORM\Column(type: Types::STRING, length: 100, nullable: true, options: ['comment' => '小程序AppID'])]
     private ?string $appId = '';
 
@@ -72,12 +62,9 @@ class Channel implements \Stringable, PlainArrayInterface, ApiArrayInterface, Ad
     #[ORM\ManyToMany(targetEntity: Coupon::class, mappedBy: 'channels', fetch: 'EXTRA_LAZY')]
     private Collection $coupons;
 
-    #[BoolColumn]
     #[IndexColumn]
     #[TrackColumn]
     #[ORM\Column(type: Types::BOOLEAN, nullable: true, options: ['comment' => '有效', 'default' => 0])]
-    #[ListColumn(order: 97)]
-    #[FormField(order: 97)]
     private ?bool $valid = false;
 
     #[CreatedByColumn]
@@ -88,10 +75,7 @@ class Channel implements \Stringable, PlainArrayInterface, ApiArrayInterface, Ad
     #[ORM\Column(nullable: true, options: ['comment' => '更新人'])]
     private ?string $updatedBy = null;
 
-    #[IndexColumn]
-    #[CreateTimeColumn]
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '创建时间'])]#[UpdateTimeColumn]
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '更新时间'])]public function __construct()
+    public function __construct()
     {
         $this->codes = new ArrayCollection();
         $this->coupons = new ArrayCollection();

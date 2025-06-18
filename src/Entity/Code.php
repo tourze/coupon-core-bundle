@@ -13,21 +13,14 @@ use Tourze\CouponContracts\CodeInterface;
 use Tourze\CouponCoreBundle\Enum\CodeStatus;
 use Tourze\CouponCoreBundle\Repository\CodeRepository;
 use Tourze\DoctrineIndexedBundle\Attribute\IndexColumn;
-use Tourze\DoctrineTimestampBundle\Attribute\CreateTimeColumn;
-use Tourze\DoctrineTimestampBundle\Attribute\UpdateTimeColumn;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
 use Tourze\DoctrineTrackBundle\Attribute\TrackColumn;
 use Tourze\DoctrineUserBundle\Attribute\CreatedByColumn;
 use Tourze\DoctrineUserBundle\Attribute\UpdatedByColumn;
 use Tourze\EasyAdmin\Attribute\Action\Exportable;
-use Tourze\EasyAdmin\Attribute\Column\BoolColumn;
 use Tourze\EasyAdmin\Attribute\Column\ExportColumn;
-use Tourze\EasyAdmin\Attribute\Column\ListColumn;
-use Tourze\EasyAdmin\Attribute\Field\FormField;
 use Tourze\EasyAdmin\Attribute\Filter\Filterable;
-use Tourze\EasyAdmin\Attribute\Permission\AsPermission;
 
-#[AsPermission(title: '券码管理')]
 #[Exportable]
 #[ORM\Entity(repositoryClass: CodeRepository::class)]
 #[ORM\Table(name: 'coupon_code', options: ['comment' => '券码'])]
@@ -40,14 +33,12 @@ class Code implements \Stringable, AdminArrayInterface, ApiArrayInterface, CodeI
     private ?int $id = 0;
 
     #[Filterable(label: '优惠券', inputWidth: 200)]
-    #[ListColumn(title: '优惠券')]
     #[ExportColumn(title: '优惠券')]
     #[ORM\ManyToOne(targetEntity: Coupon::class, inversedBy: 'codes')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Coupon $coupon = null;
 
     #[Filterable(label: '渠道')]
-    #[ListColumn(title: '渠道')]
     #[ExportColumn(title: '渠道')]
     #[ORM\ManyToOne(targetEntity: Channel::class, inversedBy: 'channels')]
     #[ORM\JoinColumn(nullable: true)]
@@ -59,20 +50,17 @@ class Code implements \Stringable, AdminArrayInterface, ApiArrayInterface, CodeI
     private ?string $sn = null;
 
     #[Filterable(label: '领取渠道')]
-    #[ListColumn(title: '领取渠道')]
     #[ExportColumn(title: '领取渠道')]
     #[ORM\ManyToOne(targetEntity: Channel::class, fetch: 'EXTRA_LAZY')]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?Channel $gatherChannel = null;
 
     #[Filterable(label: '使用渠道')]
-    #[ListColumn(title: '使用渠道')]
     #[ExportColumn(title: '使用渠道')]
     #[ORM\ManyToOne(targetEntity: Channel::class, fetch: 'EXTRA_LAZY')]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?Channel $useChannel = null;
 
-    #[ListColumn(sorter: true)]
     #[ExportColumn(title: '领取时间')]
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '领取时间'])]
     private ?\DateTimeInterface $gatherTime = null;
@@ -80,17 +68,14 @@ class Code implements \Stringable, AdminArrayInterface, ApiArrayInterface, CodeI
     /**
      * 必须在过期时间内才能使用喔.
      */
-    #[ListColumn(sorter: true)]
     #[ExportColumn(title: '过期时间')]
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '过期时间'])]
     private ?\DateTimeInterface $expireTime = null;
 
-    #[ListColumn(sorter: true)]
     #[ExportColumn(title: '使用时间')]
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '使用时间'])]
     private ?\DateTimeInterface $useTime = null;
 
-    #[ListColumn(title: '拥有用户')]
     #[ExportColumn(title: '拥有用户')]
     #[ORM\ManyToOne(targetEntity: UserInterface::class, fetch: 'EXTRA_LAZY')]
     #[ORM\JoinColumn(onDelete: 'SET NULL')]
@@ -118,17 +103,12 @@ class Code implements \Stringable, AdminArrayInterface, ApiArrayInterface, CodeI
     #[ORM\OneToOne(mappedBy: 'code', cascade: ['persist', 'remove'], fetch: 'EXTRA_LAZY')]
     private ?ReadStatus $readStatus = null;
 
-    #[BoolColumn]
-    #[ListColumn(order: 97)]
     #[ORM\Column(type: Types::BOOLEAN, nullable: true, options: ['comment' => '是否锁定', 'default' => 0])]
     private ?bool $locked = false;
 
-    #[BoolColumn]
     #[IndexColumn]
     #[TrackColumn]
     #[ORM\Column(type: Types::BOOLEAN, nullable: true, options: ['comment' => '有效', 'default' => 0])]
-    #[ListColumn(order: 97)]
-    #[FormField(order: 97)]
     private ?bool $valid = false;
 
     #[CreatedByColumn]
@@ -139,10 +119,7 @@ class Code implements \Stringable, AdminArrayInterface, ApiArrayInterface, CodeI
     #[ORM\Column(nullable: true, options: ['comment' => '更新人'])]
     private ?string $updatedBy = null;
 
-    #[IndexColumn]
-    #[CreateTimeColumn]
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '创建时间'])]#[UpdateTimeColumn]
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '更新时间'])]public function __toString(): string
+    public function __toString(): string
     {
         return "#{$this->getId()} {$this->getSn()}";
     }

@@ -16,20 +16,13 @@ use Tourze\DoctrineIndexedBundle\Attribute\IndexColumn;
 use Tourze\DoctrineIpBundle\Attribute\CreateIpColumn;
 use Tourze\DoctrineIpBundle\Attribute\UpdateIpColumn;
 use Tourze\DoctrineSnowflakeBundle\Attribute\SnowflakeColumn;
-use Tourze\DoctrineTimestampBundle\Attribute\CreateTimeColumn;
-use Tourze\DoctrineTimestampBundle\Attribute\UpdateTimeColumn;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
 use Tourze\DoctrineTrackBundle\Attribute\TrackColumn;
 use Tourze\DoctrineUserBundle\Attribute\CreatedByColumn;
 use Tourze\DoctrineUserBundle\Attribute\UpdatedByColumn;
-use Tourze\EasyAdmin\Attribute\Column\BoolColumn;
-use Tourze\EasyAdmin\Attribute\Column\ListColumn;
-use Tourze\EasyAdmin\Attribute\Field\FormField;
-use Tourze\EasyAdmin\Attribute\Permission\AsPermission;
 use Tourze\EnumExtra\Itemable;
 use Tourze\ResourceManageBundle\Model\ResourceIdentity;
 
-#[AsPermission(title: '优惠券')]
 #[ORM\Entity(repositoryClass: CouponRepository::class)]
 #[ORM\Table(name: 'coupon_main', options: ['comment' => '优惠券'])]
 class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInterface, BenefitResource, ResourceIdentity, CouponInterface
@@ -44,8 +37,6 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
     #[ORM\Column(type: Types::STRING, length: 100, unique: true, options: ['comment' => '唯一编码'])]
     private ?string $sn = null;
 
-    #[ListColumn(title: '分类')]
-    #[FormField(title: '分类')]
     #[ORM\ManyToOne(inversedBy: 'coupons')]
     private ?Category $category = null;
 
@@ -56,26 +47,21 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
     #[ORM\OneToMany(targetEntity: Code::class, mappedBy: 'coupon', fetch: 'EXTRA_LAZY', orphanRemoval: true)]
     private Collection $codes;
 
-    #[FormField(span: 12)]
     #[ORM\Column(type: Types::STRING, length: 255, options: ['comment' => '名称'])]
     private ?string $name = null;
 
-    #[ListColumn(sorter: true)]
     #[ORM\Column(type: Types::INTEGER, nullable: true, options: ['comment' => '领取后过期天数'])]
     private ?int $expireDay = null;
 
-    #[FormField(span: 5)]
     #[ORM\Column(type: Types::STRING, length: 255, nullable: true, options: ['comment' => 'ICON图标'])]
     private ?string $iconImg = null;
 
-    #[FormField(span: 5)]
     #[ORM\Column(type: Types::STRING, length: 255, nullable: true, options: ['comment' => '列表背景'])]
     private ?string $backImg = null;
 
     /**
      * @var Collection<Discount>
      */
-    #[FormField(title: '优惠信息')]
     #[ORM\OneToMany(targetEntity: Discount::class, mappedBy: 'coupon', cascade: ['persist'], fetch: 'EXTRA_LAZY', orphanRemoval: true)]
     private Collection $discounts;
 
@@ -97,7 +83,6 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
     /**
      * @var Collection<Attribute>
      */
-    #[FormField(title: '属性')]
     #[ORM\OneToMany(targetEntity: Attribute::class, mappedBy: 'coupon', cascade: ['persist'], fetch: 'EXTRA_LAZY', orphanRemoval: true, indexBy: 'name')]
     private Collection $attributes;
 
@@ -107,7 +92,6 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
     #[ORM\OneToMany(targetEntity: CouponChannel::class, mappedBy: 'coupon')]
     private Collection $couponChannels;
 
-    #[FormField(title: '渠道')]
     #[ORM\JoinTable(name: 'coupon_main_channel_relations')]
     #[ORM\ManyToMany(targetEntity: Channel::class, inversedBy: 'coupons', fetch: 'EXTRA_LAZY')]
     private Collection $channels;
@@ -122,12 +106,9 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '截止有效时间'])]
     private ?\DateTimeInterface $endTime = null;
 
-    #[BoolColumn]
     #[IndexColumn]
     #[TrackColumn]
     #[ORM\Column(type: Types::BOOLEAN, nullable: true, options: ['comment' => '有效', 'default' => 0])]
-    #[ListColumn(order: 97)]
-    #[FormField(order: 97)]
     private ?bool $valid = false;
 
     #[CreatedByColumn]
@@ -146,10 +127,7 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
     #[ORM\Column(length: 128, nullable: true, options: ['comment' => '更新时IP'])]
     private ?string $updatedFromIp = null;
 
-    #[IndexColumn]
-    #[CreateTimeColumn]
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '创建时间'])]#[UpdateTimeColumn]
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '更新时间'])]public function __construct()
+    public function __construct()
     {
         $this->codes = new ArrayCollection();
         $this->discounts = new ArrayCollection();
@@ -341,7 +319,6 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
         return $this;
     }
 
-    #[ListColumn(title: '券码数量')]
     public function renderCodeCount(): int
     {
         return $this->getCodes()->count();

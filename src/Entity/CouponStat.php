@@ -7,8 +7,6 @@ use Doctrine\ORM\Mapping as ORM;
 use Tourze\CouponCoreBundle\Repository\CouponStatRepository;
 use Tourze\DoctrineIndexedBundle\Attribute\IndexColumn;
 use Tourze\DoctrineSnowflakeBundle\Service\SnowflakeIdGenerator;
-use Tourze\DoctrineTimestampBundle\Attribute\CreateTimeColumn;
-use Tourze\DoctrineTimestampBundle\Attribute\UpdateTimeColumn;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
 
 #[ORM\Entity(repositoryClass: CouponStatRepository::class)]
@@ -38,10 +36,7 @@ class CouponStat
     #[ORM\Column(type: Types::INTEGER, options: ['comment' => '已过期数量', 'default' => 0])]
     private int $expiredNum = 0;
 
-    #[IndexColumn]
-    #[CreateTimeColumn]
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '创建时间'])]#[UpdateTimeColumn]
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '更新时间'])]public function getId(): ?string
+    public function getId(): ?string
     {
         return $this->id;
     }
