@@ -170,8 +170,6 @@ class CategoryTest extends TestCase
         $this->category->setDescription('测试描述');
         
         $adminArray = $this->category->retrieveAdminArray();
-        
-        $this->assertIsArray($adminArray);
         $this->assertEquals('测试分类', $adminArray['title']);
         $this->assertEquals('测试描述', $adminArray['description']);
     }
@@ -182,8 +180,6 @@ class CategoryTest extends TestCase
         $this->category->setDescription('测试描述');
         
         $readArray = $this->category->retrieveReadArray();
-        
-        $this->assertIsArray($readArray);
         $this->assertEquals('测试分类', $readArray['title']);
         $this->assertEquals('测试描述', $readArray['description']);
     }
@@ -200,8 +196,6 @@ class CategoryTest extends TestCase
         $this->category->setLogoUrl('https://example.com/logo.png');
         
         $simpleArray = $this->category->getSimpleArray();
-        
-        $this->assertIsArray($simpleArray);
         $this->assertEquals(123, $simpleArray['id']);
         $this->assertEquals('测试分类', $simpleArray['title']);
         $this->assertEquals('https://example.com/logo.png', $simpleArray['logoUrl']);

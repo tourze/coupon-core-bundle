@@ -20,8 +20,6 @@ class CodeQrcodeTest extends TestCase
         $this->code->setSn('TEST_QR_CODE');
         
         $qrcodeData = $this->code->getQrcodeLink();
-        
-        $this->assertIsArray($qrcodeData);
         $this->assertArrayHasKey('code', $qrcodeData);
         $this->assertArrayHasKey('sn', $qrcodeData);
         $this->assertArrayHasKey('t', $qrcodeData);
@@ -36,8 +34,6 @@ class CodeQrcodeTest extends TestCase
         $this->code->setSn('');
         
         $qrcodeData = $this->code->getQrcodeLink();
-        
-        $this->assertIsArray($qrcodeData);
         $this->assertArrayHasKey('code', $qrcodeData);
         $this->assertArrayHasKey('sn', $qrcodeData);
         $this->assertArrayHasKey('t', $qrcodeData);
@@ -56,8 +52,6 @@ class CodeQrcodeTest extends TestCase
         $this->code->setValid(true);
         
         $qrcodeData = $this->code->getQrcodeLink();
-        
-        $this->assertIsArray($qrcodeData);
         $this->assertArrayHasKey('sn', $qrcodeData);
         $this->assertEquals('QRCODE_TEST_CODE', $qrcodeData['sn']);
     }

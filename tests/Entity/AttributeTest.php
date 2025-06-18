@@ -99,8 +99,6 @@ class AttributeTest extends TestCase
         $this->attribute->setUpdateTime($updateTime);
 
         $result = $this->attribute->retrieveApiArray();
-
-        $this->assertIsArray($result);
         $this->assertArrayHasKey('id', $result);
         $this->assertArrayHasKey('createTime', $result);
         $this->assertArrayHasKey('updateTime', $result);
@@ -119,8 +117,6 @@ class AttributeTest extends TestCase
         $this->attribute->setValue('test_value');
 
         $result = $this->attribute->retrieveApiArray();
-
-        $this->assertIsArray($result);
         $this->assertNull($result['createTime']);
         $this->assertNull($result['updateTime']);
     }

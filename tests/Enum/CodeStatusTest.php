@@ -57,7 +57,6 @@ class CodeStatusTest extends TestCase
     {
         // 测试 ItemTrait 提供的方法
         $item = CodeStatus::UNUSED->toSelectItem();
-        $this->assertIsArray($item);
         $this->assertArrayHasKey('value', $item);
         $this->assertArrayHasKey('label', $item);
         $this->assertArrayHasKey('text', $item);
@@ -80,7 +79,6 @@ class CodeStatusTest extends TestCase
     {
         // 测试 SelectTrait 提供的方法
         $options = CodeStatus::genOptions();
-        $this->assertIsArray($options);
         $this->assertCount(4, $options);
         
         foreach ($options as $option) {

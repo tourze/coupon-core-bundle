@@ -33,8 +33,6 @@ class DiscountTypeTest extends TestCase
     public function test_to_select_item(): void
     {
         $freightItem = DiscountType::FREIGHT->toSelectItem();
-        
-        $this->assertIsArray($freightItem);
         $this->assertArrayHasKey('label', $freightItem);
         $this->assertArrayHasKey('text', $freightItem);
         $this->assertArrayHasKey('value', $freightItem);
@@ -45,8 +43,6 @@ class DiscountTypeTest extends TestCase
         $this->assertEquals('抵扣运费', $freightItem['name']);
         
         $orderItem = DiscountType::ORDER->toSelectItem();
-        
-        $this->assertIsArray($orderItem);
         $this->assertArrayHasKey('label', $orderItem);
         $this->assertArrayHasKey('text', $orderItem);
         $this->assertArrayHasKey('value', $orderItem);
@@ -60,16 +56,12 @@ class DiscountTypeTest extends TestCase
     public function test_to_array(): void
     {
         $freightArray = DiscountType::FREIGHT->toArray();
-        
-        $this->assertIsArray($freightArray);
         $this->assertArrayHasKey('value', $freightArray);
         $this->assertArrayHasKey('label', $freightArray);
         $this->assertEquals('freight', $freightArray['value']);
         $this->assertEquals('抵扣运费', $freightArray['label']);
         
         $orderArray = DiscountType::ORDER->toArray();
-        
-        $this->assertIsArray($orderArray);
         $this->assertArrayHasKey('value', $orderArray);
         $this->assertArrayHasKey('label', $orderArray);
         $this->assertEquals('order', $orderArray['value']);
@@ -79,8 +71,6 @@ class DiscountTypeTest extends TestCase
     public function test_gen_options(): void
     {
         $options = DiscountType::genOptions();
-        
-        $this->assertIsArray($options);
         $this->assertCount(2, $options);
         
         foreach ($options as $option) {

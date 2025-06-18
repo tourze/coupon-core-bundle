@@ -171,7 +171,6 @@ class CodeTest extends TestCase
         
         // 测试二维码链接生成
         $qrcodeData = $this->code->getQrcodeLink();
-        $this->assertIsArray($qrcodeData);
         $this->assertEquals('BIZ_TEST_CODE', $qrcodeData['code']);
         $this->assertEquals('BIZ_TEST_CODE', $qrcodeData['sn']);
         $this->assertIsInt($qrcodeData['t']);
@@ -206,13 +205,11 @@ class CodeTest extends TestCase
         $this->code->setUseTime(new DateTime('2024-06-15 14:30:00'));
         
         $apiArray = $this->code->retrieveApiArray();
-        $this->assertIsArray($apiArray);
         $this->assertEquals('API_TEST_CODE', $apiArray['sn']);
         $this->assertEquals(['id' => 5, 'name' => 'API Test Channel'], $apiArray['gather_channel']);
         $this->assertEquals(['id' => 6, 'name' => 'API Use Channel'], $apiArray['use_channel']);
         
         $adminArray = $this->code->retrieveAdminArray();
-        $this->assertIsArray($adminArray);
         $this->assertEquals('API_TEST_CODE', $adminArray['sn']);
         $this->assertTrue($adminArray['valid']);
     }

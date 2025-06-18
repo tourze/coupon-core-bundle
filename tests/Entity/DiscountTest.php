@@ -181,8 +181,6 @@ class DiscountTest extends TestCase
         $this->discount->setUpdateTime($updateTime);
 
         $result = $this->discount->retrieveApiArray();
-
-        $this->assertIsArray($result);
         $this->assertArrayHasKey('id', $result);
         $this->assertArrayHasKey('createTime', $result);
         $this->assertArrayHasKey('updateTime', $result);
@@ -203,8 +201,6 @@ class DiscountTest extends TestCase
         $this->discount->setValue('25');
 
         $result = $this->discount->retrieveApiArray();
-
-        $this->assertIsArray($result);
         $this->assertNull($result['createTime']);
         $this->assertNull($result['updateTime']);
     }

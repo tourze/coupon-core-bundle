@@ -187,8 +187,6 @@ class ChannelTest extends TestCase
         $this->channel->setUpdateTime($updateTime);
 
         $result = $this->channel->retrievePlainArray();
-
-        $this->assertIsArray($result);
         $this->assertArrayHasKey('id', $result);
         $this->assertArrayHasKey('createTime', $result);
         $this->assertArrayHasKey('updateTime', $result);

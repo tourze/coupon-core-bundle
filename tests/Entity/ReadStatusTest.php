@@ -75,8 +75,6 @@ class ReadStatusTest extends TestCase
         $this->readStatus->setCreatedBy('user123');
 
         $result = $this->readStatus->retrieveApiArray();
-
-        $this->assertIsArray($result);
         $this->assertArrayHasKey('id', $result);
         $this->assertArrayHasKey('createTime', $result);
         $this->assertArrayHasKey('updateTime', $result);
@@ -94,8 +92,6 @@ class ReadStatusTest extends TestCase
         $this->readStatus->setCreatedBy(null);
 
         $result = $this->readStatus->retrieveApiArray();
-
-        $this->assertIsArray($result);
         $this->assertNull($result['createTime']);
         $this->assertNull($result['updateTime']);
         $this->assertNull($result['createdBy']);

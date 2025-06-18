@@ -119,8 +119,6 @@ class CouponTest extends TestCase
         $this->coupon->setRemark('优惠券描述');
         
         $apiArray = $this->coupon->retrieveApiArray();
-        
-        $this->assertIsArray($apiArray);
         $this->assertEquals('测试优惠券', $apiArray['name']);
         $this->assertEquals('COUPON123', $apiArray['sn']);
         // backImg可能不会直接暴露在API数组中，所以我们不检查它
@@ -172,8 +170,6 @@ class CouponTest extends TestCase
         $this->coupon->setSn('TEST12345');
         
         $adminArray = $this->coupon->retrieveAdminArray();
-        
-        $this->assertIsArray($adminArray);
         $this->assertArrayHasKey('id', $adminArray);
         $this->assertArrayHasKey('name', $adminArray);
         
