@@ -61,8 +61,8 @@ class ChannelTest extends TestCase
 
     public function test_datetime_properties(): void
     {
-        $createTime = new \DateTime('2023-01-01 10:00:00');
-        $updateTime = new \DateTime('2023-01-02 11:00:00');
+        $createTime = new \DateTimeImmutable('2023-01-01 10:00:00');
+        $updateTime = new \DateTimeImmutable('2023-01-02 11:00:00');
 
         $this->channel->setCreateTime($createTime);
         $this->channel->setUpdateTime($updateTime);
@@ -181,8 +181,8 @@ class ChannelTest extends TestCase
         $this->channel->setRedirectUrl('https://example.com');
         $this->channel->setAppId('wx123456');
 
-        $createTime = new \DateTime('2023-01-01 10:00:00');
-        $updateTime = new \DateTime('2023-01-02 11:00:00');
+        $createTime = new \DateTimeImmutable('2023-01-01 10:00:00');
+        $updateTime = new \DateTimeImmutable('2023-01-02 11:00:00');
         $this->channel->setCreateTime($createTime);
         $this->channel->setUpdateTime($updateTime);
 

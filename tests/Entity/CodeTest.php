@@ -2,7 +2,7 @@
 
 namespace Tourze\CouponCoreBundle\Tests\Entity;
 
-use DateTime;
+use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -71,7 +71,7 @@ class CodeTest extends TestCase
         $this->assertEquals('测试备注信息', $this->code->getRemark());
         
         // 测试时间相关属性
-        $now = new DateTime();
+        $now = new DateTimeImmutable();
         $this->code->setGatherTime($now);
         $this->code->setExpireTime($now);
         $this->code->setUseTime($now);
@@ -116,16 +116,16 @@ class CodeTest extends TestCase
         // 测试未使用状态
         $this->code->setValid(true);
         $this->code->setUseTime(null);
-        $this->code->setExpireTime(new DateTime('+1 day'));
+        $this->code->setExpireTime(new DateTimeImmutable('+1 day'));
         $this->assertEquals(CodeStatus::UNUSED, $this->code->getStatus());
         
         // 测试已使用状态
-        $this->code->setUseTime(new DateTime());
+        $this->code->setUseTime(new DateTimeImmutable());
         $this->assertEquals(CodeStatus::USED, $this->code->getStatus());
         
         // 测试已过期状态
         $this->code->setUseTime(null);
-        $this->code->setExpireTime(new DateTime('-1 day'));
+        $this->code->setExpireTime(new DateTimeImmutable('-1 day'));
         $this->assertEquals(CodeStatus::EXPIRED, $this->code->getStatus());
         
         // 测试无效状态
@@ -147,15 +147,15 @@ class CodeTest extends TestCase
         $this->code->setCoupon($this->coupon);
         $this->code->setSn('LIFECYCLE_TEST');
         $this->code->setValid(true);
-        $this->code->setCreateTime(new DateTime());
-        $this->code->setGatherTime(new DateTime());
-        $this->code->setExpireTime(new DateTime('+30 days'));
+        $this->code->setCreateTime(new DateTimeImmutable());
+        $this->code->setGatherTime(new DateTimeImmutable());
+        $this->code->setExpireTime(new DateTimeImmutable('+30 days'));
         $this->code->setGatherChannel($gatherChannel);
         $this->code->setOwner($this->owner);
         $this->code->setNeedActive(true);
         $this->code->setActive(true);
-        $this->code->setActiveTime(new DateTime());
-        $this->code->setUseTime(new DateTime());
+        $this->code->setActiveTime(new DateTimeImmutable());
+        $this->code->setUseTime(new DateTimeImmutable());
         $this->code->setUseChannel($useChannel);
         $this->code->setConsumeCount(1);
         
@@ -176,8 +176,8 @@ class CodeTest extends TestCase
         $this->assertIsInt($qrcodeData['t']);
         
         // 测试有效期文本
-        $this->code->setGatherTime(new DateTime('2024-01-01'));
-        $this->code->setExpireTime(new DateTime('2024-01-31'));
+        $this->code->setGatherTime(new DateTimeImmutable('2024-01-01'));
+        $this->code->setExpireTime(new DateTimeImmutable('2024-01-31'));
         $this->assertEquals('有效期:2024.01.01至2024.01.31', $this->code->getValidPeriodText());
     }
     
@@ -200,9 +200,9 @@ class CodeTest extends TestCase
         $this->code->setUseChannel($useChannel);
         $this->code->setValid(true);
         $this->code->setLocked(false);
-        $this->code->setGatherTime(new DateTime('2024-01-01 10:00:00'));
-        $this->code->setExpireTime(new DateTime('2024-12-31 23:59:59'));
-        $this->code->setUseTime(new DateTime('2024-06-15 14:30:00'));
+        $this->code->setGatherTime(new DateTimeImmutable('2024-01-01 10:00:00'));
+        $this->code->setExpireTime(new DateTimeImmutable('2024-12-31 23:59:59'));
+        $this->code->setUseTime(new DateTimeImmutable('2024-06-15 14:30:00'));
         
         $apiArray = $this->code->retrieveApiArray();
         $this->assertEquals('API_TEST_CODE', $apiArray['sn']);

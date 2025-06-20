@@ -2,7 +2,7 @@
 
 namespace Tourze\CouponCoreBundle\Command;
 
-use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -14,9 +14,10 @@ use Tourze\Symfony\CronJob\Attribute\AsCronTask;
  * 检查优惠券类别的有效期
  */
 #[AsCronTask('* * * * *')]
-#[AsCommand(name: 'coupon:check-expired-category', description: '检查优惠券类别的有效期')]
+#[AsCommand(name: self::NAME, description: '检查优惠券类别的有效期')]
 class CheckExpiredCategoryCommand extends Command
 {
+    public const NAME = 'coupon:check-expired-category';
     public function __construct(private readonly CategoryRepository $categoryRepository, ?string $name = null)
     {
         parent::__construct($name);
@@ -26,7 +27,7 @@ class CheckExpiredCategoryCommand extends Command
     {
         $this->categoryRepository->createQueryBuilder('c')
             ->where('c.startTime > :now or c.endTime < :now')
-            ->setParameter('now', Carbon::now())
+            ->setParameter('now', CarbonImmutable::now())
             ->set('c.valid', 0)
             ->update()
             ->getQuery()

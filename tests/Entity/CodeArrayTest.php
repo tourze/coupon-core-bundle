@@ -2,7 +2,7 @@
 
 namespace Tourze\CouponCoreBundle\Tests\Entity;
 
-use DateTime;
+use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Tourze\CouponCoreBundle\Entity\Channel;
@@ -71,10 +71,10 @@ class CodeArrayTest extends TestCase
         $this->code->setLocked(false);
         $this->code->setNeedActive(true);
         $this->code->setActive(false);
-        $this->code->setGatherTime(new DateTime('2024-01-01 10:00:00'));
-        $this->code->setExpireTime(new DateTime('2024-12-31 23:59:59'));
-        $this->code->setUseTime(new DateTime('2024-06-15 14:30:00'));
-        $this->code->setActiveTime(new DateTime('2024-01-02 09:00:00'));
+        $this->code->setGatherTime(new DateTimeImmutable('2024-01-01 10:00:00'));
+        $this->code->setExpireTime(new DateTimeImmutable('2024-12-31 23:59:59'));
+        $this->code->setUseTime(new DateTimeImmutable('2024-06-15 14:30:00'));
+        $this->code->setActiveTime(new DateTimeImmutable('2024-01-02 09:00:00'));
         $this->code->setRemark('测试备注信息');
         $this->code->setCoupon($coupon);
         $this->code->setChannel($channel);
@@ -158,15 +158,15 @@ class CodeArrayTest extends TestCase
         $this->code->setLocked(false);
         $this->code->setNeedActive(true);
         $this->code->setActive(false);
-        $this->code->setGatherTime(new DateTime('2024-01-01 10:00:00'));
-        $this->code->setExpireTime(new DateTime('2024-12-31 23:59:59'));
-        $this->code->setUseTime(new DateTime('2024-06-15 14:30:00'));
-        $this->code->setActiveTime(new DateTime('2024-01-02 09:00:00'));
+        $this->code->setGatherTime(new DateTimeImmutable('2024-01-01 10:00:00'));
+        $this->code->setExpireTime(new DateTimeImmutable('2024-12-31 23:59:59'));
+        $this->code->setUseTime(new DateTimeImmutable('2024-06-15 14:30:00'));
+        $this->code->setActiveTime(new DateTimeImmutable('2024-01-02 09:00:00'));
         $this->code->setRemark('测试备注信息');
         $this->code->setCreatedBy('admin');
         $this->code->setUpdatedBy('system');
-        $this->code->setCreateTime(new DateTime('2024-01-01 08:00:00'));
-        $this->code->setUpdateTime(new DateTime('2024-01-01 10:30:00'));
+        $this->code->setCreateTime(new DateTimeImmutable('2024-01-01 08:00:00'));
+        $this->code->setUpdateTime(new DateTimeImmutable('2024-01-01 10:30:00'));
         $this->code->setCoupon($coupon);
         $this->code->setChannel($channel);
         $this->code->setOwner($owner);

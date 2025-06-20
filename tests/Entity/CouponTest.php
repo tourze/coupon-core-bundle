@@ -3,6 +3,7 @@
 namespace Tourze\CouponCoreBundle\Tests\Entity;
 
 use DateTime;
+use DateTimeImmutable;
 use DateTimeInterface;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
@@ -43,11 +44,11 @@ class CouponTest extends TestCase
         $this->coupon->setExpireDay(30);
         $this->assertEquals(30, $this->coupon->getExpireDay());
         
-        $startTime = new DateTime();
+        $startTime = new DateTimeImmutable();
         $this->coupon->setStartTime($startTime);
         $this->assertEquals($startTime, $this->coupon->getStartTime());
         
-        $endTime = new DateTime('+30 days');
+        $endTime = new DateTimeImmutable('+30 days');
         $this->coupon->setEndTime($endTime);
         $this->assertEquals($endTime, $this->coupon->getEndTime());
         
@@ -129,7 +130,7 @@ class CouponTest extends TestCase
     public function testDateTimeInterface(): void
     {
         // 测试 DateTime 和 DateTimeInterface 的正确处理
-        $date = new DateTime();
+        $date = new DateTimeImmutable();
         $this->coupon->setCreateTime($date);
         $this->assertInstanceOf(DateTimeInterface::class, $this->coupon->getCreateTime());
         

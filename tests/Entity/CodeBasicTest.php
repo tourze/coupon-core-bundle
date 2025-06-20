@@ -2,7 +2,7 @@
 
 namespace Tourze\CouponCoreBundle\Tests\Entity;
 
-use DateTime;
+use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 use Tourze\CouponCoreBundle\Entity\Channel;
 use Tourze\CouponCoreBundle\Entity\Code;
@@ -84,12 +84,12 @@ class CodeBasicTest extends TestCase
     
     public function test_datetime_properties(): void
     {
-        $gatherTime = new DateTime('2024-01-01 10:00:00');
-        $expireTime = new DateTime('2024-12-31 23:59:59');
-        $useTime = new DateTime('2024-06-15 14:30:00');
-        $activeTime = new DateTime('2024-01-02 09:00:00');
-        $createTime = new DateTime('2024-01-01 08:00:00');
-        $updateTime = new DateTime('2024-01-01 10:30:00');
+        $gatherTime = new DateTimeImmutable('2024-01-01 10:00:00');
+        $expireTime = new DateTimeImmutable('2024-12-31 23:59:59');
+        $useTime = new DateTimeImmutable('2024-06-15 14:30:00');
+        $activeTime = new DateTimeImmutable('2024-01-02 09:00:00');
+        $createTime = new DateTimeImmutable('2024-01-01 08:00:00');
+        $updateTime = new DateTimeImmutable('2024-01-01 10:30:00');
         
         $this->code->setGatherTime($gatherTime);
         $this->code->setExpireTime($expireTime);

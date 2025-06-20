@@ -7,14 +7,14 @@ use Doctrine\ORM\Mapping as ORM;
 use Tourze\CouponCoreBundle\Repository\CouponChannelRepository;
 use Tourze\DoctrineSnowflakeBundle\Service\SnowflakeIdGenerator;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
-use Tourze\DoctrineUserBundle\Attribute\CreatedByColumn;
-use Tourze\DoctrineUserBundle\Attribute\UpdatedByColumn;
+use Tourze\DoctrineUserBundle\Traits\BlameableAware;
 
 #[ORM\Table(name: 'ims_coupon_entity_platform_relation', options: ['comment' => '优惠券投放渠道'])]
 #[ORM\Entity(repositoryClass: CouponChannelRepository::class)]
-class CouponChannel
+class CouponChannel implements \Stringable
 {
     use TimestampableAware;
+    use BlameableAware;
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(SnowflakeIdGenerator::class)]
@@ -32,42 +32,12 @@ class CouponChannel
     #[ORM\Column(type: Types::INTEGER, options: ['comment' => '配额'])]
     private ?int $quota = null;
 
-    #[CreatedByColumn]
-    #[ORM\Column(nullable: true, options: ['comment' => '创建人'])]
-    private ?string $createdBy = null;
-
-    #[UpdatedByColumn]
-    #[ORM\Column(nullable: true, options: ['comment' => '更新人'])]
-    private ?string $updatedBy = null;
 
     public function getId(): ?string
     {
         return $this->id;
     }
 
-    public function setCreatedBy(?string $createdBy): self
-    {
-        $this->createdBy = $createdBy;
-
-        return $this;
-    }
-
-    public function getCreatedBy(): ?string
-    {
-        return $this->createdBy;
-    }
-
-    public function setUpdatedBy(?string $updatedBy): self
-    {
-        $this->updatedBy = $updatedBy;
-
-        return $this;
-    }
-
-    public function getUpdatedBy(): ?string
-    {
-        return $this->updatedBy;
-    }
 
     public function getCoupon(): ?Coupon
     {
@@ -103,4 +73,10 @@ class CouponChannel
         $this->quota = $quota;
 
         return $this;
-    }}
+    }
+
+    public function __toString(): string
+    {
+        return sprintf('CouponChannel #%s (%s -> %s)', $this->id ?? '', $this->coupon?->getName() ?? '', $this->channel?->getTitle() ?? '');
+    }
+}

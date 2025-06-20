@@ -2,7 +2,7 @@
 
 namespace Tourze\CouponCoreBundle\Procedure\Category;
 
-use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Tourze\CouponCoreBundle\Repository\CategoryRepository;
 use Tourze\JsonRPC\Core\Attribute\MethodDoc;
 use Tourze\JsonRPC\Core\Attribute\MethodExpose;
@@ -37,7 +37,7 @@ class GetCouponCategoryList extends BaseProcedure
         ]);
 
         $list = [];
-        $now = Carbon::now();
+        $now = CarbonImmutable::now();
         foreach ($category as $item) {
             if ($item->getEndTime()) {
                 if ($now->gt($item->getEndTime())) {

@@ -42,8 +42,8 @@ class CouponChannelTest extends TestCase
 
     public function test_datetime_properties(): void
     {
-        $createTime = new \DateTime('2023-01-01 10:00:00');
-        $updateTime = new \DateTime('2023-01-02 11:00:00');
+        $createTime = new \DateTimeImmutable('2023-01-01 10:00:00');
+        $updateTime = new \DateTimeImmutable('2023-01-02 11:00:00');
 
         $this->couponChannel->setCreateTime($createTime);
         $this->couponChannel->setUpdateTime($updateTime);
@@ -248,8 +248,8 @@ class CouponChannelTest extends TestCase
 
     public function test_timestamp_consistency(): void
     {
-        $now = new \DateTime();
-        $later = new \DateTime('+1 hour');
+        $now = new \DateTimeImmutable();
+        $later = new \DateTimeImmutable('+1 hour');
 
         $this->couponChannel->setCreateTime($now);
         $this->couponChannel->setUpdateTime($later);

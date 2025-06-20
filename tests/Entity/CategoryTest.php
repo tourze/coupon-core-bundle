@@ -51,11 +51,11 @@ class CategoryTest extends TestCase
         $this->category->setUpdatedBy('admin');
         $this->assertEquals('admin', $this->category->getUpdatedBy());
         
-        $now = new \DateTime();
+        $now = new \DateTimeImmutable();
         $this->category->setCreateTime($now);
         $this->assertEquals($now, $this->category->getCreateTime());
         
-        $updateTime = new \DateTime();
+        $updateTime = new \DateTimeImmutable();
         $this->category->setUpdateTime($updateTime);
         $this->assertEquals($updateTime, $this->category->getUpdateTime());
         

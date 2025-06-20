@@ -52,8 +52,8 @@ class AttributeTest extends TestCase
 
     public function test_datetime_properties(): void
     {
-        $createTime = new \DateTime('2023-01-01 10:00:00');
-        $updateTime = new \DateTime('2023-01-02 11:00:00');
+        $createTime = new \DateTimeImmutable('2023-01-01 10:00:00');
+        $updateTime = new \DateTimeImmutable('2023-01-02 11:00:00');
 
         $this->attribute->setCreateTime($createTime);
         $this->attribute->setUpdateTime($updateTime);
@@ -93,8 +93,8 @@ class AttributeTest extends TestCase
         $this->attribute->setName('test_name');
         $this->attribute->setValue('test_value');
         
-        $createTime = new \DateTime('2023-01-01 10:00:00');
-        $updateTime = new \DateTime('2023-01-02 11:00:00');
+        $createTime = new \DateTimeImmutable('2023-01-01 10:00:00');
+        $updateTime = new \DateTimeImmutable('2023-01-02 11:00:00');
         $this->attribute->setCreateTime($createTime);
         $this->attribute->setUpdateTime($updateTime);
 

@@ -2,7 +2,7 @@
 
 namespace Tourze\CouponCoreBundle\Tests\Entity;
 
-use DateTime;
+use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 use Tourze\CouponCoreBundle\Entity\Channel;
 use Tourze\CouponCoreBundle\Entity\Code;
@@ -26,7 +26,7 @@ class CodeLifecycleTest extends TestCase
         $this->code->setCoupon($coupon);
         $this->code->setSn('LIFECYCLE_TEST_CODE');
         $this->code->setValid(true);
-        $this->code->setCreateTime(new DateTime());
+        $this->code->setCreateTime(new DateTimeImmutable());
         
         $this->assertTrue($this->code->isValid());
         $this->assertNotNull($this->code->getCreateTime());
@@ -46,8 +46,8 @@ class CodeLifecycleTest extends TestCase
         $this->code->setSn('LIFECYCLE_TEST_CODE');
         $this->code->setValid(true);
         $this->code->setGatherChannel($gatherChannel);
-        $this->code->setGatherTime(new DateTime());
-        $this->code->setExpireTime(new DateTime('+30 days'));
+        $this->code->setGatherTime(new DateTimeImmutable());
+        $this->code->setExpireTime(new DateTimeImmutable('+30 days'));
         
         $this->assertTrue($this->code->isValid());
         $this->assertNotNull($this->code->getGatherTime());
@@ -66,7 +66,7 @@ class CodeLifecycleTest extends TestCase
         $this->code->setValid(true);
         $this->code->setNeedActive(true);
         $this->code->setActive(true);
-        $this->code->setActiveTime(new DateTime());
+        $this->code->setActiveTime(new DateTimeImmutable());
         
         $this->assertTrue($this->code->isValid());
         $this->assertTrue($this->code->isNeedActive());
@@ -87,7 +87,7 @@ class CodeLifecycleTest extends TestCase
         $this->code->setSn('LIFECYCLE_TEST_CODE');
         $this->code->setValid(true);
         $this->code->setUseChannel($useChannel);
-        $this->code->setUseTime(new DateTime());
+        $this->code->setUseTime(new DateTimeImmutable());
         $this->code->setConsumeCount(1);
         
         $this->assertTrue($this->code->isValid());
@@ -105,11 +105,11 @@ class CodeLifecycleTest extends TestCase
         $this->code->setCoupon($coupon);
         $this->code->setSn('LIFECYCLE_TEST_CODE');
         $this->code->setValid(true);
-        $this->code->setExpireTime(new DateTime('-1 day'));
+        $this->code->setExpireTime(new DateTimeImmutable('-1 day'));
         
         $this->assertTrue($this->code->isValid());
         $this->assertNotNull($this->code->getExpireTime());
-        $this->assertTrue($this->code->getExpireTime() < new DateTime());
+        $this->assertTrue($this->code->getExpireTime() < new DateTimeImmutable());
     }
     
     public function test_multiple_consume_scenario(): void

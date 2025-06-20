@@ -2,7 +2,7 @@
 
 namespace Tourze\CouponCoreBundle\Entity;
 
-use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -15,8 +15,7 @@ use Tourze\CouponCoreBundle\Repository\CodeRepository;
 use Tourze\DoctrineIndexedBundle\Attribute\IndexColumn;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
 use Tourze\DoctrineTrackBundle\Attribute\TrackColumn;
-use Tourze\DoctrineUserBundle\Attribute\CreatedByColumn;
-use Tourze\DoctrineUserBundle\Attribute\UpdatedByColumn;
+use Tourze\DoctrineUserBundle\Traits\BlameableAware;
 use Tourze\EasyAdmin\Attribute\Action\Exportable;
 use Tourze\EasyAdmin\Attribute\Column\ExportColumn;
 use Tourze\EasyAdmin\Attribute\Filter\Filterable;
@@ -27,6 +26,7 @@ use Tourze\EasyAdmin\Attribute\Filter\Filterable;
 class Code implements \Stringable, AdminArrayInterface, ApiArrayInterface, CodeInterface
 {
     use TimestampableAware;
+    use BlameableAware;
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: Types::INTEGER, options: ['comment' => '码ID'])]
@@ -111,42 +111,12 @@ class Code implements \Stringable, AdminArrayInterface, ApiArrayInterface, CodeI
     #[ORM\Column(type: Types::BOOLEAN, nullable: true, options: ['comment' => '有效', 'default' => 0])]
     private ?bool $valid = false;
 
-    #[CreatedByColumn]
-    #[ORM\Column(nullable: true, options: ['comment' => '创建人'])]
-    private ?string $createdBy = null;
-
-    #[UpdatedByColumn]
-    #[ORM\Column(nullable: true, options: ['comment' => '更新人'])]
-    private ?string $updatedBy = null;
 
     public function __toString(): string
     {
         return "#{$this->getId()} {$this->getSn()}";
     }
 
-    public function setCreatedBy(?string $createdBy): self
-    {
-        $this->createdBy = $createdBy;
-
-        return $this;
-    }
-
-    public function getCreatedBy(): ?string
-    {
-        return $this->createdBy;
-    }
-
-    public function setUpdatedBy(?string $updatedBy): self
-    {
-        $this->updatedBy = $updatedBy;
-
-        return $this;
-    }
-
-    public function getUpdatedBy(): ?string
-    {
-        return $this->updatedBy;
-    }
 
     public function isValid(): ?bool
     {
@@ -365,7 +335,7 @@ class Code implements \Stringable, AdminArrayInterface, ApiArrayInterface, CodeI
             return CodeStatus::INVALID;
         }
 
-        $now = Carbon::now();
+        $now = CarbonImmutable::now();
         if ($this->getExpireTime() && $now->greaterThan($this->getExpireTime())) {
             return CodeStatus::EXPIRED;
         }

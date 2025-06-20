@@ -2,7 +2,7 @@
 
 namespace Tourze\CouponCoreBundle\Procedure\Coupon;
 
-use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
@@ -62,8 +62,8 @@ class GatherCoupon extends LockableProcedure
             throw new ApiException('优惠券已被抢光', $e->getCode(), previous: $e);
         }
 
-        $code->setGatherTime(Carbon::now());
-        $code->setExpireTime(Carbon::now()->addDays($coupon->getExpireDay())); // 过期时间
+        $code->setGatherTime(CarbonImmutable::now());
+        $code->setExpireTime(CarbonImmutable::now()->addDays($coupon->getExpireDay())); // 过期时间
         $code->setOwner($user);
         $this->codeRepository->add($code);
 

@@ -2,7 +2,7 @@
 
 namespace Tourze\CouponCoreBundle\Procedure\Code;
 
-use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -37,7 +37,7 @@ class ActiveCouponCode extends LockableProcedure
     {
         return [
             '__message' => '激活成功',
-            'expireTime' => Carbon::now()->format('Y-m-d H:i:s'),
+            'expireTime' => CarbonImmutable::now()->format('Y-m-d H:i:s'),
         ];
     }
 
@@ -61,10 +61,10 @@ class ActiveCouponCode extends LockableProcedure
         }
 
         $code->setActive(true);
-        $code->setActiveTime(Carbon::now());
+        $code->setActiveTime(CarbonImmutable::now());
         // 激活后要重新计算时间的喔
         if ($code->getCoupon()->getActiveValidDay()) {
-            $code->setExpireTime(Carbon::now()->addDays($code->getCoupon()->getActiveValidDay()));
+            $code->setExpireTime(CarbonImmutable::now()->addDays($code->getCoupon()->getActiveValidDay()));
         }
         $this->entityManager->persist($code);
         $this->entityManager->flush();

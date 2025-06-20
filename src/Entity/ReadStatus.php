@@ -9,14 +9,14 @@ use Tourze\Arrayable\ApiArrayInterface;
 use Tourze\CouponCoreBundle\Repository\ReadStatusRepository;
 use Tourze\DoctrineSnowflakeBundle\Service\SnowflakeIdGenerator;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
-use Tourze\DoctrineUserBundle\Attribute\CreatedByColumn;
-use Tourze\DoctrineUserBundle\Attribute\UpdatedByColumn;
+use Tourze\DoctrineUserBundle\Traits\BlameableAware;
 
 #[ORM\Entity(repositoryClass: ReadStatusRepository::class)]
 #[ORM\Table(name: 'coupon_code_read_status', options: ['comment' => '码被查看情况'])]
-class ReadStatus implements ApiArrayInterface
+class ReadStatus implements ApiArrayInterface, \Stringable
 {
     use TimestampableAware;
+    use BlameableAware;
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(SnowflakeIdGenerator::class)]
@@ -28,42 +28,12 @@ class ReadStatus implements ApiArrayInterface
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?Code $code = null;
 
-    #[CreatedByColumn]
-    #[ORM\Column(nullable: true, options: ['comment' => '创建人'])]
-    private ?string $createdBy = null;
-
-    #[UpdatedByColumn]
-    #[ORM\Column(nullable: true, options: ['comment' => '更新人'])]
-    private ?string $updatedBy = null;
 
     public function getId(): ?string
     {
         return $this->id;
     }
 
-    public function setCreatedBy(?string $createdBy): self
-    {
-        $this->createdBy = $createdBy;
-
-        return $this;
-    }
-
-    public function getCreatedBy(): ?string
-    {
-        return $this->createdBy;
-    }
-
-    public function setUpdatedBy(?string $updatedBy): self
-    {
-        $this->updatedBy = $updatedBy;
-
-        return $this;
-    }
-
-    public function getUpdatedBy(): ?string
-    {
-        return $this->updatedBy;
-    }
 
     public function retrieveApiArray(): array
     {
@@ -86,4 +56,10 @@ class ReadStatus implements ApiArrayInterface
         $this->code = $code;
 
         return $this;
-    }}
+    }
+
+    public function __toString(): string
+    {
+        return sprintf('ReadStatus #%s for Code %s', $this->id ?? '', $this->code?->getSn() ?? '');
+    }
+}

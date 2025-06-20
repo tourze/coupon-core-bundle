@@ -46,8 +46,8 @@ class BatchTest extends TestCase
 
     public function test_datetime_properties(): void
     {
-        $createTime = new \DateTime('2023-01-01 10:00:00');
-        $updateTime = new \DateTime('2023-01-02 11:00:00');
+        $createTime = new \DateTimeImmutable('2023-01-01 10:00:00');
+        $updateTime = new \DateTimeImmutable('2023-01-02 11:00:00');
 
         $this->batch->setCreateTime($createTime);
         $this->batch->setUpdateTime($updateTime);

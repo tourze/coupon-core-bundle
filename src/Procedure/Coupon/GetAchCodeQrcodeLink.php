@@ -2,7 +2,7 @@
 
 namespace Tourze\CouponCoreBundle\Procedure\Coupon;
 
-use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -53,7 +53,7 @@ class GetAchCodeQrcodeLink extends LockableProcedure
             'couponCode' => $code->getSn(),
             'couponId' => $code->getCoupon()->getSn(),
             'identityId' => $this->security->getUser()->getUserIdentifier(),
-            'genTime' => Carbon::now()->getTimestamp(),
+            'genTime' => CarbonImmutable::now()->getTimestamp(),
         ];
         if (!empty($this->skuId)) {
             $codeData['skuId'] = $this->skuId;

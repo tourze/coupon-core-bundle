@@ -2,7 +2,7 @@
 
 namespace Tourze\CouponCoreBundle\Command;
 
-use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -15,9 +15,10 @@ use Tourze\CouponCoreBundle\Repository\CodeRepository;
 /**
  * 自动切换优惠券码的状态
  */
-#[AsCommand(name: 'coupon:revoke-expired-code', description: '自动回收过期优惠券')]
+#[AsCommand(name: self::NAME, description: '自动回收过期优惠券')]
 class RevokeExpiredCodeCommand extends Command
 {
+    public const NAME = 'coupon:revoke-expired-code';
     /**
      * @var int 每分钟处理数量
      */
@@ -38,7 +39,7 @@ class RevokeExpiredCodeCommand extends Command
             ->andWhere('a.expireTime IS NOT NULL') // 有过期时间
             ->andWhere('a.expireTime < :time') // 已经过了过期时间
             ->andWhere('a.valid = true') // 但是还标记为有效
-            ->setParameter('time', Carbon::now()->format('Y-m-d H:i:s'))
+            ->setParameter('time', CarbonImmutable::now()->format('Y-m-d H:i:s'))
             ->orderBy('a.id', Criteria::DESC)
             ->setMaxResults($this->number)
             ->getQuery()

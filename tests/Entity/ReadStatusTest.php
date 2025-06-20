@@ -35,8 +35,8 @@ class ReadStatusTest extends TestCase
 
     public function test_datetime_properties(): void
     {
-        $createTime = new \DateTime('2023-01-01 10:00:00');
-        $updateTime = new \DateTime('2023-01-02 11:00:00');
+        $createTime = new \DateTimeImmutable('2023-01-01 10:00:00');
+        $updateTime = new \DateTimeImmutable('2023-01-02 11:00:00');
 
         $this->readStatus->setCreateTime($createTime);
         $this->readStatus->setUpdateTime($updateTime);
@@ -67,8 +67,8 @@ class ReadStatusTest extends TestCase
 
     public function test_retrieve_api_array(): void
     {
-        $createTime = new \DateTime('2023-01-01 10:00:00');
-        $updateTime = new \DateTime('2023-01-02 11:00:00');
+        $createTime = new \DateTimeImmutable('2023-01-01 10:00:00');
+        $updateTime = new \DateTimeImmutable('2023-01-02 11:00:00');
 
         $this->readStatus->setCreateTime($createTime);
         $this->readStatus->setUpdateTime($updateTime);
@@ -166,8 +166,8 @@ class ReadStatusTest extends TestCase
         $code = new Code();
         $code->setSn('COMPLETE-READ-TEST');
         
-        $createTime = new \DateTime('2023-01-01 08:00:00');
-        $updateTime = new \DateTime('2023-01-01 08:05:00');
+        $createTime = new \DateTimeImmutable('2023-01-01 08:00:00');
+        $updateTime = new \DateTimeImmutable('2023-01-01 08:05:00');
 
         $this->readStatus->setCode($code);
         $this->readStatus->setCreatedBy('reader_user');
@@ -196,7 +196,7 @@ class ReadStatusTest extends TestCase
         $code = new Code();
         $code->setSn('READ-TRACK-001');
         
-        $readTime = new \DateTime();
+        $readTime = new \DateTimeImmutable();
         $userId = 'user_12345';
 
         $this->readStatus->setCode($code);
@@ -217,8 +217,8 @@ class ReadStatusTest extends TestCase
         $this->readStatus->setCode($code);
         $this->readStatus->setCreatedBy('system');
         $this->readStatus->setUpdatedBy('system');
-        $this->readStatus->setCreateTime(new \DateTime());
-        $this->readStatus->setUpdateTime(new \DateTime());
+        $this->readStatus->setCreateTime(new \DateTimeImmutable());
+        $this->readStatus->setUpdateTime(new \DateTimeImmutable());
 
         $this->assertEquals('system', $this->readStatus->getCreatedBy());
         $this->assertEquals('system', $this->readStatus->getUpdatedBy());

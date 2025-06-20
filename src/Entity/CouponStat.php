@@ -11,7 +11,7 @@ use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
 
 #[ORM\Entity(repositoryClass: CouponStatRepository::class)]
 #[ORM\Table(name: 'coupon_stat', options: ['comment' => '优惠券统计'])]
-class CouponStat
+class CouponStat implements \Stringable
 {
     use TimestampableAware;
     #[ORM\Id]
@@ -89,4 +89,16 @@ class CouponStat
     public function setExpiredNum(int $expiredNum): void
     {
         $this->expiredNum = $expiredNum;
-    }}
+    }
+
+    public function __toString(): string
+    {
+        return sprintf('CouponStat #%s (Total: %d, Received: %d, Used: %d, Expired: %d)',
+            $this->id ?? '',
+            $this->totalNum,
+            $this->receivedNum,
+            $this->usedNum,
+            $this->expiredNum
+        );
+    }
+}
