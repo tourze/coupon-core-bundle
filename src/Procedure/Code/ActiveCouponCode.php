@@ -48,7 +48,7 @@ class ActiveCouponCode extends LockableProcedure
             'sn' => $this->code,
             'needActive' => true,
         ]);
-        if (!$code) {
+        if ($code === null) {
             throw new ApiException('找不到券码');
         }
 
@@ -63,7 +63,7 @@ class ActiveCouponCode extends LockableProcedure
         $code->setActive(true);
         $code->setActiveTime(CarbonImmutable::now());
         // 激活后要重新计算时间的喔
-        if ($code->getCoupon()->getActiveValidDay()) {
+        if ($code->getCoupon()->getActiveValidDay() !== null && $code->getCoupon()->getActiveValidDay() > 0) {
             $code->setExpireTime(CarbonImmutable::now()->addDays($code->getCoupon()->getActiveValidDay()));
         }
         $this->entityManager->persist($code);

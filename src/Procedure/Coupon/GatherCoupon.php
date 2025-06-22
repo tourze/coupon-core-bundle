@@ -3,11 +3,11 @@
 namespace Tourze\CouponCoreBundle\Procedure\Coupon;
 
 use Carbon\CarbonImmutable;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Tourze\CouponCoreBundle\Exception\PickCodeNotFoundException;
-use Tourze\CouponCoreBundle\Repository\CodeRepository;
 use Tourze\CouponCoreBundle\Repository\CouponRepository;
 use Tourze\CouponCoreBundle\Service\CouponService;
 use Tourze\JsonRPC\Core\Attribute\MethodDoc;
@@ -31,10 +31,10 @@ class GatherCoupon extends LockableProcedure
 
     public function __construct(
         private readonly CouponRepository $couponRepository,
-        private readonly CodeRepository $codeRepository,
         private readonly CouponService $codeService,
         private readonly NormalizerInterface $normalizer,
         private readonly Security $security,
+        private readonly EntityManagerInterface $entityManager,
     ) {
     }
 
@@ -43,7 +43,7 @@ class GatherCoupon extends LockableProcedure
         $coupon = $this->couponRepository->findOneBy([
             'id' => $this->couponId,
         ]);
-        if (!$coupon) {
+        if ($coupon === null) {
             throw new ApiException('找不到指定优惠券');
         }
 
@@ -65,7 +65,8 @@ class GatherCoupon extends LockableProcedure
         $code->setGatherTime(CarbonImmutable::now());
         $code->setExpireTime(CarbonImmutable::now()->addDays($coupon->getExpireDay())); // 过期时间
         $code->setOwner($user);
-        $this->codeRepository->add($code);
+        $this->entityManager->persist($code);
+        $this->entityManager->flush();
 
         $result = $this->normalizer->normalize($code, 'array', ['groups' => 'restful_read']);
         $result['__message'] = '领取成功';

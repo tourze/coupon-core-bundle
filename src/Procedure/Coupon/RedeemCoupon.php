@@ -53,7 +53,7 @@ class RedeemCoupon extends LockableProcedure
             $code = $this->codeRepository->findOneBy([
                 'sn' => $item,
             ]);
-            if (empty($code)) {
+            if ($code === null) {
                 throw new ApiException('券码不存在');
             }
 
@@ -75,7 +75,7 @@ class RedeemCoupon extends LockableProcedure
             }
         }
 
-        if ($errorMessage) {
+        if ($errorMessage !== '') {
             throw new ApiException($errorMessage);
         }
 

@@ -40,7 +40,7 @@ class GetCouponCodeDetail extends CacheableProcedure
             'id' => $this->codeId,
             'owner' => $this->security->getUser(),
         ]);
-        if (!$code) {
+        if ($code === null) {
             throw new ApiException('找不到券码');
         }
 
@@ -50,7 +50,7 @@ class GetCouponCodeDetail extends CacheableProcedure
     public function getCacheKey(JsonRpcRequest $request): string
     {
         $key = static::buildParamCacheKey($request->getParams());
-        if ($this->security->getUser()) {
+        if ($this->security->getUser() !== null) {
             $key .= '-' . $this->security->getUser()->getUserIdentifier();
         }
 

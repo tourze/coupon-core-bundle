@@ -25,7 +25,7 @@ class GetCouponCategoryList extends BaseProcedure
 
     public function execute(): array
     {
-        if ($this->parentId) {
+        if ($this->parentId > 0) {
             $parent = $this->categoryRepository->find($this->parentId);
         } else {
             $parent = null;
@@ -39,12 +39,12 @@ class GetCouponCategoryList extends BaseProcedure
         $list = [];
         $now = CarbonImmutable::now();
         foreach ($category as $item) {
-            if ($item->getEndTime()) {
+            if ($item->getEndTime() !== null) {
                 if ($now->gt($item->getEndTime())) {
                     continue;
                 }
             }
-            if ($item->getStartTime()) {
+            if ($item->getStartTime() !== null) {
                 if ($now->lt($item->getStartTime())) {
                     continue;
                 }

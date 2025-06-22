@@ -45,7 +45,7 @@ class GetAchCodeQrcodeLink extends LockableProcedure
             'id' => $this->codeId,
             'owner' => $this->security->getUser(),
         ]);
-        if (!$code) {
+        if ($code === null) {
             throw new ApiException('找不到优惠券码');
         }
 
@@ -55,7 +55,7 @@ class GetAchCodeQrcodeLink extends LockableProcedure
             'identityId' => $this->security->getUser()->getUserIdentifier(),
             'genTime' => CarbonImmutable::now()->getTimestamp(),
         ];
-        if (!empty($this->skuId)) {
+        if ($this->skuId !== '') {
             $codeData['skuId'] = $this->skuId;
             $codeData['skuName'] = $this->skuName;
         }

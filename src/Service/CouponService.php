@@ -2,7 +2,7 @@
 
 namespace Tourze\CouponCoreBundle\Service;
 
-use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use CouponCode\CouponCode;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Exception\ORMException;
@@ -55,18 +55,15 @@ class CouponService
         $event = new DetectCouponEvent();
         $event->setCouponId($couponId);
         $this->eventDispatcher->dispatch($event);
-        if ($event->getCoupon()) {
+        if ($event->getCoupon() !== null) {
             return $event->getCoupon();
         }
 
-        $coupon = null;
-        if (!$coupon) {
-            $coupon = $this->couponRepository->findOneBy(['sn' => $couponId]);
-        }
-        if (!$coupon && is_numeric($couponId)) {
+        $coupon = $this->couponRepository->findOneBy(['sn' => $couponId]);
+        if ($coupon === null && is_numeric($couponId)) {
             $coupon = $this->couponRepository->findOneBy(['id' => $couponId]);
         }
-        if (!$coupon) {
+        if ($coupon === null) {
             throw new CouponNotFoundException('找不到优惠券');
         }
 
@@ -124,7 +121,7 @@ class CouponService
             ->getQuery()
             ->getOneOrNullResult();
 
-        if (!$code) {
+        if ($code === null) {
             if (!$renewable) {
                 throw new PickCodeNotFoundException('找不到任何优惠券码');
             }
@@ -132,11 +129,11 @@ class CouponService
         }
 
         $code->setOwner($user);
-        $code->setGatherTime(Carbon::now());
+        $code->setGatherTime(CarbonImmutable::now());
 
         // 过期天数
-        if ($coupon->getExpireDay()) {
-            $code->setExpireTime(Carbon::now()->addDays($coupon->getExpireDay()));
+        if ($coupon->getExpireDay() !== null && $coupon->getExpireDay() > 0) {
+            $code->setExpireTime(CarbonImmutable::now()->addDays($coupon->getExpireDay()));
         }
 
         return $code;
@@ -152,7 +149,7 @@ class CouponService
         $event->setCoupon($coupon);
         $event->setExtend($extend);
         $this->eventDispatcher->dispatch($event);
-        if ($event->getCode()) {
+        if ($event->getCode() !== null) {
             return $event->getCode();
         }
 
@@ -174,12 +171,12 @@ class CouponService
             'owner' => $user,
             'sn' => $sn,
         ]);
-        if (!$code) {
+        if ($code === null) {
             $event = new CodeNotFoundEvent();
             $event->setSn($sn);
             $event->setUser($user);
             $this->eventDispatcher->dispatch($event);
-            if ($event->getCode()) {
+            if ($event->getCode() !== null) {
                 $code = $event->getCode();
             } else {
                 $exception = new CodeNotFoundException();
@@ -207,7 +204,7 @@ class CouponService
      */
     public function lockCode(Code $code): void
     {
-        if ($code->getUseTime()) {
+        if ($code->getUseTime() !== null) {
             throw new CodeUsedException();
         }
 
@@ -225,7 +222,7 @@ class CouponService
      */
     public function unlockCode(Code $code): void
     {
-        if ($code->getUseTime()) {
+        if ($code->getUseTime() !== null) {
             throw new CodeUsedException();
         }
 
@@ -243,11 +240,11 @@ class CouponService
      */
     public function redeemCode(Code $code, ?object $extra = null): void
     {
-        if ($code->getUseTime()) {
+        if ($code->getUseTime() !== null) {
             throw new CodeUsedException();
         }
 
-        $code->setUseTime(Carbon::now());
+        $code->setUseTime(CarbonImmutable::now());
         $this->entityManager->persist($code);
         $this->entityManager->flush();
 
@@ -342,7 +339,7 @@ class CouponService
     private function getCouponStat(string $couponId): CouponStat
     {
         $stat = $this->couponStatRepository->findOneBy(['couponId' => $couponId]);
-        if (!$stat) {
+        if ($stat === null) {
             $stat = new CouponStat();
             $stat->setCouponId($couponId);
             $stat->setTotalNum(0);

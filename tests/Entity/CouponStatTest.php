@@ -175,7 +175,7 @@ class CouponStatTest extends TestCase
         $this->assertEquals(400, $unusedNum);
 
         // 计算使用率
-        $usageRate = $receivedNum > 0 ? ($usedNum / $receivedNum) * 100 : 0;
+        $usageRate = ($usedNum / $receivedNum) * 100;
         $this->assertEquals(37.5, $usageRate);
     }
 

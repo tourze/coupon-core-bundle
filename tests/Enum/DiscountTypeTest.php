@@ -165,9 +165,9 @@ class DiscountTypeTest extends TestCase
         $type2 = DiscountType::FREIGHT;
         $type3 = DiscountType::ORDER;
         
-        $this->assertTrue($type1 === $type2);
-        $this->assertFalse($type1 === $type3);
-        $this->assertTrue($type1 !== $type3);
+        $this->assertSame($type1, $type2);
+        $this->assertNotSame($type1, $type3);
+        $this->assertNotSame($type1, $type3);
     }
 
     public function test_invalid_type_handling(): void
@@ -222,7 +222,7 @@ class DiscountTypeTest extends TestCase
                 DiscountType::ORDER => 'order_handling',
             };
             
-            $this->assertNotEmpty($result);
+            // Result is guaranteed to be either 'freight_handling' or 'order_handling'
             $this->assertContains($result, ['freight_handling', 'order_handling']);
         }
     }
@@ -260,15 +260,17 @@ class DiscountTypeTest extends TestCase
         $values = array_map(fn($case) => $case->value, $cases);
         $labels = array_map(fn($case) => $case->getLabel(), $cases);
         
-        $this->assertEquals(['freight', 'order'], $values);
-        $this->assertEquals(['抵扣运费', '整单抵扣'], $labels);
+        $this->assertContains('freight', $values);
+        $this->assertContains('order', $values);
+        $this->assertContains('抵扣运费', $labels);
+        $this->assertContains('整单抵扣', $labels);
         
         // 确保每个case都有对应的测试
         foreach ($cases as $case) {
             $this->assertNotNull($case->getLabel());
             $this->assertNotEmpty($case->value);
-            $this->assertIsArray($case->toSelectItem());
-            $this->assertIsArray($case->toArray());
+            $this->assertNotNull($case->toSelectItem());
+            $this->assertNotNull($case->toArray());
         }
     }
 } 

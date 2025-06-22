@@ -42,12 +42,12 @@ class SubmitCouponCodeChannel extends LockableProcedure
             'owner' => $this->security->getUser(),
             'sn' => $this->code,
         ]);
-        if (!$code) {
+        if ($code === null) {
             throw new ApiException('找不到券码');
         }
 
         $useChannel = $this->channelRepository->findOneBy(['id' => $this->channelId]);
-        if (!$useChannel) {
+        if ($useChannel === null) {
             throw new ApiException('暂无该试用渠道~');
         }
         $code->setChannel($useChannel);

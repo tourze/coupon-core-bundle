@@ -2,7 +2,7 @@
 
 namespace Tourze\CouponCoreBundle\Repository;
 
-use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\QueryBuilder;
@@ -61,7 +61,7 @@ class CodeRepository extends ServiceEntityRepository
                 break;
             case 3: // 已过期
                 $qb->andWhere('a.useTime IS NULL AND a.expireTime < :now')
-                    ->setParameter('now', Carbon::now())
+                    ->setParameter('now', CarbonImmutable::now())
                     ->orderBy('a.expireTime', Criteria::DESC);
                 break;
         }

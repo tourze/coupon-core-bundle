@@ -68,11 +68,11 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
     #[ORM\Column(type: Types::TEXT, nullable: true, options: ['comment' => '备注'])]
     private ?string $remark = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '可用开始时间'])]
-    private ?\DateTime $startDateTime = null;
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '可用开始时间'])]
+    private ?\DateTimeImmutable $startDateTime = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '可用结束时间'])]
-    private ?\DateTime $endDateTime = null;
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '可用结束时间'])]
+    private ?\DateTimeImmutable $endDateTime = null;
 
     #[ORM\Column(type: Types::BOOLEAN, nullable: true, options: ['comment' => '是否需要激活'])]
     private ?bool $needActive = null;
@@ -100,11 +100,11 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
     #[ORM\OneToMany(targetEntity: Batch::class, mappedBy: 'coupon')]
     private Collection $batches;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '开始有效时间'])]
-    private ?\DateTimeInterface $startTime = null;
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '开始有效时间'])]
+    private ?\DateTimeImmutable $startTime = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '截止有效时间'])]
-    private ?\DateTimeInterface $endTime = null;
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '截止有效时间'])]
+    private ?\DateTimeImmutable $endTime = null;
 
     #[IndexColumn]
     #[TrackColumn]
@@ -132,7 +132,7 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
 
     public function __toString(): string
     {
-        if (!$this->getId()) {
+        if ($this->getId() === null || $this->getId() === 0) {
             return '';
         }
 
@@ -294,26 +294,38 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
         return $this->getCodes()->count();
     }
 
-    public function getStartDateTime(): ?\DateTime
+    public function getStartDateTime(): ?\DateTimeImmutable
     {
         return $this->startDateTime;
     }
 
-    public function setStartDateTime(?\DateTime $startDateTime): self
+    public function setStartDateTime(?\DateTimeInterface $startDateTime): self
     {
-        $this->startDateTime = $startDateTime;
+        if ($startDateTime === null) {
+            $this->startDateTime = null;
+        } elseif ($startDateTime instanceof \DateTimeImmutable) {
+            $this->startDateTime = $startDateTime;
+        } else {
+            $this->startDateTime = \DateTimeImmutable::createFromInterface($startDateTime);
+        }
 
         return $this;
     }
 
-    public function getEndDateTime(): ?\DateTime
+    public function getEndDateTime(): ?\DateTimeImmutable
     {
         return $this->endDateTime;
     }
 
-    public function setEndDateTime(?\DateTime $endDateTime): self
+    public function setEndDateTime(?\DateTimeInterface $endDateTime): self
     {
-        $this->endDateTime = $endDateTime;
+        if ($endDateTime === null) {
+            $this->endDateTime = null;
+        } elseif ($endDateTime instanceof \DateTimeImmutable) {
+            $this->endDateTime = $endDateTime;
+        } else {
+            $this->endDateTime = \DateTimeImmutable::createFromInterface($endDateTime);
+        }
 
         return $this;
     }
@@ -571,33 +583,45 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
         ];
     }
 
-    public function getStartTime(): ?\DateTimeInterface
+    public function getStartTime(): ?\DateTimeImmutable
     {
         return $this->startTime;
     }
 
     public function setStartTime(?\DateTimeInterface $startTime): static
     {
-        $this->startTime = $startTime;
+        if ($startTime === null) {
+            $this->startTime = null;
+        } elseif ($startTime instanceof \DateTimeImmutable) {
+            $this->startTime = $startTime;
+        } else {
+            $this->startTime = \DateTimeImmutable::createFromInterface($startTime);
+        }
 
         return $this;
     }
 
-    public function getEndTime(): ?\DateTimeInterface
+    public function getEndTime(): ?\DateTimeImmutable
     {
         return $this->endTime;
     }
 
     public function setEndTime(?\DateTimeInterface $endTime): static
     {
-        $this->endTime = $endTime;
+        if ($endTime === null) {
+            $this->endTime = null;
+        } elseif ($endTime instanceof \DateTimeImmutable) {
+            $this->endTime = $endTime;
+        } else {
+            $this->endTime = \DateTimeImmutable::createFromInterface($endTime);
+        }
 
         return $this;
     }
 
     public function getResourceId(): string
     {
-        return $this->getId();
+        return (string) $this->getId();
     }
 
     public function getResourceLabel(): string

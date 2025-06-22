@@ -31,7 +31,7 @@ class GetCouponDetail extends BaseProcedure
             'id' => $this->couponId,
             'valid' => true,
         ]);
-        if (!$coupon) {
+        if ($coupon === null) {
             throw new ApiException('找不到优惠券');
         }
 

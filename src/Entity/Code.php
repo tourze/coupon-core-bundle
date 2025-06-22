@@ -16,11 +16,7 @@ use Tourze\DoctrineIndexedBundle\Attribute\IndexColumn;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
 use Tourze\DoctrineTrackBundle\Attribute\TrackColumn;
 use Tourze\DoctrineUserBundle\Traits\BlameableAware;
-use Tourze\EasyAdmin\Attribute\Action\Exportable;
-use Tourze\EasyAdmin\Attribute\Column\ExportColumn;
-use Tourze\EasyAdmin\Attribute\Filter\Filterable;
 
-#[Exportable]
 #[ORM\Entity(repositoryClass: CodeRepository::class)]
 #[ORM\Table(name: 'coupon_code', options: ['comment' => '券码'])]
 class Code implements \Stringable, AdminArrayInterface, ApiArrayInterface, CodeInterface
@@ -32,62 +28,43 @@ class Code implements \Stringable, AdminArrayInterface, ApiArrayInterface, CodeI
     #[ORM\Column(type: Types::INTEGER, options: ['comment' => '码ID'])]
     private ?int $id = 0;
 
-    #[Filterable(label: '优惠券', inputWidth: 200)]
-    #[ExportColumn(title: '优惠券')]
     #[ORM\ManyToOne(targetEntity: Coupon::class, inversedBy: 'codes')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Coupon $coupon = null;
 
-    #[Filterable(label: '渠道')]
-    #[ExportColumn(title: '渠道')]
     #[ORM\ManyToOne(targetEntity: Channel::class, inversedBy: 'channels')]
     #[ORM\JoinColumn(nullable: true)]
     private ?Channel $channel = null;
 
     #[TrackColumn]
-    #[ExportColumn(title: '券码')]
     #[ORM\Column(type: Types::STRING, length: 100, unique: true, options: ['comment' => '券码'])]
     private ?string $sn = null;
 
-    #[Filterable(label: '领取渠道')]
-    #[ExportColumn(title: '领取渠道')]
     #[ORM\ManyToOne(targetEntity: Channel::class, fetch: 'EXTRA_LAZY')]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?Channel $gatherChannel = null;
 
-    #[Filterable(label: '使用渠道')]
-    #[ExportColumn(title: '使用渠道')]
     #[ORM\ManyToOne(targetEntity: Channel::class, fetch: 'EXTRA_LAZY')]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?Channel $useChannel = null;
 
-    #[ExportColumn(title: '领取时间')]
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '领取时间'])]
-    private ?\DateTimeInterface $gatherTime = null;
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '领取时间'])]
+    private ?\DateTimeImmutable $gatherTime = null;
 
-    /**
-     * 必须在过期时间内才能使用喔.
-     */
-    #[ExportColumn(title: '过期时间')]
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '过期时间'])]
-    private ?\DateTimeInterface $expireTime = null;
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '过期时间, 必须在过期时间内才能使用'])]
+    private ?\DateTimeImmutable $expireTime = null;
 
-    #[ExportColumn(title: '使用时间')]
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '使用时间'])]
-    private ?\DateTimeInterface $useTime = null;
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '使用时间'])]
+    private ?\DateTimeImmutable $useTime = null;
 
-    #[ExportColumn(title: '拥有用户')]
     #[ORM\ManyToOne(targetEntity: UserInterface::class, fetch: 'EXTRA_LAZY')]
     #[ORM\JoinColumn(onDelete: 'SET NULL')]
     private ?UserInterface $owner = null;
 
-    /**
-     * 保留字段，用于后续实现单优惠券多次核销的逻辑.
-     */
-    #[ORM\Column(type: Types::INTEGER, nullable: true, options: ['default' => 1, 'comment' => '核销次数'])]
+    #[ORM\Column(type: Types::INTEGER, nullable: true, options: ['default' => 1, 'comment' => '核销次数, 保留字段，用于后续实现单优惠券多次核销的逻辑'])]
     private ?int $consumeCount = null;
 
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[ORM\Column(type: Types::TEXT, nullable: true, options: ['comment' => '备注'])]
     private ?string $remark = null;
 
     #[ORM\Column(type: Types::BOOLEAN, nullable: true, options: ['comment' => '是否需要激活'])]
@@ -96,8 +73,8 @@ class Code implements \Stringable, AdminArrayInterface, ApiArrayInterface, CodeI
     #[ORM\Column(nullable: true, options: ['comment' => '是否已激活'])]
     private ?bool $active = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '激活时间'])]
-    private ?\DateTimeInterface $activeTime = null;
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '激活时间'])]
+    private ?\DateTimeImmutable $activeTime = null;
 
     #[Ignore]
     #[ORM\OneToOne(mappedBy: 'code', cascade: ['persist', 'remove'], fetch: 'EXTRA_LAZY')]
@@ -154,26 +131,38 @@ class Code implements \Stringable, AdminArrayInterface, ApiArrayInterface, CodeI
         return $this;
     }
 
-    public function getGatherTime(): ?\DateTimeInterface
+    public function getGatherTime(): ?\DateTimeImmutable
     {
         return $this->gatherTime;
     }
 
     public function setGatherTime(?\DateTimeInterface $gatherTime): self
     {
-        $this->gatherTime = $gatherTime;
+        if ($gatherTime === null) {
+            $this->gatherTime = null;
+        } elseif ($gatherTime instanceof \DateTimeImmutable) {
+            $this->gatherTime = $gatherTime;
+        } else {
+            $this->gatherTime = \DateTimeImmutable::createFromInterface($gatherTime);
+        }
 
         return $this;
     }
 
-    public function getExpireTime(): ?\DateTimeInterface
+    public function getExpireTime(): ?\DateTimeImmutable
     {
         return $this->expireTime;
     }
 
     public function setExpireTime(?\DateTimeInterface $expireTime): self
     {
-        $this->expireTime = $expireTime;
+        if ($expireTime === null) {
+            $this->expireTime = null;
+        } elseif ($expireTime instanceof \DateTimeImmutable) {
+            $this->expireTime = $expireTime;
+        } else {
+            $this->expireTime = \DateTimeImmutable::createFromInterface($expireTime);
+        }
 
         return $this;
     }
@@ -190,14 +179,20 @@ class Code implements \Stringable, AdminArrayInterface, ApiArrayInterface, CodeI
         return $this;
     }
 
-    public function getUseTime(): ?\DateTimeInterface
+    public function getUseTime(): ?\DateTimeImmutable
     {
         return $this->useTime;
     }
 
     public function setUseTime(?\DateTimeInterface $useTime): self
     {
-        $this->useTime = $useTime;
+        if ($useTime === null) {
+            $this->useTime = null;
+        } elseif ($useTime instanceof \DateTimeImmutable) {
+            $this->useTime = $useTime;
+        } else {
+            $this->useTime = \DateTimeImmutable::createFromInterface($useTime);
+        }
 
         return $this;
     }
@@ -266,11 +261,11 @@ class Code implements \Stringable, AdminArrayInterface, ApiArrayInterface, CodeI
 
     public function getValidPeriodText(): ?string
     {
-        if (!$this->getExpireTime()) {
+        if ($this->getExpireTime() === null) {
             return null;
         }
 
-        if (!$this->getGatherTime()) {
+        if ($this->getGatherTime() === null) {
             return "有效期:至{$this->getExpireTime()->format('Y.m.d')}";
         }
 
@@ -301,14 +296,20 @@ class Code implements \Stringable, AdminArrayInterface, ApiArrayInterface, CodeI
         return $this;
     }
 
-    public function getActiveTime(): ?\DateTimeInterface
+    public function getActiveTime(): ?\DateTimeImmutable
     {
         return $this->activeTime;
     }
 
     public function setActiveTime(?\DateTimeInterface $activeTime): self
     {
-        $this->activeTime = $activeTime;
+        if ($activeTime === null) {
+            $this->activeTime = null;
+        } elseif ($activeTime instanceof \DateTimeImmutable) {
+            $this->activeTime = $activeTime;
+        } else {
+            $this->activeTime = \DateTimeImmutable::createFromInterface($activeTime);
+        }
 
         return $this;
     }
@@ -327,7 +328,7 @@ class Code implements \Stringable, AdminArrayInterface, ApiArrayInterface, CodeI
 
     public function getStatus(): CodeStatus
     {
-        if ($this->getUseTime()) {
+        if ($this->getUseTime() !== null) {
             return CodeStatus::USED;
         }
 
@@ -336,7 +337,7 @@ class Code implements \Stringable, AdminArrayInterface, ApiArrayInterface, CodeI
         }
 
         $now = CarbonImmutable::now();
-        if ($this->getExpireTime() && $now->greaterThan($this->getExpireTime())) {
+        if ($this->getExpireTime() !== null && $now->greaterThan($this->getExpireTime())) {
             return CodeStatus::EXPIRED;
         }
 

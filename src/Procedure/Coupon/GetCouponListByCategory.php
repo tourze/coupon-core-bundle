@@ -2,7 +2,7 @@
 
 namespace Tourze\CouponCoreBundle\Procedure\Coupon;
 
-use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Tourze\CouponCoreBundle\Entity\Category;
@@ -36,7 +36,7 @@ class GetCouponListByCategory extends CacheableProcedure
     public function execute(): array
     {
         $category = $this->categoryRepository->find($this->categoryId);
-        if (empty($category)) {
+        if ($category === null) {
             throw new ApiException('分类不存在');
         }
 
@@ -45,14 +45,14 @@ class GetCouponListByCategory extends CacheableProcedure
         ]);
 
         $list = [];
-        $now = Carbon::now();
+        $now = CarbonImmutable::now();
         foreach ($coupon as $item) {
-            if ($item->getEndTime()) {
+            if ($item->getEndTime() !== null) {
                 if ($now->gt($item->getEndTime())) {
                     continue;
                 }
             }
-            if ($item->getStartTime()) {
+            if ($item->getStartTime() !== null) {
                 if ($now->lt($item->getStartTime())) {
                     continue;
                 }
@@ -67,7 +67,7 @@ class GetCouponListByCategory extends CacheableProcedure
     public function getCacheKey(JsonRpcRequest $request): string
     {
         $key = static::buildParamCacheKey($request->getParams());
-        if ($this->security->getUser()) {
+        if ($this->security->getUser() !== null) {
             $key .= '-' . $this->security->getUser()->getUserIdentifier();
         }
 

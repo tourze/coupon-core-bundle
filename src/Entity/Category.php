@@ -4,7 +4,6 @@ namespace Tourze\CouponCoreBundle\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\Common\Collections\Criteria;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Ignore;
@@ -58,17 +57,14 @@ class Category implements \Stringable, Itemable, AdminArrayInterface
     #[ORM\OneToMany(targetEntity: Coupon::class, mappedBy: 'category')]
     private Collection $coupons;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '开始有效时间'])]
-    private ?\DateTimeInterface $startTime = null;
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '开始有效时间'])]
+    private ?\DateTimeImmutable $startTime = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '截止有效时间'])]
-    private ?\DateTimeInterface $endTime = null;
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '截止有效时间'])]
+    private ?\DateTimeImmutable $endTime = null;
 
-    /**
-     * order值大的排序靠前。有效的值范围是[0, 2^32].
-     */
     #[IndexColumn]
-    #[ORM\Column(type: Types::INTEGER, nullable: true, options: ['default' => '0', 'comment' => '次序值'])]
+    #[ORM\Column(type: Types::INTEGER, nullable: true, options: ['default' => '0', 'comment' => '次序值，order值大的排序靠前。有效的值范围是[0, 2^32]'])]
     private ?int $sortNumber = 0;
 
     #[IndexColumn]
@@ -85,7 +81,7 @@ class Category implements \Stringable, Itemable, AdminArrayInterface
 
     public function __toString(): string
     {
-        if (!$this->getId()) {
+        if ($this->getId() === null || $this->getId() === 0) {
             return '';
         }
 
@@ -223,7 +219,7 @@ class Category implements \Stringable, Itemable, AdminArrayInterface
 
     public function getNestTitle(): string
     {
-        if ($this->getParent()) {
+        if ($this->getParent() !== null) {
             return "{$this->getParent()->getTitle()}/{$this->getTitle()}";
         }
 
@@ -242,8 +238,9 @@ class Category implements \Stringable, Itemable, AdminArrayInterface
             'children' => [],
         ];
 
-        $criteria = Criteria::create()->orderBy(['sortNumber' => Criteria::DESC]);
-        foreach ($this->getChildren()->matching($criteria) as $child) {
+        $children = $this->getChildren()->toArray();
+        usort($children, fn($a, $b) => ($b->getSortNumber() ?? 0) <=> ($a->getSortNumber() ?? 0));
+        foreach ($children as $child) {
             /* @var static $child */
             $result['children'][] = $child->getSimpleArray();
         }
@@ -320,26 +317,38 @@ class Category implements \Stringable, Itemable, AdminArrayInterface
         ];
     }
 
-    public function getStartTime(): ?\DateTimeInterface
+    public function getStartTime(): ?\DateTimeImmutable
     {
         return $this->startTime;
     }
 
     public function setStartTime(?\DateTimeInterface $startTime): static
     {
-        $this->startTime = $startTime;
+        if ($startTime === null) {
+            $this->startTime = null;
+        } elseif ($startTime instanceof \DateTimeImmutable) {
+            $this->startTime = $startTime;
+        } else {
+            $this->startTime = \DateTimeImmutable::createFromInterface($startTime);
+        }
 
         return $this;
     }
 
-    public function getEndTime(): ?\DateTimeInterface
+    public function getEndTime(): ?\DateTimeImmutable
     {
         return $this->endTime;
     }
 
     public function setEndTime(?\DateTimeInterface $endTime): static
     {
-        $this->endTime = $endTime;
+        if ($endTime === null) {
+            $this->endTime = null;
+        } elseif ($endTime instanceof \DateTimeImmutable) {
+            $this->endTime = $endTime;
+        } else {
+            $this->endTime = \DateTimeImmutable::createFromInterface($endTime);
+        }
 
         return $this;
     }

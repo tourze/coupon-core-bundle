@@ -39,7 +39,7 @@ class UpdateCodeReadStatus extends LockableProcedure
         ]);
 
         foreach ($codes as $code) {
-            if ($code->getReadStatus()) {
+            if ($code->getReadStatus() !== null) {
                 continue;
             }
 

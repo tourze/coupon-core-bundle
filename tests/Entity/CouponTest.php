@@ -136,18 +136,18 @@ class CouponTest extends TestCase
         
         $startDate = new DateTime();
         $this->coupon->setStartDateTime($startDate);
-        $this->assertInstanceOf(DateTime::class, $this->coupon->getStartDateTime());
+        $this->assertInstanceOf(DateTimeImmutable::class, $this->coupon->getStartDateTime());
         
         $endDate = new DateTime();
         $this->coupon->setEndDateTime($endDate);
-        $this->assertInstanceOf(DateTime::class, $this->coupon->getEndDateTime());
+        $this->assertInstanceOf(DateTimeImmutable::class, $this->coupon->getEndDateTime());
     }
     
     public function testRenderCodeCount(): void
     {
         // 由于此方法依赖实际的持久化数据，我们验证其返回类型
         $count = $this->coupon->renderCodeCount();
-        $this->assertIsInt($count);
+        $this->assertEquals(0, $count);
     }
     
     public function testResourceInterface(): void

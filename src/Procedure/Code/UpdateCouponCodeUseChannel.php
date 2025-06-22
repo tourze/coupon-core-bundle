@@ -5,6 +5,7 @@ namespace Tourze\CouponCoreBundle\Procedure\Code;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Tourze\CouponCoreBundle\Repository\ChannelRepository;
 use Tourze\CouponCoreBundle\Repository\CodeRepository;
 use Tourze\JsonRPC\Core\Attribute\MethodDoc;
 use Tourze\JsonRPC\Core\Attribute\MethodExpose;
@@ -31,6 +32,7 @@ class UpdateCouponCodeUseChannel extends LockableProcedure
         private readonly CodeRepository $codeRepository,
         private readonly Security $security,
         private readonly EntityManagerInterface $entityManager,
+        private readonly ChannelRepository $channelRepository,
     ) {
     }
 
@@ -40,11 +42,19 @@ class UpdateCouponCodeUseChannel extends LockableProcedure
             'owner' => $this->security->getUser(),
             'sn' => $this->code,
         ]);
-        if (!$code) {
+        if ($code === null) {
             throw new ApiException('找不到券码');
         }
 
-        $code->setUseChannel($this->useChannel);
+        $channel = null;
+        if ($this->useChannel !== '') {
+            $channel = $this->channelRepository->find($this->useChannel);
+            if ($channel === null) {
+                throw new ApiException('找不到渠道');
+            }
+        }
+
+        $code->setUseChannel($channel);
         $this->entityManager->persist($code);
         $this->entityManager->flush();
 

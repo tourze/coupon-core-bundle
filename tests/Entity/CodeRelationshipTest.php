@@ -23,7 +23,6 @@ class CodeRelationshipTest extends TestCase
         $coupon = $this->createMock(Coupon::class);
         $coupon->method('isValid')->willReturn(true);
         
-        /** @var Coupon $coupon */
         $this->code->setCoupon($coupon);
         $this->assertSame($coupon, $this->code->getCoupon());
     }
@@ -38,7 +37,6 @@ class CodeRelationshipTest extends TestCase
     {
         $channel = $this->createMock(Channel::class);
         
-        /** @var Channel $channel */
         $this->code->setChannel($channel);
         $this->assertSame($channel, $this->code->getChannel());
     }
@@ -53,7 +51,6 @@ class CodeRelationshipTest extends TestCase
     {
         $owner = $this->createMock(UserInterface::class);
         
-        /** @var UserInterface $owner */
         $this->code->setOwner($owner);
         $this->assertSame($owner, $this->code->getOwner());
     }
@@ -69,7 +66,6 @@ class CodeRelationshipTest extends TestCase
         $readStatus = $this->createMock(ReadStatus::class);
         $readStatus->method('getCode')->willReturn($this->code);
         
-        /** @var ReadStatus $readStatus */
         $this->code->setReadStatus($readStatus);
         $this->assertSame($readStatus, $this->code->getReadStatus());
     }

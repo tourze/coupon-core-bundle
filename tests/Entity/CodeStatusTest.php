@@ -81,7 +81,6 @@ class CodeStatusTest extends TestCase
         $coupon = $this->createMock(Coupon::class);
         $coupon->method('isValid')->willReturn(true);
         
-        /** @var Coupon $coupon */
         $this->code->setCoupon($coupon);
         $this->code->setValid(true);
         $this->code->setUseTime(new DateTime()); // 已使用
@@ -97,7 +96,6 @@ class CodeStatusTest extends TestCase
         $coupon = $this->createMock(Coupon::class);
         $coupon->method('isValid')->willReturn(false); // 优惠券无效
         
-        /** @var Coupon $coupon */
         $this->code->setCoupon($coupon);
         $this->code->setValid(true);
         $this->code->setUseTime(null); // 未使用
