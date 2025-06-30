@@ -367,7 +367,7 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
 
     public function getIconImg(): ?string
     {
-        return $this->iconImg ?: ($_ENV['COUPON_DEFAULT_ICON_IMG'] ?? null);
+        return $this->iconImg ?? ($_ENV['COUPON_DEFAULT_ICON_IMG'] ?? null);
     }
 
     public function setIconImg(?string $iconImg): self

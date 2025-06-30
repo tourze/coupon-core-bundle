@@ -16,12 +16,12 @@ use Tourze\JsonRPC\Core\Exception\ApiException;
 use Tourze\JsonRPCLockBundle\Procedure\LockableProcedure;
 use Tourze\JsonRPCLogBundle\Attribute\Log;
 
-#[MethodTag('优惠券模块')]
-#[MethodDoc('使用优惠券')]
-#[IsGranted('IS_AUTHENTICATED_FULLY')]
-#[MethodExpose('RedeemCoupon')]
+#[MethodTag(name: '优惠券模块')]
+#[MethodDoc(summary: '使用优惠券')]
+#[IsGranted(attribute: 'IS_AUTHENTICATED_FULLY')]
+#[MethodExpose(method: 'RedeemCoupon')]
 #[Log]
-#[WithMonologChannel('procedure')]
+#[WithMonologChannel(channel: 'procedure')]
 class RedeemCoupon extends LockableProcedure
 {
     /**

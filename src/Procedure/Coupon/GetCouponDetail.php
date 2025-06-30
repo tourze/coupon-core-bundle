@@ -11,12 +11,12 @@ use Tourze\JsonRPC\Core\Attribute\MethodTag;
 use Tourze\JsonRPC\Core\Exception\ApiException;
 use Tourze\JsonRPC\Core\Procedure\BaseProcedure;
 
-#[MethodTag('优惠券模块')]
-#[MethodDoc('读取优惠券详情')]
-#[MethodExpose('GetCouponDetail')]
+#[MethodTag(name: '优惠券模块')]
+#[MethodDoc(summary: '读取优惠券详情')]
+#[MethodExpose(method: 'GetCouponDetail')]
 class GetCouponDetail extends BaseProcedure
 {
-    #[MethodParam('优惠券ID')]
+    #[MethodParam(description: '优惠券ID')]
     public string $couponId;
 
     public function __construct(

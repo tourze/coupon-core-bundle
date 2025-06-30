@@ -4,6 +4,7 @@ namespace Tourze\CouponCoreBundle\Service;
 
 use Symfony\Component\Security\Core\User\UserInterface;
 use Tourze\CouponCoreBundle\Entity\Coupon;
+use Tourze\CouponCoreBundle\Exception\CouponNotFoundException;
 use Tourze\CouponCoreBundle\Repository\CouponRepository;
 use Tourze\ResourceManageBundle\Model\ResourceIdentity;
 use Tourze\ResourceManageBundle\Service\ResourceProvider;
@@ -46,7 +47,7 @@ class CouponResourceProvider implements ResourceProvider
     public function sendResource(UserInterface $user, ResourceIdentity|Coupon|null $identity, string $amount, int|float|null $expireDay = null, ?\DateTimeInterface $expireTime = null): void
     {
         if (!$identity instanceof Coupon) {
-            throw new \RuntimeException('找不到要发送的优惠券');
+            throw new CouponNotFoundException('找不到要发送的优惠券');
         }
         $this->couponService->sendCode($user, $identity);
     }

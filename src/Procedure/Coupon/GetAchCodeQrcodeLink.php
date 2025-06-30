@@ -16,19 +16,19 @@ use Tourze\JsonRPC\Core\Exception\ApiException;
 use Tourze\JsonRPCLockBundle\Procedure\LockableProcedure;
 use Yiisoft\Json\Json;
 
-#[MethodTag('优惠券模块')]
-#[MethodDoc('获取优惠券二维码信息')]
-#[IsGranted('IS_AUTHENTICATED_FULLY')]
-#[MethodExpose('GetAchCodeQrcodeLink')]
+#[MethodTag(name: '优惠券模块')]
+#[MethodDoc(summary: '获取优惠券二维码信息')]
+#[IsGranted(attribute: 'IS_AUTHENTICATED_FULLY')]
+#[MethodExpose(method: 'GetAchCodeQrcodeLink')]
 class GetAchCodeQrcodeLink extends LockableProcedure
 {
-    #[MethodParam('数据库优惠券ID')]
+    #[MethodParam(description: '数据库优惠券ID')]
     public int $codeId;
 
-    #[MethodParam('特殊参数，直接携带的skuId')]
+    #[MethodParam(description: '特殊参数，直接携带的skuId')]
     public string $skuId = '';
 
-    #[MethodParam('特殊参数，直接携带的sku名称')]
+    #[MethodParam(description: '特殊参数，直接携带的sku名称')]
     public string $skuName = '';
 
     public function __construct(

@@ -2,6 +2,9 @@
 
 namespace Tourze\CouponCoreBundle\Exception;
 
-class CouponNotFoundException extends \Exception
+/**
+ * 优惠券未找到异常
+ */
+class CouponNotFoundException extends \RuntimeException
 {
 }

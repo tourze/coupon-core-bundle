@@ -3,6 +3,7 @@
 namespace Tourze\CouponCoreBundle\MessageHandler;
 
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
+use Tourze\CouponCoreBundle\Exception\CreateCodeException;
 use Tourze\CouponCoreBundle\Message\CreateCodeMessage;
 use Tourze\CouponCoreBundle\Repository\CouponRepository;
 use Tourze\CouponCoreBundle\Service\CouponService;
@@ -23,7 +24,7 @@ class CreateCodeHandler
             'valid' => true,
         ]);
         if ($coupon === null) {
-            throw new \Exception('生成code时，找不到优惠券');
+            throw new CreateCodeException('生成code时，找不到优惠券');
         }
 
         $c = $message->getQuantity();

@@ -19,14 +19,14 @@ use Tourze\JsonRPCLockBundle\Procedure\LockableProcedure;
 use Tourze\JsonRPCLogBundle\Attribute\Log;
 
 
-#[MethodDoc('领取优惠券')]
-#[MethodTag('优惠券模块')]
-#[IsGranted('IS_AUTHENTICATED_FULLY')]
-#[MethodExpose('GatherCoupon')]
+#[MethodDoc(summary: '领取优惠券')]
+#[MethodTag(name: '优惠券模块')]
+#[IsGranted(attribute: 'IS_AUTHENTICATED_FULLY')]
+#[MethodExpose(method: 'GatherCoupon')]
 #[Log]
 class GatherCoupon extends LockableProcedure
 {
-    #[MethodParam('优惠券ID')]
+    #[MethodParam(description: '优惠券ID')]
     public string $couponId;
 
     public function __construct(

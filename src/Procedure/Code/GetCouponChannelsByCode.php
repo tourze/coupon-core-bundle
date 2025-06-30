@@ -16,13 +16,13 @@ use Tourze\JsonRPC\Core\Exception\ApiException;
 use Tourze\JsonRPC\Core\Model\JsonRpcRequest;
 use Tourze\JsonRPCCacheBundle\Procedure\CacheableProcedure;
 
-#[MethodTag('优惠券模块')]
-#[MethodDoc('获取code channel信息')]
-#[IsGranted('IS_AUTHENTICATED_FULLY')]
-#[MethodExpose('GetCouponChannelsByCode')]
+#[MethodTag(name: '优惠券模块')]
+#[MethodDoc(summary: '获取code channel信息')]
+#[IsGranted(attribute: 'IS_AUTHENTICATED_FULLY')]
+#[MethodExpose(method: 'GetCouponChannelsByCode')]
 class GetCouponChannelsByCode extends CacheableProcedure
 {
-    #[MethodParam('券码')]
+    #[MethodParam(description: '券码')]
     public string $code;
 
     public function __construct(

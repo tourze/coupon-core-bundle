@@ -10,12 +10,12 @@ use Tourze\JsonRPC\Core\Attribute\MethodParam;
 use Tourze\JsonRPC\Core\Attribute\MethodTag;
 use Tourze\JsonRPC\Core\Procedure\BaseProcedure;
 
-#[MethodTag('优惠券模块')]
-#[MethodDoc('获取所有优惠券分类')]
-#[MethodExpose('GetCouponCategoryList')]
+#[MethodTag(name: '优惠券模块')]
+#[MethodDoc(summary: '获取所有优惠券分类')]
+#[MethodExpose(method: 'GetCouponCategoryList')]
 class GetCouponCategoryList extends BaseProcedure
 {
-    #[MethodParam('上级分类ID')]
+    #[MethodParam(description: '上级分类ID')]
     public int $parentId = 0;
 
     public function __construct(

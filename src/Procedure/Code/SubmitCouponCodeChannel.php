@@ -15,17 +15,17 @@ use Tourze\JsonRPC\Core\Exception\ApiException;
 use Tourze\JsonRPCLockBundle\Procedure\LockableProcedure;
 use Tourze\JsonRPCLogBundle\Attribute\Log;
 
-#[MethodTag('优惠券模块')]
-#[MethodDoc('提交优惠券码使用渠道')]
-#[IsGranted('IS_AUTHENTICATED_FULLY')]
-#[MethodExpose('SubmitCouponCodeChannel')]
+#[MethodTag(name: '优惠券模块')]
+#[MethodDoc(summary: '提交优惠券码使用渠道')]
+#[IsGranted(attribute: 'IS_AUTHENTICATED_FULLY')]
+#[MethodExpose(method: 'SubmitCouponCodeChannel')]
 #[Log]
 class SubmitCouponCodeChannel extends LockableProcedure
 {
-    #[MethodParam('券码')]
+    #[MethodParam(description: '券码')]
     public string $code;
 
-    #[MethodParam('使用渠道Id')]
+    #[MethodParam(description: '使用渠道Id')]
     public string $channelId;
 
     public function __construct(

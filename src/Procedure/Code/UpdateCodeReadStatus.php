@@ -16,12 +16,12 @@ use Tourze\JsonRPC\Core\Attribute\MethodTag;
 use Tourze\JsonRPCLockBundle\Procedure\LockableProcedure;
 use Tourze\JsonRPCLogBundle\Attribute\Log;
 
-#[MethodTag('优惠券模块')]
-#[MethodDoc('更新券码被查看情况')]
-#[IsGranted('IS_AUTHENTICATED_FULLY')]
-#[MethodExpose('UpdateCodeReadStatus')]
+#[MethodTag(name: '优惠券模块')]
+#[MethodDoc(summary: '更新券码被查看情况')]
+#[IsGranted(attribute: 'IS_AUTHENTICATED_FULLY')]
+#[MethodExpose(method: 'UpdateCodeReadStatus')]
 #[Log]
-#[WithMonologChannel('procedure')]
+#[WithMonologChannel(channel: 'procedure')]
 class UpdateCodeReadStatus extends LockableProcedure
 {
     public function __construct(

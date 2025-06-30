@@ -13,7 +13,7 @@ use Tourze\Symfony\CronJob\Attribute\AsCronTask;
 /**
  * 检查优惠券类别的有效期
  */
-#[AsCronTask('* * * * *')]
+#[AsCronTask(expression: '* * * * *')]
 #[AsCommand(name: self::NAME, description: '检查优惠券类别的有效期')]
 class CheckExpiredCategoryCommand extends Command
 {

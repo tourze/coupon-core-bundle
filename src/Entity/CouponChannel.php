@@ -5,7 +5,7 @@ namespace Tourze\CouponCoreBundle\Entity;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Tourze\CouponCoreBundle\Repository\CouponChannelRepository;
-use Tourze\DoctrineSnowflakeBundle\Service\SnowflakeIdGenerator;
+use Tourze\DoctrineSnowflakeBundle\Traits\SnowflakeKeyAware;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
 use Tourze\DoctrineUserBundle\Traits\BlameableAware;
 
@@ -15,11 +15,7 @@ class CouponChannel implements \Stringable
 {
     use TimestampableAware;
     use BlameableAware;
-    #[ORM\Id]
-    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
-    #[ORM\CustomIdGenerator(SnowflakeIdGenerator::class)]
-    #[ORM\Column(type: Types::BIGINT, nullable: false, options: ['comment' => 'ID'])]
-    private ?string $id = null;
+    use SnowflakeKeyAware;
 
     #[ORM\ManyToOne(inversedBy: 'channels')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
@@ -31,12 +27,6 @@ class CouponChannel implements \Stringable
 
     #[ORM\Column(type: Types::INTEGER, options: ['comment' => '配额'])]
     private ?int $quota = null;
-
-
-    public function getId(): ?string
-    {
-        return $this->id;
-    }
 
 
     public function getCoupon(): ?Coupon

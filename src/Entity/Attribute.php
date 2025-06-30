@@ -10,7 +10,7 @@ use Tourze\Arrayable\ApiArrayInterface;
 use Tourze\CouponCoreBundle\Repository\AttributeRepository;
 use Tourze\DoctrineIpBundle\Attribute\CreateIpColumn;
 use Tourze\DoctrineIpBundle\Attribute\UpdateIpColumn;
-use Tourze\DoctrineSnowflakeBundle\Service\SnowflakeIdGenerator;
+use Tourze\DoctrineSnowflakeBundle\Traits\SnowflakeKeyAware;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
 use Tourze\DoctrineUserBundle\Traits\BlameableAware;
 
@@ -21,11 +21,7 @@ class Attribute implements ApiArrayInterface, AdminArrayInterface, \Stringable
 {
     use TimestampableAware;
     use BlameableAware;
-    #[ORM\Id]
-    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
-    #[ORM\CustomIdGenerator(SnowflakeIdGenerator::class)]
-    #[ORM\Column(type: Types::BIGINT, nullable: false, options: ['comment' => 'ID'])]
-    private ?string $id = null;
+    use SnowflakeKeyAware;
 
     #[Ignore]
     #[ORM\ManyToOne(targetEntity: Coupon::class, cascade: ['persist'], inversedBy: 'attributes')]
@@ -49,12 +45,6 @@ class Attribute implements ApiArrayInterface, AdminArrayInterface, \Stringable
     #[UpdateIpColumn]
     #[ORM\Column(length: 128, nullable: true, options: ['comment' => '更新时IP'])]
     private ?string $updatedFromIp = null;
-
-    public function getId(): ?string
-    {
-        return $this->id;
-    }
-
 
     public function setCreatedFromIp(?string $createdFromIp): self
     {

@@ -15,18 +15,18 @@ use Tourze\JsonRPC\Core\Attribute\MethodTag;
 use Tourze\JsonRPC\Core\Procedure\BaseProcedure;
 use Tourze\JsonRPCPaginatorBundle\Procedure\PaginatorTrait;
 
-#[MethodTag('优惠券模块')]
-#[MethodDoc('获取用户的所有优惠券')]
-#[IsGranted('IS_AUTHENTICATED_FULLY')]
-#[MethodExpose('GetUserCouponList')]
+#[MethodTag(name: '优惠券模块')]
+#[MethodDoc(summary: '获取用户的所有优惠券')]
+#[IsGranted(attribute: 'IS_AUTHENTICATED_FULLY')]
+#[MethodExpose(method: 'GetUserCouponList')]
 class GetUserCouponList extends BaseProcedure
 {
     use PaginatorTrait;
 
-    #[MethodParam('指定优惠券ID列表')]
+    #[MethodParam(description: '指定优惠券ID列表')]
     public array $couponIds = [];
 
-    #[MethodParam('状态，1待使用、2已使用、3已过期')]
+    #[MethodParam(description: '状态，1待使用、2已使用、3已过期')]
     public int $status = 0;
 
     public function __construct(

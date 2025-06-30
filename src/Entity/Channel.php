@@ -14,7 +14,7 @@ use Tourze\Arrayable\PlainArrayInterface;
 use Tourze\CouponCoreBundle\Repository\ChannelRepository;
 use Tourze\DoctrineIndexedBundle\Attribute\IndexColumn;
 use Tourze\DoctrineRandomBundle\Attribute\RandomStringColumn;
-use Tourze\DoctrineSnowflakeBundle\Service\SnowflakeIdGenerator;
+use Tourze\DoctrineSnowflakeBundle\Traits\SnowflakeKeyAware;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
 use Tourze\DoctrineTrackBundle\Attribute\TrackColumn;
 use Tourze\DoctrineUserBundle\Traits\BlameableAware;
@@ -25,17 +25,13 @@ class Channel implements \Stringable, PlainArrayInterface, ApiArrayInterface, Ad
 {
     use TimestampableAware;
     use BlameableAware;
-    #[ORM\Id]
-    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
-    #[ORM\CustomIdGenerator(SnowflakeIdGenerator::class)]
-    #[ORM\Column(type: Types::BIGINT, nullable: false, options: ['comment' => 'ID'])]
-    private ?string $id = null;
+    use SnowflakeKeyAware;
 
     #[ORM\Column(length: 60, options: ['comment' => '标题'])]
     private ?string $title = null;
 
     #[RandomStringColumn(length: 10)]
-    #[Groups(['admin_curd'])]
+    #[Groups(groups: ['admin_curd'])]
     #[ORM\Column(type: Types::STRING, length: 100, unique: true, nullable: true, options: ['comment' => '编码'])]
     private ?string $code = null;
 
@@ -77,11 +73,6 @@ class Channel implements \Stringable, PlainArrayInterface, ApiArrayInterface, Ad
     public function __toString(): string
     {
         return $this->title ?? '';
-    }
-
-    public function getId(): ?string
-    {
-        return $this->id;
     }
 
     public function getCode(): ?string

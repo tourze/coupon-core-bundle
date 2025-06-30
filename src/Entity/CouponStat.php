@@ -6,7 +6,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Tourze\CouponCoreBundle\Repository\CouponStatRepository;
 use Tourze\DoctrineIndexedBundle\Attribute\IndexColumn;
-use Tourze\DoctrineSnowflakeBundle\Service\SnowflakeIdGenerator;
+use Tourze\DoctrineSnowflakeBundle\Traits\SnowflakeKeyAware;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
 
 #[ORM\Entity(repositoryClass: CouponStatRepository::class)]
@@ -14,11 +14,7 @@ use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
 class CouponStat implements \Stringable
 {
     use TimestampableAware;
-    #[ORM\Id]
-    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
-    #[ORM\CustomIdGenerator(SnowflakeIdGenerator::class)]
-    #[ORM\Column(type: Types::BIGINT, nullable: false, options: ['comment' => 'ID'])]
-    private ?string $id = null;
+    use SnowflakeKeyAware;
 
     #[IndexColumn]
     #[ORM\Column(type: Types::STRING, length: 100, unique: true, options: ['comment' => '优惠券id'])]
@@ -35,11 +31,6 @@ class CouponStat implements \Stringable
 
     #[ORM\Column(type: Types::INTEGER, options: ['comment' => '已过期数量', 'default' => 0])]
     private int $expiredNum = 0;
-
-    public function getId(): ?string
-    {
-        return $this->id;
-    }
 
     public function getCouponId(): string
     {
