@@ -2,45 +2,37 @@
 
 namespace Tourze\CouponCoreBundle\Tests\Event;
 
-use PHPUnit\Framework\TestCase;
-use stdClass;
+use PHPUnit\Framework\Attributes\CoversClass;
 use Tourze\CouponCoreBundle\Entity\Code;
 use Tourze\CouponCoreBundle\Event\CodeRedeemEvent;
+use Tourze\PHPUnitSymfonyUnitTest\AbstractEventTestCase;
 
-class CodeRedeemEventTest extends TestCase
+/**
+ * @internal
+ */
+#[CoversClass(CodeRedeemEvent::class)]
+final class CodeRedeemEventTest extends AbstractEventTestCase
 {
-    public function testGetAndSetCode(): void
+    public function testEventCreation(): void
     {
         $event = new CodeRedeemEvent();
-        $code = $this->createMock(Code::class);
-        
+        $this->assertInstanceOf(CodeRedeemEvent::class, $event);
+        $this->assertNull($event->getCode());
+    }
+
+    public function testCodeSetterAndGetter(): void
+    {
+        $event = new CodeRedeemEvent();
+        $code = new Code();
+
         $event->setCode($code);
         $this->assertSame($code, $event->getCode());
     }
 
-    public function testGetAndSetExtra(): void
+    public function testCodeCanBeNull(): void
     {
         $event = new CodeRedeemEvent();
-        $extra = new stdClass();
-        $extra->data = 'test_data';
-        
-        $event->setExtra($extra);
-        $this->assertSame($extra, $event->getExtra());
-    }
-
-    public function testSetExtraToNull(): void
-    {
-        $event = new CodeRedeemEvent();
-        $extra = new stdClass();
-        
-        $event->setExtra($extra);
-        $event->setExtra(null);
-        $this->assertNull($event->getExtra());
-    }
-
-    public function testInitialExtraIsNull(): void
-    {
-        $event = new CodeRedeemEvent();
-        $this->assertNull($event->getExtra());
+        $event->setCode(null);
+        $this->assertNull($event->getCode());
     }
 }

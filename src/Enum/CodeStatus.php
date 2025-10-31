@@ -15,7 +15,6 @@ enum CodeStatus: string implements Labelable, Itemable, Selectable
 {
     use ItemTrait;
     use SelectTrait;
-
     case UNUSED = 'unused';
     case USED = 'used';
     case INVALID = 'invalid';
@@ -29,5 +28,23 @@ enum CodeStatus: string implements Labelable, Itemable, Selectable
             self::INVALID => '无效',
             self::EXPIRED => '已过期',
         };
+    }
+
+    /**
+     * 获取所有枚举的选项数组（用于下拉列表等）
+     *
+     * @return array<int, array{value: string, label: string}>
+     */
+    public static function toSelectItems(): array
+    {
+        $result = [];
+        foreach (self::cases() as $case) {
+            $result[] = [
+                'value' => $case->value,
+                'label' => $case->getLabel(),
+            ];
+        }
+
+        return $result;
     }
 }

@@ -2,15 +2,18 @@
 
 namespace Tourze\CouponCoreBundle\Tests\Exception;
 
-use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 use Tourze\CouponCoreBundle\Exception\CreateCodeException;
+use Tourze\PHPUnitBase\AbstractExceptionTestCase;
 
-class CreateCodeExceptionTest extends TestCase
+/**
+ * @internal
+ */
+#[CoversClass(CreateCodeException::class)]
+final class CreateCodeExceptionTest extends AbstractExceptionTestCase
 {
-    public function testExceptionIsRuntimeException(): void
+    protected function getExceptionClass(): string
     {
-        $exception = new CreateCodeException('Test message');
-        $this->assertInstanceOf(\RuntimeException::class, $exception);
-        $this->assertEquals('Test message', $exception->getMessage());
+        return CreateCodeException::class;
     }
 }

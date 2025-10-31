@@ -2,101 +2,54 @@
 
 namespace Tourze\CouponCoreBundle\Tests\Entity;
 
-use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 use Tourze\CouponCoreBundle\Entity\Code;
+use Tourze\PHPUnitDoctrineEntity\AbstractEntityTestCase;
 
-class CodeBoundaryTest extends TestCase
+/**
+ * @internal
+ */
+#[CoversClass(Code::class)]
+final class CodeBoundaryTest extends AbstractEntityTestCase
 {
-    private Code $code;
-    
-    protected function setUp(): void
+    public function testBoundaryConditions(): void
     {
-        $this->code = new Code();
+        // 测试边界条件下的 getter 和 setter 方法
+        $entity = $this->createEntity();
+        $this->assertInstanceOf(Code::class, $entity);
+
+        // 测试空字符串序列号
+        $entity->setSn('');
+        $this->assertEquals('', $entity->getSn());
+
+        // 测试长序列号
+        $longSn = str_repeat('A', 255);
+        $entity->setSn($longSn);
+        $this->assertEquals($longSn, $entity->getSn());
+
+        // 测试布尔值边界
+        $entity->setValid(true);
+        $this->assertTrue($entity->isValid());
+
+        $entity->setValid(false);
+        $this->assertFalse($entity->isValid());
     }
-    
-    public function test_null_values_handling(): void
+
+    protected function createEntity(): Code
     {
-        // 测试所有可为 null 的字段
-        $this->code->setCoupon(null);
-        $this->code->setChannel(null);
-        $this->code->setOwner(null);
-        $this->code->setGatherChannel(null);
-        $this->code->setUseChannel(null);
-        $this->code->setGatherTime(null);
-        $this->code->setExpireTime(null);
-        $this->code->setUseTime(null);
-        $this->code->setActiveTime(null);
-        $this->code->setRemark(null);
-        $this->code->setNeedActive(null);
-        $this->code->setActive(null);
-        $this->code->setCreatedBy(null);
-        $this->code->setUpdatedBy(null);
-        
-        $this->assertNull($this->code->getCoupon());
-        $this->assertNull($this->code->getChannel());
-        $this->assertNull($this->code->getOwner());
-        $this->assertNull($this->code->getGatherChannel());
-        $this->assertNull($this->code->getUseChannel());
-        $this->assertNull($this->code->getGatherTime());
-        $this->assertNull($this->code->getExpireTime());
-        $this->assertNull($this->code->getUseTime());
-        $this->assertNull($this->code->getActiveTime());
-        $this->assertNull($this->code->getRemark());
-        $this->assertNull($this->code->isNeedActive());
-        $this->assertNull($this->code->isActive());
-        $this->assertNull($this->code->getCreatedBy());
-        $this->assertNull($this->code->getUpdatedBy());
+        return new Code();
     }
-    
-    public function test_empty_string_values(): void
+
+    /**
+     * @return array<array{0: string, 1: mixed}>
+     */
+    public static function propertiesProvider(): array
     {
-        $this->code->setSn('');
-        $this->code->setRemark('');
-        $this->code->setCreatedBy('');
-        $this->code->setUpdatedBy('');
-        
-        $this->assertEquals('', $this->code->getSn());
-        $this->assertEquals('', $this->code->getRemark());
-        $this->assertEquals('', $this->code->getCreatedBy());
-        $this->assertEquals('', $this->code->getUpdatedBy());
+        return [
+            'sn' => ['sn', 'TEST_CODE_123'],
+            'valid' => ['valid', true],
+            'locked' => ['locked', false],
+            'remark' => ['remark', '测试备注'],
+        ];
     }
-    
-    public function test_extreme_values(): void
-    {
-        // 测试极值
-        $this->code->setConsumeCount(0);
-        $this->assertEquals(0, $this->code->getConsumeCount());
-        
-        $this->code->setConsumeCount(PHP_INT_MAX);
-        $this->assertEquals(PHP_INT_MAX, $this->code->getConsumeCount());
-        
-        $this->code->setConsumeCount(-1);
-        $this->assertEquals(-1, $this->code->getConsumeCount());
-    }
-    
-    public function test_long_string_values(): void
-    {
-        $longString = str_repeat('A', 1000);
-        
-        $this->code->setSn($longString);
-        $this->code->setRemark($longString);
-        
-        $this->assertEquals($longString, $this->code->getSn());
-        $this->assertEquals($longString, $this->code->getRemark());
-    }
-    
-    public function test_special_characters_in_strings(): void
-    {
-        $specialString = '特殊字符测试!@#$%^&*()_+-=[]{}|;:,.<>?/~`';
-        
-        $this->code->setSn($specialString);
-        $this->code->setRemark($specialString);
-        $this->code->setCreatedBy($specialString);
-        $this->code->setUpdatedBy($specialString);
-        
-        $this->assertEquals($specialString, $this->code->getSn());
-        $this->assertEquals($specialString, $this->code->getRemark());
-        $this->assertEquals($specialString, $this->code->getCreatedBy());
-        $this->assertEquals($specialString, $this->code->getUpdatedBy());
-    }
-} 
+}

@@ -2,16 +2,26 @@
 
 namespace Tourze\CouponCoreBundle\Tests\Service;
 
-use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 use Tourze\CouponCoreBundle\Service\AdminMenu;
+use Tourze\PHPUnitSymfonyWebTest\AbstractEasyAdminMenuTestCase;
 
-class AdminMenuTest extends TestCase
+/**
+ * @internal
+ */
+#[CoversClass(AdminMenu::class)]
+#[RunTestsInSeparateProcesses]
+final class AdminMenuTest extends AbstractEasyAdminMenuTestCase
 {
-    public function testCanInstantiate(): void
+    public function testServiceCreation(): void
     {
-        $linkGenerator = $this->createMock(\Tourze\EasyAdminMenuBundle\Service\LinkGeneratorInterface::class);
-        $adminMenu = new AdminMenu($linkGenerator);
-        
-        $this->assertInstanceOf(AdminMenu::class, $adminMenu);
+        $service = self::getService(AdminMenu::class);
+        $this->assertInstanceOf(AdminMenu::class, $service);
+    }
+
+    protected function onSetUp(): void
+    {
+        // 父类方法的实现
     }
 }

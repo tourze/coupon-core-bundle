@@ -23,6 +23,10 @@ class GetUserCouponList extends BaseProcedure
 {
     use PaginatorTrait;
 
+    /**
+     * @var array<int, int>
+     * @phpstan-ignore-next-line missingType.iterableValue
+     */
     #[MethodParam(description: '指定优惠券ID列表')]
     public array $couponIds = [];
 
@@ -40,18 +44,22 @@ class GetUserCouponList extends BaseProcedure
     public function execute(): array
     {
         $coupons = [];
-        if (!empty($this->couponIds)) {
+        if ([] !== $this->couponIds) {
             $coupons = $this->couponRepository->findBy([
                 'id' => $this->couponIds,
             ]);
-            if (empty($coupons)) {
+            if ([] === $coupons) {
                 // 如果指定的优惠券ID不存在，返回空结果
                 return $this->fetchList($this->codeRepository->createQueryBuilder('a')->where('a.id = 0'), $this->formatItem(...));
             }
         }
 
+        $user = $this->security->getUser();
+        if (null === $user) {
+            throw new \RuntimeException('User not authenticated');
+        }
         $qb = $this->codeRepository->createUserCouponCodesQueryBuilder(
-            $this->security->getUser(),
+            $user,
             $coupons,
             $this->status
         );
@@ -59,8 +67,17 @@ class GetUserCouponList extends BaseProcedure
         return $this->fetchList($qb, $this->formatItem(...));
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function formatItem(Code $item): array
     {
-        return $this->normalizer->normalize($item, 'array', ['groups' => 'restful_read']);
+        $normalized = $this->normalizer->normalize($item, 'array', ['groups' => 'restful_read']);
+        if (!is_array($normalized)) {
+            throw new \RuntimeException('Normalization failed');
+        }
+
+        /** @var array<string, mixed> $normalized */
+        return $normalized;
     }
 }

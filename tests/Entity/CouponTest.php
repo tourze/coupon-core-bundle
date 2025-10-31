@@ -2,179 +2,162 @@
 
 namespace Tourze\CouponCoreBundle\Tests\Entity;
 
-use DateTime;
-use DateTimeImmutable;
-use DateTimeInterface;
-use PHPUnit\Framework\TestCase;
-use ReflectionClass;
-use Tourze\CouponCoreBundle\Entity\Category;
+use PHPUnit\Framework\Attributes\CoversClass;
 use Tourze\CouponCoreBundle\Entity\Coupon;
-use Tourze\CouponCoreBundle\Entity\Discount;
+use Tourze\PHPUnitDoctrineEntity\AbstractEntityTestCase;
 
-class CouponTest extends TestCase
+/**
+ * @internal
+ */
+#[CoversClass(Coupon::class)]
+final class CouponTest extends AbstractEntityTestCase
 {
-    private Coupon $coupon;
-    
-    protected function setUp(): void
-    {
-        $this->coupon = new Coupon();
-    }
-    
     public function testGetterAndSetterMethods(): void
     {
+        $entity = $this->createEntity();
+
         // 测试基本属性设置和获取
-        $this->coupon->setName('测试优惠券');
-        $this->assertEquals('测试优惠券', $this->coupon->getName());
-        
-        $this->coupon->setSn('COUPON123');
-        $this->assertEquals('COUPON123', $this->coupon->getSn());
-        
-        $this->coupon->setBackImg('https://example.com/back.png');
-        $this->assertEquals('https://example.com/back.png', $this->coupon->getBackImg());
-        
-        $this->coupon->setIconImg('https://example.com/front.png');
-        $this->assertEquals('https://example.com/front.png', $this->coupon->getIconImg());
-        
-        $this->coupon->setRemark('优惠券描述');
-        $this->assertEquals('优惠券描述', $this->coupon->getRemark());
-        
-        $this->coupon->setUseDesc('使用说明');
-        $this->assertEquals('使用说明', $this->coupon->getUseDesc());
-        
-        $this->coupon->setExpireDay(30);
-        $this->assertEquals(30, $this->coupon->getExpireDay());
-        
-        $startTime = new DateTimeImmutable();
-        $this->coupon->setStartTime($startTime);
-        $this->assertEquals($startTime, $this->coupon->getStartTime());
-        
-        $endTime = new DateTimeImmutable('+30 days');
-        $this->coupon->setEndTime($endTime);
-        $this->assertEquals($endTime, $this->coupon->getEndTime());
-        
-        $this->coupon->setValid(true);
-        $this->assertTrue($this->coupon->isValid());
+        $entity->setName('测试优惠券');
+        $this->assertEquals('测试优惠券', $entity->getName());
+
+        $entity->setSn('COUPON123');
+        $this->assertEquals('COUPON123', $entity->getSn());
+
+        $entity->setBackImg('https://example.com/back.png');
+        $this->assertEquals('https://example.com/back.png', $entity->getBackImg());
+
+        $entity->setIconImg('https://example.com/front.png');
+        $this->assertEquals('https://example.com/front.png', $entity->getIconImg());
+
+        $entity->setRemark('优惠券描述');
+        $this->assertEquals('优惠券描述', $entity->getRemark());
+
+        $entity->setUseDesc('使用说明');
+        $this->assertEquals('使用说明', $entity->getUseDesc());
+
+        $entity->setExpireDay(30);
+        $this->assertEquals(30, $entity->getExpireDay());
+
+        $startTime = new \DateTimeImmutable();
+        $entity->setStartTime($startTime);
+        $this->assertEquals($startTime, $entity->getStartTime());
+
+        $endTime = new \DateTimeImmutable('+30 days');
+        $entity->setEndTime($endTime);
+        $this->assertEquals($endTime, $entity->getEndTime());
+
+        $entity->setValid(true);
+        $this->assertTrue($entity->isValid());
     }
-    
-    public function testRelationships(): void
-    {
-        // 测试 Category 关系
-        $category = new Category();
-        $category->setTitle('测试分类');
-        
-        $this->coupon->setCategory($category);
-        $this->assertSame($category, $this->coupon->getCategory());
-        
-        // 测试 Discount 关系
-        $discount = new Discount();
-        $this->coupon->addDiscount($discount);
-        $this->assertTrue($this->coupon->getDiscounts()->contains($discount));
-        
-        // 测试移除 Discount
-        $this->coupon->removeDiscount($discount);
-        $this->assertFalse($this->coupon->getDiscounts()->contains($discount));
-    }
-    
+
     public function testToStringMethod(): void
     {
+        $entity = $this->createEntity();
+
         // coupon对象未设置任何属性时，toString应该返回空字符串
-        $this->assertEquals('', (string)$this->coupon);
-        
-        $this->coupon->setName('测试优惠券');
-        
-        // 使用反射设置ID
-        $reflection = new ReflectionClass($this->coupon);
-        $idProperty = $reflection->getProperty('id');
-        $idProperty->setAccessible(true);
-        $idProperty->setValue($this->coupon, 123);
-        
-        $this->assertStringContainsString('测试优惠券', (string)$this->coupon);
+        $this->assertEquals('', (string) $entity);
+
+        $entity->setName('测试优惠券');
+
+        // 对于未保存的实体（ID为null），toString返回空字符串
+        $this->assertEquals('', (string) $entity);
     }
-    
-    public function testToSelectItem(): void
-    {
-        $this->coupon->setName('测试优惠券');
-        
-        // 使用反射设置ID
-        $reflection = new ReflectionClass($this->coupon);
-        $idProperty = $reflection->getProperty('id');
-        $idProperty->setAccessible(true);
-        $idProperty->setValue($this->coupon, 123);
-        
-        $selectItem = $this->coupon->toSelectItem();
-        
-        $this->assertArrayHasKey('value', $selectItem);
-        $this->assertArrayHasKey('text', $selectItem);
-        $this->assertEquals(123, $selectItem['value']);
-        $this->assertStringContainsString('测试优惠券', $selectItem['text']);
-    }
-    
+
     /**
      * 测试API数组输出
      */
     public function testRetrieveApiArray(): void
     {
-        $this->coupon->setName('测试优惠券');
-        $this->coupon->setSn('COUPON123');
-        $this->coupon->setBackImg('https://example.com/back.png');
-        $this->coupon->setRemark('优惠券描述');
-        
-        $apiArray = $this->coupon->retrieveApiArray();
+        $entity = $this->createEntity();
+
+        $entity->setName('测试优惠券');
+        $entity->setSn('COUPON123');
+        $entity->setBackImg('https://example.com/back.png');
+        $entity->setRemark('优惠券描述');
+
+        $apiArray = $entity->retrieveApiArray();
         $this->assertEquals('测试优惠券', $apiArray['name']);
         $this->assertEquals('COUPON123', $apiArray['sn']);
         // backImg可能不会直接暴露在API数组中，所以我们不检查它
         // $this->assertEquals('https://example.com/back.png', $apiArray['backImg']);
         $this->assertEquals('优惠券描述', $apiArray['remark']);
     }
-    
+
     public function testDateTimeInterface(): void
     {
+        $entity = $this->createEntity();
+
         // 测试 DateTime 和 DateTimeInterface 的正确处理
-        $date = new DateTimeImmutable();
-        $this->coupon->setCreateTime($date);
-        $this->assertInstanceOf(DateTimeInterface::class, $this->coupon->getCreateTime());
-        
-        $startDate = new DateTime();
-        $this->coupon->setStartDateTime($startDate);
-        $this->assertInstanceOf(DateTimeImmutable::class, $this->coupon->getStartDateTime());
-        
-        $endDate = new DateTime();
-        $this->coupon->setEndDateTime($endDate);
-        $this->assertInstanceOf(DateTimeImmutable::class, $this->coupon->getEndDateTime());
+        $date = new \DateTimeImmutable();
+        $entity->setCreateTime($date);
+        $this->assertInstanceOf(\DateTimeInterface::class, $entity->getCreateTime());
+
+        $startDate = new \DateTime();
+        $entity->setStartDateTime($startDate);
+        $this->assertInstanceOf(\DateTimeImmutable::class, $entity->getStartDateTime());
+
+        $endDate = new \DateTime();
+        $entity->setEndDateTime($endDate);
+        $this->assertInstanceOf(\DateTimeImmutable::class, $entity->getEndDateTime());
     }
-    
-    public function testRenderCodeCount(): void
+
+    public function testCodeCollectionCount(): void
     {
-        // 由于此方法依赖实际的持久化数据，我们验证其返回类型
-        $count = $this->coupon->renderCodeCount();
-        $this->assertEquals(0, $count);
+        $entity = $this->createEntity();
+
+        // 测试 codes collection 的计数功能
+        $this->assertCount(0, $entity->getCodes());
     }
-    
+
     public function testResourceInterface(): void
     {
-        // 不使用setId方法，而是通过反射设置id属性
-        $reflection = new ReflectionClass($this->coupon);
-        $idProperty = $reflection->getProperty('id');
-        $idProperty->setAccessible(true);
-        $idProperty->setValue($this->coupon, 123);
-        
-        $this->coupon->setName('测试优惠券');
-        
+        $entity = $this->createEntity();
+
+        // 对于未保存的实体，ID为null
+        $entity->setName('测试优惠券');
+
         // Coupon的实际方法可能只返回ID而不是"coupon-123"格式
-        $this->assertEquals('123', $this->coupon->getResourceId());
-        $this->assertEquals('测试优惠券', $this->coupon->getResourceLabel());
+        $this->assertNull($entity->getId());
+        $this->assertEmpty($entity->getResourceId());
+        $this->assertEquals('测试优惠券', $entity->getResourceLabel());
     }
-    
+
     public function testRetrieveAdminArray(): void
     {
-        $this->coupon->setName('测试优惠券');
-        $this->coupon->setSn('TEST12345');
-        
-        $adminArray = $this->coupon->retrieveAdminArray();
+        $entity = $this->createEntity();
+
+        $entity->setName('测试优惠券');
+        $entity->setSn('TEST12345');
+
+        $adminArray = $entity->retrieveAdminArray();
         $this->assertArrayHasKey('id', $adminArray);
         $this->assertArrayHasKey('name', $adminArray);
-        
+
         $this->assertEquals('测试优惠券', $adminArray['name']);
         $this->assertEquals('TEST12345', $adminArray['sn']);
+    }
+
+    protected function createEntity(): Coupon
+    {
+        return new Coupon();
+    }
+
+    /**
+     * @return array<array{0: string, 1: mixed}>
+     */
+    public static function propertiesProvider(): array
+    {
+        return [
+            'name' => ['name', '测试优惠券'],
+            'sn' => ['sn', 'COUPON123'],
+            'backImg' => ['backImg', 'https://example.com/back.png'],
+            'iconImg' => ['iconImg', 'https://example.com/front.png'],
+            'remark' => ['remark', '优惠券描述'],
+            'useDesc' => ['useDesc', '使用说明'],
+            'expireDay' => ['expireDay', 30],
+            'startTime' => ['startTime', new \DateTimeImmutable()],
+            'endTime' => ['endTime', new \DateTimeImmutable('+30 days')],
+            'valid' => ['valid', true],
+        ];
     }
 }

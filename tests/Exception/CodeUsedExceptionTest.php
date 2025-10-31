@@ -2,16 +2,18 @@
 
 namespace Tourze\CouponCoreBundle\Tests\Exception;
 
-use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 use Tourze\CouponCoreBundle\Exception\CodeUsedException;
+use Tourze\PHPUnitBase\AbstractExceptionTestCase;
 
-class CodeUsedExceptionTest extends TestCase
+/**
+ * @internal
+ */
+#[CoversClass(CodeUsedException::class)]
+final class CodeUsedExceptionTest extends AbstractExceptionTestCase
 {
-    public function testExceptionIsThrowable(): void
+    protected function getExceptionClass(): string
     {
-        $this->expectException(CodeUsedException::class);
-        $this->expectExceptionMessage('Test message');
-        
-        throw new CodeUsedException('Test message');
+        return CodeUsedException::class;
     }
 }

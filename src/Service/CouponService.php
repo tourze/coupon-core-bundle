@@ -32,16 +32,16 @@ use Tourze\CouponCoreBundle\Repository\CouponStatRepository;
  * 优惠券服务
  */
 #[Autoconfigure(public: true)]
-class CouponService
+readonly class CouponService
 {
     public function __construct(
-        private readonly CouponRepository $couponRepository,
-        private readonly CodeRepository $codeRepository,
-        private readonly CouponCode $codeGen,
-        private readonly EventDispatcherInterface $eventDispatcher,
-        private readonly UrlGeneratorInterface $urlGenerator,
-        private readonly CouponStatRepository $couponStatRepository,
-        private readonly EntityManagerInterface $entityManager,
+        private CouponRepository $couponRepository,
+        private CodeRepository $codeRepository,
+        private CouponCode $codeGen,
+        private EventDispatcherInterface $eventDispatcher,
+        private UrlGeneratorInterface $urlGenerator,
+        private CouponStatRepository $couponStatRepository,
+        private EntityManagerInterface $entityManager,
     ) {
     }
 
@@ -55,15 +55,18 @@ class CouponService
         $event = new DetectCouponEvent();
         $event->setCouponId($couponId);
         $this->eventDispatcher->dispatch($event);
-        if ($event->getCoupon() !== null) {
-            return $event->getCoupon();
+        $eventCoupon = $event->getCoupon();
+        if (null !== $eventCoupon) {
+            return $eventCoupon;
         }
 
+        /** @var Coupon|null $coupon */
         $coupon = $this->couponRepository->findOneBy(['sn' => $couponId]);
-        if ($coupon === null && is_numeric($couponId)) {
+        if (null === $coupon && is_numeric($couponId)) {
+            /** @var Coupon|null $coupon */
             $coupon = $this->couponRepository->findOneBy(['id' => $couponId]);
         }
-        if ($coupon === null) {
+        if (null === $coupon) {
             throw new CouponNotFoundException('找不到优惠券');
         }
 
@@ -72,6 +75,8 @@ class CouponService
 
     /**
      * 查询优惠券详情
+     *
+     * 不考虑并发：只读统计查询，无需锁控制
      */
     public function getCouponValidStock(Coupon $coupon): int
     {
@@ -113,15 +118,21 @@ class CouponService
         // TODO: 重新实现条件检查逻辑
         // $this->conditionManager->checkRequirements($coupon, $user);
 
-        $code = $this->codeRepository->createQueryBuilder('a')
+        $result = $this->codeRepository->createQueryBuilder('a')
             ->where('a.coupon = :coupon AND a.valid = true AND a.owner IS NULL AND a.gatherTime IS NULL')
             ->setParameter('coupon', $coupon)
             ->orderBy('a.id', 'DESC')
             ->setMaxResults(1)
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getOneOrNullResult()
+        ;
 
-        if ($code === null) {
+        $code = null;
+        if ($result instanceof Code) {
+            $code = $result;
+        }
+
+        if (null === $code) {
             if (!$renewable) {
                 throw new PickCodeNotFoundException('找不到任何优惠券码');
             }
@@ -132,7 +143,7 @@ class CouponService
         $code->setGatherTime(CarbonImmutable::now());
 
         // 过期天数
-        if ($coupon->getExpireDay() !== null && $coupon->getExpireDay() > 0) {
+        if (null !== $coupon->getExpireDay() && $coupon->getExpireDay() > 0) {
             $code->setExpireTime(CarbonImmutable::now()->addDays($coupon->getExpireDay()));
         }
 
@@ -149,11 +160,14 @@ class CouponService
         $event->setCoupon($coupon);
         $event->setExtend($extend);
         $this->eventDispatcher->dispatch($event);
-        if ($event->getCode() !== null) {
+        if (null !== $event->getCode()) {
             return $event->getCode();
         }
 
         $code = $this->pickCode($user, $coupon);
+        if (null === $code) {
+            throw new PickCodeNotFoundException('无法获取优惠券码');
+        }
         $this->entityManager->persist($code);
         $this->entityManager->flush();
 
@@ -167,17 +181,19 @@ class CouponService
      */
     public function getCodeDetail(UserInterface $user, string $sn): Code
     {
+        /** @var Code|null $code */
         $code = $this->codeRepository->findOneBy([
             'owner' => $user,
             'sn' => $sn,
         ]);
-        if ($code === null) {
+        if (null === $code) {
             $event = new CodeNotFoundEvent();
             $event->setSn($sn);
             $event->setUser($user);
             $this->eventDispatcher->dispatch($event);
-            if ($event->getCode() !== null) {
-                $code = $event->getCode();
+            $eventCode = $event->getCode();
+            if (null !== $eventCode) {
+                $code = $eventCode;
             } else {
                 $exception = new CodeNotFoundException();
                 $exception->setSn($sn);
@@ -204,7 +220,7 @@ class CouponService
      */
     public function lockCode(Code $code): void
     {
-        if ($code->getUseTime() !== null) {
+        if (null !== $code->getUseTime()) {
             throw new CodeUsedException();
         }
 
@@ -222,7 +238,7 @@ class CouponService
      */
     public function unlockCode(Code $code): void
     {
-        if ($code->getUseTime() !== null) {
+        if (null !== $code->getUseTime()) {
             throw new CodeUsedException();
         }
 
@@ -240,7 +256,7 @@ class CouponService
      */
     public function redeemCode(Code $code, ?object $extra = null): void
     {
-        if ($code->getUseTime() !== null) {
+        if (null !== $code->getUseTime()) {
             throw new CodeUsedException();
         }
 
@@ -272,11 +288,13 @@ class CouponService
         $stat = $this->getCouponStat($couponId);
         $this->couponStatRepository->createQueryBuilder('a')
             ->update()
-            ->set('a.totalNum', "a.totalNum + {$num}")
+            ->set('a.totalNum', 'a.totalNum + :num')
             ->where('a.couponId = :couponId')
             ->setParameter('couponId', $couponId)
+            ->setParameter('num', $num)
             ->getQuery()
-            ->execute();
+            ->execute()
+        ;
     }
 
     /**
@@ -291,11 +309,13 @@ class CouponService
         }
         $this->couponStatRepository->createQueryBuilder('a')
             ->update()
-            ->set('a.usedNum', "a.usedNum + {$num}")
+            ->set('a.usedNum', 'a.usedNum + :num')
             ->where('a.couponId = :couponId')
             ->setParameter('couponId', $couponId)
+            ->setParameter('num', $num)
             ->getQuery()
-            ->execute();
+            ->execute()
+        ;
     }
 
     /**
@@ -310,11 +330,13 @@ class CouponService
         }
         $this->couponStatRepository->createQueryBuilder('a')
             ->update()
-            ->set('a.receivedNum', "a.receivedNum + {$num}")
+            ->set('a.receivedNum', 'a.receivedNum + :num')
             ->where('a.couponId = :couponId')
             ->setParameter('couponId', $couponId)
+            ->setParameter('num', $num)
             ->getQuery()
-            ->execute();
+            ->execute()
+        ;
     }
 
     /**
@@ -329,17 +351,20 @@ class CouponService
         }
         $this->couponStatRepository->createQueryBuilder('a')
             ->update()
-            ->set('a.expiredNum', "a.expiredNum + {$num}")
+            ->set('a.expiredNum', 'a.expiredNum + :num')
             ->where('a.couponId = :couponId')
             ->setParameter('couponId', $couponId)
+            ->setParameter('num', $num)
             ->getQuery()
-            ->execute();
+            ->execute()
+        ;
     }
 
     private function getCouponStat(string $couponId): CouponStat
     {
+        /** @var CouponStat|null $stat */
         $stat = $this->couponStatRepository->findOneBy(['couponId' => $couponId]);
-        if ($stat === null) {
+        if (null === $stat) {
             $stat = new CouponStat();
             $stat->setCouponId($couponId);
             $stat->setTotalNum(0);

@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tourze\CouponCoreBundle\Entity;
 
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 use Tourze\CouponCoreBundle\Repository\CouponStatRepository;
 use Tourze\DoctrineIndexedBundle\Attribute\IndexColumn;
 use Tourze\DoctrineSnowflakeBundle\Traits\SnowflakeKeyAware;
@@ -17,18 +20,23 @@ class CouponStat implements \Stringable
     use SnowflakeKeyAware;
 
     #[IndexColumn]
+    #[Assert\Length(max: 100)]
     #[ORM\Column(type: Types::STRING, length: 100, unique: true, options: ['comment' => '优惠券id'])]
     private string $couponId;
 
+    #[Assert\PositiveOrZero]
     #[ORM\Column(type: Types::INTEGER, options: ['comment' => '总数量', 'default' => 0])]
     private int $totalNum = 0;
 
+    #[Assert\PositiveOrZero]
     #[ORM\Column(type: Types::INTEGER, options: ['comment' => '已领取数量', 'default' => 0])]
     private int $receivedNum = 0;
 
+    #[Assert\PositiveOrZero]
     #[ORM\Column(type: Types::INTEGER, options: ['comment' => '已使用数量', 'default' => 0])]
     private int $usedNum = 0;
 
+    #[Assert\PositiveOrZero]
     #[ORM\Column(type: Types::INTEGER, options: ['comment' => '已过期数量', 'default' => 0])]
     private int $expiredNum = 0;
 

@@ -39,30 +39,48 @@ class GetAchCodeQrcodeLink extends LockableProcedure
     ) {
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function execute(): array
     {
         $code = $this->codeRepository->findOneBy([
             'id' => $this->codeId,
             'owner' => $this->security->getUser(),
         ]);
-        if ($code === null) {
+        if (null === $code) {
             throw new ApiException('找不到优惠券码');
+        }
+
+        $coupon = $code->getCoupon();
+        if (null === $coupon) {
+            throw new ApiException('优惠券信息不存在');
+        }
+
+        $user = $this->security->getUser();
+        if (null === $user) {
+            throw new ApiException('用户未登录');
         }
 
         $codeData = [
             'couponCode' => $code->getSn(),
-            'couponId' => $code->getCoupon()->getSn(),
-            'identityId' => $this->security->getUser()->getUserIdentifier(),
+            'couponId' => $coupon->getSn(),
+            'identityId' => $user->getUserIdentifier(),
             'genTime' => CarbonImmutable::now()->getTimestamp(),
         ];
-        if ($this->skuId !== '') {
+        if ('' !== $this->skuId) {
             $codeData['skuId'] = $this->skuId;
             $codeData['skuName'] = $this->skuName;
         }
 
         $codeData = Json::encode($codeData);
 
-        $result = $this->normalizer->normalize($code, 'array', ['groups' => 'restful_read']);
+        $normalized = $this->normalizer->normalize($code, 'array', ['groups' => 'restful_read']);
+        if (!is_array($normalized)) {
+            throw new ApiException('序列化失败');
+        }
+        /** @var array<string, mixed> $normalized */
+        $result = $normalized;
         $result['data'] = $codeData;
         $result['qrcodeUrl'] = $this->urlGenerator->generate('qr_code_generate', [
             'data' => $codeData,

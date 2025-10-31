@@ -32,11 +32,12 @@ class CouponResourceProvider implements ResourceProvider
         return '优惠券';
     }
 
+    /**
+     * @return array<int, Coupon>|null
+     */
     public function getIdentities(): ?iterable
     {
-        foreach ($this->couponRepository->findBy(['valid' => true]) as $item) {
-            yield $item;
-        }
+        return $this->couponRepository->findBy(['valid' => true]);
     }
 
     public function findIdentity(string $identity): ?ResourceIdentity

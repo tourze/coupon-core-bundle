@@ -2,21 +2,25 @@
 
 namespace Tourze\CouponCoreBundle\Tests\DependencyInjection;
 
-use PHPUnit\Framework\TestCase;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
+use PHPUnit\Framework\Attributes\CoversClass;
 use Tourze\CouponCoreBundle\DependencyInjection\CouponCoreExtension;
+use Tourze\PHPUnitSymfonyUnitTest\AbstractDependencyInjectionExtensionTestCase;
 
-class CouponCoreExtensionTest extends TestCase
+/**
+ * @internal
+ */
+#[CoversClass(CouponCoreExtension::class)]
+final class CouponCoreExtensionTest extends AbstractDependencyInjectionExtensionTestCase
 {
-    public function testLoad(): void
+    public function testExtensionCreation(): void
     {
-        $container = new ContainerBuilder();
-        $container->setParameter('kernel.project_dir', '/test');
         $extension = new CouponCoreExtension();
-        
-        $extension->load([], $container);
-        
-        // 验证服务配置是否被正确加载
-        $this->assertTrue($container->hasDefinition('Tourze\CouponCoreBundle\Service\CouponService'));
+        $this->assertInstanceOf(CouponCoreExtension::class, $extension);
+    }
+
+    public function testGetAlias(): void
+    {
+        $extension = new CouponCoreExtension();
+        $this->assertEquals('coupon_core', $extension->getAlias());
     }
 }

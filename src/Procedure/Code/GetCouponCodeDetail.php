@@ -5,7 +5,6 @@ namespace Tourze\CouponCoreBundle\Procedure\Code;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
-use Tourze\CouponCoreBundle\Entity\Channel;
 use Tourze\CouponCoreBundle\Entity\Code;
 use Tourze\CouponCoreBundle\Entity\Coupon;
 use Tourze\CouponCoreBundle\Repository\CodeRepository;
@@ -34,23 +33,38 @@ class GetCouponCodeDetail extends CacheableProcedure
     ) {
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function execute(): array
     {
         $code = $this->codeRepository->findOneBy([
             'id' => $this->codeId,
             'owner' => $this->security->getUser(),
         ]);
-        if ($code === null) {
+        if (null === $code) {
             throw new ApiException('找不到券码');
         }
 
-        return $this->normalizer->normalize($code, 'array', ['groups' => 'restful_read']);
+        $normalized = $this->normalizer->normalize($code, 'array', ['groups' => 'restful_read']);
+        if (!is_array($normalized)) {
+            throw new ApiException('序列化失败');
+        }
+
+        /** @var array<string, mixed> $normalized */
+        return $normalized;
     }
 
     public function getCacheKey(JsonRpcRequest $request): string
     {
-        $key = static::buildParamCacheKey($request->getParams());
-        if ($this->security->getUser() !== null) {
+        $params = $request->getParams();
+        if (null === $params) {
+            $key = 'no-params';
+        } else {
+            $key = static::buildParamCacheKey($params);
+        }
+
+        if (null !== $this->security->getUser()) {
             $key .= '-' . $this->security->getUser()->getUserIdentifier();
         }
 
@@ -64,8 +78,14 @@ class GetCouponCodeDetail extends CacheableProcedure
 
     public function getCacheTags(JsonRpcRequest $request): iterable
     {
-        yield CacheHelper::getClassTags(Code::class, $request->getParams()->get('codeId'));
-        yield CacheHelper::getClassTags(Channel::class, $request->getParams()->get('codeId'));
-        yield CacheHelper::getClassTags(Coupon::class, $request->getParams()->get('codeId'));
+        $params = $request->getParams();
+        if (null === $params) {
+            return;
+        }
+
+        $codeId = $params->get('codeId');
+        $codeIdString = is_scalar($codeId) ? (string) $codeId : null;
+        yield CacheHelper::getClassTags(Code::class, $codeIdString);
+        yield CacheHelper::getClassTags(Coupon::class, $codeIdString);
     }
 }

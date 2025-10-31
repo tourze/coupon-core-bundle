@@ -3,85 +3,47 @@
 namespace Tourze\CouponCoreBundle\Tests\Command;
 
 use Doctrine\ORM\EntityManagerInterface;
-use PHPUnit\Framework\TestCase;
-use Symfony\Component\Console\Application;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
+use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;
 use Tourze\CouponCoreBundle\Command\RevokeExpiredCodeCommand;
-use Tourze\CouponCoreBundle\Entity\Code;
 use Tourze\CouponCoreBundle\Repository\CodeRepository;
+use Tourze\PHPUnitSymfonyKernelTest\AbstractCommandTestCase;
 
-class RevokeExpiredCodeCommandTest extends TestCase
+/**
+ * @internal
+ */
+#[CoversClass(RevokeExpiredCodeCommand::class)]
+#[RunTestsInSeparateProcesses]
+final class RevokeExpiredCodeCommandTest extends AbstractCommandTestCase
 {
-    public function testExecute(): void
+    private CommandTester $commandTester;
+
+    protected function getCommandTester(): CommandTester
     {
-        $codeRepository = $this->createMock(CodeRepository::class);
-        $entityManager = $this->createMock(EntityManagerInterface::class);
-        
-        $queryBuilder = $this->getMockBuilder(\Doctrine\ORM\QueryBuilder::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-            
-        $query = $this->getMockBuilder(\Doctrine\ORM\Query::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        
-        $code = $this->createMock(Code::class);
-        
-        $codeRepository->expects($this->once())
-            ->method('createQueryBuilder')
-            ->with('a')
-            ->willReturn($queryBuilder);
-        
-        $queryBuilder->expects($this->once())
-            ->method('where')
-            ->with('a.useTime IS NULL')
-            ->willReturn($queryBuilder);
-            
-        $queryBuilder->expects($this->exactly(3))
-            ->method('andWhere')
-            ->willReturn($queryBuilder);
-            
-        $queryBuilder->expects($this->once())
-            ->method('setParameter')
-            ->with('time', $this->isType('string'))
-            ->willReturn($queryBuilder);
-            
-        $queryBuilder->expects($this->once())
-            ->method('orderBy')
-            ->willReturn($queryBuilder);
-            
-        $queryBuilder->expects($this->once())
-            ->method('setMaxResults')
-            ->with(500)
-            ->willReturn($queryBuilder);
-            
-        $queryBuilder->expects($this->once())
-            ->method('getQuery')
-            ->willReturn($query);
-            
-        $query->expects($this->once())
-            ->method('toIterable')
-            ->willReturn([$code]);
-        
-        $code->expects($this->once())
-            ->method('setValid')
-            ->with(false);
-            
-        $entityManager->expects($this->once())
-            ->method('persist')
-            ->with($code);
-            
-        $entityManager->expects($this->once())
-            ->method('flush');
-        
-        $command = new RevokeExpiredCodeCommand($codeRepository, $entityManager);
-        
-        $application = new Application();
-        $application->add($command);
-        
-        $commandTester = new CommandTester($command);
-        $commandTester->execute([]);
-        
-        $this->assertSame(0, $commandTester->getStatusCode());
+        return $this->commandTester;
+    }
+
+    protected function onSetUp(): void
+    {
+        $command = self::getService(RevokeExpiredCodeCommand::class);
+        $this->commandTester = new CommandTester($command);
+    }
+
+    public function testCommandExecution(): void
+    {
+        $this->commandTester->execute([]);
+
+        $this->assertEquals(0, $this->commandTester->getStatusCode());
+        $this->assertStringContainsString('撤销过期码', $this->commandTester->getDisplay());
+    }
+
+    public function testCommandConfiguration(): void
+    {
+        $command = self::getService(RevokeExpiredCodeCommand::class);
+
+        $this->assertSame('coupon:revoke-expired-code', $command->getName());
+        $this->assertSame('自动回收过期优惠券', $command->getDescription());
     }
 }

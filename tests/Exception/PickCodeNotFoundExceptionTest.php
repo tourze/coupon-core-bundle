@@ -2,16 +2,18 @@
 
 namespace Tourze\CouponCoreBundle\Tests\Exception;
 
-use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 use Tourze\CouponCoreBundle\Exception\PickCodeNotFoundException;
+use Tourze\PHPUnitBase\AbstractExceptionTestCase;
 
-class PickCodeNotFoundExceptionTest extends TestCase
+/**
+ * @internal
+ */
+#[CoversClass(PickCodeNotFoundException::class)]
+final class PickCodeNotFoundExceptionTest extends AbstractExceptionTestCase
 {
-    public function testExceptionIsThrowable(): void
+    protected function getExceptionClass(): string
     {
-        $this->expectException(PickCodeNotFoundException::class);
-        $this->expectExceptionMessage('Test message');
-        
-        throw new PickCodeNotFoundException('Test message');
+        return PickCodeNotFoundException::class;
     }
 }

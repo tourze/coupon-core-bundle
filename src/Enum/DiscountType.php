@@ -20,7 +20,25 @@ enum DiscountType: string implements Labelable, Itemable, Selectable
     {
         return match ($this) {
             self::FREIGHT => '抵扣运费',
-            self::ORDER => '整单抵扣',
+            self::ORDER => '订单优惠',
         };
+    }
+
+    /**
+     * 获取所有枚举的选项数组（用于下拉列表等）
+     *
+     * @return array<int, array{value: string, label: string}>
+     */
+    public static function toSelectItems(): array
+    {
+        $result = [];
+        foreach (self::cases() as $case) {
+            $result[] = [
+                'value' => $case->value,
+                'label' => $case->getLabel(),
+            ];
+        }
+
+        return $result;
     }
 }

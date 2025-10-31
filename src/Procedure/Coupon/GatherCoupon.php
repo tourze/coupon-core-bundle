@@ -18,7 +18,6 @@ use Tourze\JsonRPC\Core\Exception\ApiException;
 use Tourze\JsonRPCLockBundle\Procedure\LockableProcedure;
 use Tourze\JsonRPCLogBundle\Attribute\Log;
 
-
 #[MethodDoc(summary: '领取优惠券')]
 #[MethodTag(name: '优惠券模块')]
 #[IsGranted(attribute: 'IS_AUTHENTICATED_FULLY')]
@@ -38,16 +37,22 @@ class GatherCoupon extends LockableProcedure
     ) {
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function execute(): array
     {
         $coupon = $this->couponRepository->findOneBy([
             'id' => $this->couponId,
         ]);
-        if ($coupon === null) {
+        if (null === $coupon) {
             throw new ApiException('找不到指定优惠券');
         }
 
         $user = $this->security->getUser();
+        if (null === $user) {
+            throw new ApiException('用户未登录');
+        }
 
         // TODO: 重新实现条件检查逻辑
         // try {
@@ -62,13 +67,22 @@ class GatherCoupon extends LockableProcedure
             throw new ApiException('优惠券已被抢光', $e->getCode(), previous: $e);
         }
 
+        if (null === $code) {
+            throw new ApiException('优惠券领取失败');
+        }
+
         $code->setGatherTime(CarbonImmutable::now());
-        $code->setExpireTime(CarbonImmutable::now()->addDays($coupon->getExpireDay())); // 过期时间
+        $expireDay = $coupon->getExpireDay() ?? 30; // 默认30天过期
+        $code->setExpireTime(CarbonImmutable::now()->addDays((int) $expireDay)); // 过期时间
         $code->setOwner($user);
         $this->entityManager->persist($code);
         $this->entityManager->flush();
 
         $result = $this->normalizer->normalize($code, 'array', ['groups' => 'restful_read']);
+        if (!is_array($result)) {
+            throw new ApiException('序列化失败');
+        }
+        /** @var array<string, mixed> $result */
         $result['__message'] = '领取成功';
 
         return $result;

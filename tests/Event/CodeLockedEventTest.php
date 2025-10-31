@@ -2,27 +2,36 @@
 
 namespace Tourze\CouponCoreBundle\Tests\Event;
 
-use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 use Tourze\CouponCoreBundle\Entity\Code;
 use Tourze\CouponCoreBundle\Event\CodeLockedEvent;
+use Tourze\PHPUnitSymfonyUnitTest\AbstractEventTestCase;
 
-class CodeLockedEventTest extends TestCase
+/**
+ * @internal
+ */
+#[CoversClass(CodeLockedEvent::class)]
+final class CodeLockedEventTest extends AbstractEventTestCase
 {
-    public function testGetAndSetCode(): void
+    public function testEventCreation(): void
     {
         $event = new CodeLockedEvent();
-        $code = $this->createMock(Code::class);
-        
+        $this->assertInstanceOf(CodeLockedEvent::class, $event);
+        $this->assertNull($event->getCode());
+    }
+
+    public function testCodeSetterAndGetter(): void
+    {
+        $event = new CodeLockedEvent();
+        $code = new Code();
+
         $event->setCode($code);
         $this->assertSame($code, $event->getCode());
     }
 
-    public function testSetCodeToNull(): void
+    public function testCodeCanBeNull(): void
     {
         $event = new CodeLockedEvent();
-        $code = $this->createMock(Code::class);
-        
-        $event->setCode($code);
         $event->setCode(null);
         $this->assertNull($event->getCode());
     }

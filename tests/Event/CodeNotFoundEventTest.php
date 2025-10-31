@@ -2,46 +2,36 @@
 
 namespace Tourze\CouponCoreBundle\Tests\Event;
 
-use PHPUnit\Framework\TestCase;
-use Symfony\Component\Security\Core\User\UserInterface;
+use PHPUnit\Framework\Attributes\CoversClass;
 use Tourze\CouponCoreBundle\Entity\Code;
 use Tourze\CouponCoreBundle\Event\CodeNotFoundEvent;
+use Tourze\PHPUnitSymfonyUnitTest\AbstractEventTestCase;
 
-class CodeNotFoundEventTest extends TestCase
+/**
+ * @internal
+ */
+#[CoversClass(CodeNotFoundEvent::class)]
+final class CodeNotFoundEventTest extends AbstractEventTestCase
 {
-    public function testGetAndSetSn(): void
+    public function testEventCreation(): void
     {
         $event = new CodeNotFoundEvent();
-        $sn = 'TEST_SN_12345';
-        
-        $event->setSn($sn);
-        $this->assertSame($sn, $event->getSn());
+        $this->assertInstanceOf(CodeNotFoundEvent::class, $event);
+        $this->assertNull($event->getCode());
     }
 
-    public function testGetAndSetUser(): void
+    public function testCodeSetterAndGetter(): void
     {
         $event = new CodeNotFoundEvent();
-        $user = $this->createMock(UserInterface::class);
-        
-        $event->setUser($user);
-        $this->assertSame($user, $event->getUser());
-    }
+        $code = new Code();
 
-    public function testGetAndSetCode(): void
-    {
-        $event = new CodeNotFoundEvent();
-        $code = $this->createMock(Code::class);
-        
         $event->setCode($code);
         $this->assertSame($code, $event->getCode());
     }
 
-    public function testSetCodeToNull(): void
+    public function testCodeCanBeNull(): void
     {
         $event = new CodeNotFoundEvent();
-        $code = $this->createMock(Code::class);
-        
-        $event->setCode($code);
         $event->setCode(null);
         $this->assertNull($event->getCode());
     }

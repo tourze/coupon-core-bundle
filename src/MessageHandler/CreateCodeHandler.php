@@ -23,7 +23,7 @@ class CreateCodeHandler
             'id' => $message->getCouponId(),
             'valid' => true,
         ]);
-        if ($coupon === null) {
+        if (null === $coupon) {
             throw new CreateCodeException('生成code时，找不到优惠券');
         }
 

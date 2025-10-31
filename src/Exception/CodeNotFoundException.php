@@ -4,7 +4,7 @@ namespace Tourze\CouponCoreBundle\Exception;
 
 class CodeNotFoundException extends \Exception
 {
-    private string $sn;
+    private string $sn = '';
 
     public function getSn(): string
     {

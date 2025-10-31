@@ -3,7 +3,7 @@
 namespace Tourze\CouponCoreBundle\Command;
 
 use Carbon\CarbonImmutable;
-use Doctrine\Common\Collections\Criteria;
+use Doctrine\Common\Collections\Order;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -19,33 +19,37 @@ use Tourze\CouponCoreBundle\Repository\CodeRepository;
 class RevokeExpiredCodeCommand extends Command
 {
     public const NAME = 'coupon:revoke-expired-code';
+
     /**
      * @var int 每分钟处理数量
      */
     protected int $number = 500;
 
     public function __construct(
-        private readonly CodeRepository $codeRepository, 
+        private readonly CodeRepository $codeRepository,
         private readonly EntityManagerInterface $entityManager,
-        ?string $name = null
+        ?string $name = null,
     ) {
         parent::__construct($name);
     }
 
-    public function execute(InputInterface $input, OutputInterface $output): int
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $output->writeln('撤销过期码');
+
         $codes = $this->codeRepository->createQueryBuilder('a')
             ->where('a.useTime IS NULL') // 未使用过
             ->andWhere('a.expireTime IS NOT NULL') // 有过期时间
             ->andWhere('a.expireTime < :time') // 已经过了过期时间
             ->andWhere('a.valid = true') // 但是还标记为有效
             ->setParameter('time', CarbonImmutable::now()->format('Y-m-d H:i:s'))
-            ->orderBy('a.id', Criteria::DESC)
+            ->orderBy('a.id', Order::Descending->value)
             ->setMaxResults($this->number)
             ->getQuery()
-            ->toIterable();
+            ->toIterable()
+        ;
         foreach ($codes as $code) {
-            /* @var Code $code */
+            assert($code instanceof Code);
             $code->setValid(false);
             $this->entityManager->persist($code);
             $this->entityManager->flush();

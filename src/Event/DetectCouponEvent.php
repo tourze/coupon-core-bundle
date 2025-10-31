@@ -9,7 +9,7 @@ class DetectCouponEvent extends Event
 {
     use CouponAware;
 
-    private string $couponId;
+    private string $couponId = '';
 
     public function getCouponId(): string
     {

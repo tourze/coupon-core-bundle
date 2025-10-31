@@ -12,9 +12,9 @@ class SendCodeEvent extends Event
     use CouponAware;
     use CodeAware;
 
-    private UserInterface $user;
+    private ?UserInterface $user = null;
 
-    public function getUser(): UserInterface
+    public function getUser(): ?UserInterface
     {
         return $this->user;
     }
@@ -24,7 +24,7 @@ class SendCodeEvent extends Event
         $this->user = $user;
     }
 
-    public string $extend = '';
+    public ?string $extend = '';
 
     public function getExtend(): ?string
     {

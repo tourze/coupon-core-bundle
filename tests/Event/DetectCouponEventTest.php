@@ -2,43 +2,46 @@
 
 namespace Tourze\CouponCoreBundle\Tests\Event;
 
-use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 use Tourze\CouponCoreBundle\Entity\Coupon;
 use Tourze\CouponCoreBundle\Event\DetectCouponEvent;
+use Tourze\PHPUnitSymfonyUnitTest\AbstractEventTestCase;
 
-class DetectCouponEventTest extends TestCase
+/**
+ * @internal
+ */
+#[CoversClass(DetectCouponEvent::class)]
+final class DetectCouponEventTest extends AbstractEventTestCase
 {
-    public function testGetAndSetCouponId(): void
+    public function testEventCreation(): void
     {
         $event = new DetectCouponEvent();
-        $couponId = 'COUPON_12345';
-        
-        $event->setCouponId($couponId);
-        $this->assertSame($couponId, $event->getCouponId());
+        $this->assertInstanceOf(DetectCouponEvent::class, $event);
+        $this->assertNull($event->getCoupon());
     }
 
-    public function testGetAndSetCoupon(): void
+    public function testCouponSetterAndGetter(): void
     {
         $event = new DetectCouponEvent();
-        $coupon = $this->createMock(Coupon::class);
-        
+        $coupon = new Coupon();
+
         $event->setCoupon($coupon);
         $this->assertSame($coupon, $event->getCoupon());
     }
 
-    public function testSetCouponToNull(): void
+    public function testCouponCanBeNull(): void
     {
         $event = new DetectCouponEvent();
-        $coupon = $this->createMock(Coupon::class);
-        
-        $event->setCoupon($coupon);
         $event->setCoupon(null);
         $this->assertNull($event->getCoupon());
     }
 
-    public function testInitialCouponIsNull(): void
+    public function testCouponIdSetterAndGetter(): void
     {
         $event = new DetectCouponEvent();
-        $this->assertNull($event->getCoupon());
+        $couponId = 'test-coupon-123';
+
+        $event->setCouponId($couponId);
+        $this->assertEquals($couponId, $event->getCouponId());
     }
 }

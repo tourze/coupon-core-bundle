@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tourze\CouponCoreBundle\Entity;
 
 use BenefitBundle\Model\BenefitResource;
@@ -8,13 +10,14 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Ignore;
+use Symfony\Component\Validator\Constraints as Assert;
 use Tourze\Arrayable\AdminArrayInterface;
 use Tourze\Arrayable\ApiArrayInterface;
+use Tourze\CouponCommandBundle\Entity\CommandConfig;
 use Tourze\CouponContracts\CouponInterface;
 use Tourze\CouponCoreBundle\Repository\CouponRepository;
 use Tourze\DoctrineIndexedBundle\Attribute\IndexColumn;
-use Tourze\DoctrineIpBundle\Attribute\CreateIpColumn;
-use Tourze\DoctrineIpBundle\Attribute\UpdateIpColumn;
+use Tourze\DoctrineIpBundle\Traits\IpTraceableAware;
 use Tourze\DoctrineSnowflakeBundle\Attribute\SnowflakeColumn;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
 use Tourze\DoctrineTrackBundle\Attribute\TrackColumn;
@@ -22,146 +25,114 @@ use Tourze\DoctrineUserBundle\Traits\BlameableAware;
 use Tourze\EnumExtra\Itemable;
 use Tourze\ResourceManageBundle\Model\ResourceIdentity;
 
+/**
+ * @implements AdminArrayInterface<string, mixed>
+ * @implements ApiArrayInterface<string, mixed>
+ */
 #[ORM\Entity(repositoryClass: CouponRepository::class)]
 #[ORM\Table(name: 'coupon_main', options: ['comment' => '优惠券'])]
 class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInterface, BenefitResource, ResourceIdentity, CouponInterface
 {
     use TimestampableAware;
     use BlameableAware;
+    use IpTraceableAware;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: Types::INTEGER, options: ['comment' => 'ID'])]
-    private ?int $id = 0;
+    private ?int $id = null; // @phpstan-ignore-line property.unusedType Doctrine sets this
 
     #[SnowflakeColumn]
+    #[Assert\Length(max: 100)]
     #[ORM\Column(type: Types::STRING, length: 100, unique: true, options: ['comment' => '唯一编码'])]
     private ?string $sn = null;
 
-    #[ORM\ManyToOne(inversedBy: 'coupons')]
-    private ?Category $category = null;
-
     /**
-     * @var Collection<Code>
+     * @var Collection<int, Code>
      */
     #[Ignore]
-    #[ORM\OneToMany(targetEntity: Code::class, mappedBy: 'coupon', fetch: 'EXTRA_LAZY', orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: Code::class, mappedBy: 'coupon', cascade: ['persist'], fetch: 'EXTRA_LAZY', orphanRemoval: true)]
     private Collection $codes;
 
+    #[Assert\Length(max: 255)]
     #[ORM\Column(type: Types::STRING, length: 255, options: ['comment' => '名称'])]
     private ?string $name = null;
 
+    #[Assert\PositiveOrZero]
     #[ORM\Column(type: Types::INTEGER, nullable: true, options: ['comment' => '领取后过期天数'])]
     private ?int $expireDay = null;
 
+    #[Assert\Length(max: 255)]
     #[ORM\Column(type: Types::STRING, length: 255, nullable: true, options: ['comment' => 'ICON图标'])]
     private ?string $iconImg = null;
 
+    #[Assert\Length(max: 255)]
     #[ORM\Column(type: Types::STRING, length: 255, nullable: true, options: ['comment' => '列表背景'])]
     private ?string $backImg = null;
 
-    /**
-     * @var Collection<Discount>
-     */
-    #[ORM\OneToMany(targetEntity: Discount::class, mappedBy: 'coupon', cascade: ['persist'], fetch: 'EXTRA_LAZY', orphanRemoval: true)]
-    private Collection $discounts;
-
+    #[Assert\Length(max: 65535)]
     #[ORM\Column(type: Types::TEXT, nullable: true, options: ['comment' => '备注'])]
     private ?string $remark = null;
 
+    #[Assert\Type(type: \DateTimeInterface::class)]
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '可用开始时间'])]
     private ?\DateTimeImmutable $startDateTime = null;
 
+    #[Assert\Type(type: \DateTimeInterface::class)]
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '可用结束时间'])]
     private ?\DateTimeImmutable $endDateTime = null;
 
+    #[Assert\Type(type: 'bool')]
     #[ORM\Column(type: Types::BOOLEAN, nullable: true, options: ['comment' => '是否需要激活'])]
     private ?bool $needActive = null;
 
+    #[Assert\PositiveOrZero]
     #[ORM\Column(nullable: true, options: ['comment' => '激活后有效天数'])]
     private ?int $activeValidDay = null;
 
-    /**
-     * @var Collection<Attribute>
-     */
-    #[ORM\OneToMany(targetEntity: Attribute::class, mappedBy: 'coupon', cascade: ['persist'], fetch: 'EXTRA_LAZY', orphanRemoval: true, indexBy: 'name')]
-    private Collection $attributes;
-
+    #[Assert\Length(max: 65535)]
     #[ORM\Column(type: Types::TEXT, nullable: true, options: ['comment' => '使用说明'])]
     private ?string $useDesc = null;
 
-    #[ORM\OneToMany(targetEntity: CouponChannel::class, mappedBy: 'coupon')]
-    private Collection $couponChannels;
-
-    #[ORM\JoinTable(name: 'coupon_main_channel_relations')]
-    #[ORM\ManyToMany(targetEntity: Channel::class, inversedBy: 'coupons', fetch: 'EXTRA_LAZY')]
-    private Collection $channels;
-
+    /**
+     * @var Collection<int, Batch>
+     */
     #[Ignore]
-    #[ORM\OneToMany(targetEntity: Batch::class, mappedBy: 'coupon')]
+    #[ORM\OneToMany(targetEntity: Batch::class, mappedBy: 'coupon', cascade: ['persist'])]
     private Collection $batches;
 
+    #[Ignore]
+    #[ORM\OneToOne(targetEntity: CommandConfig::class, inversedBy: 'coupon')]
+    #[ORM\JoinColumn(name: 'command_config_id', referencedColumnName: 'id', nullable: true)]
+    private ?CommandConfig $commandConfig = null;
+
+    #[Assert\Type(type: \DateTimeInterface::class)]
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '开始有效时间'])]
     private ?\DateTimeImmutable $startTime = null;
 
+    #[Assert\Type(type: \DateTimeInterface::class)]
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '截止有效时间'])]
     private ?\DateTimeImmutable $endTime = null;
 
     #[IndexColumn]
     #[TrackColumn]
+    #[Assert\Type(type: 'bool')]
     #[ORM\Column(type: Types::BOOLEAN, nullable: true, options: ['comment' => '有效', 'default' => 0])]
     private ?bool $valid = false;
-
-
-    #[CreateIpColumn]
-    #[ORM\Column(length: 128, nullable: true, options: ['comment' => '创建时IP'])]
-    private ?string $createdFromIp = null;
-
-    #[UpdateIpColumn]
-    #[ORM\Column(length: 128, nullable: true, options: ['comment' => '更新时IP'])]
-    private ?string $updatedFromIp = null;
 
     public function __construct()
     {
         $this->codes = new ArrayCollection();
-        $this->discounts = new ArrayCollection();
-        $this->attributes = new ArrayCollection();
-        $this->couponChannels = new ArrayCollection();
-        $this->channels = new ArrayCollection();
         $this->batches = new ArrayCollection();
     }
 
     public function __toString(): string
     {
-        if ($this->getId() === null || $this->getId() === 0) {
+        if (null === $this->getId() || 0 === $this->getId()) {
             return '';
         }
 
         return "{$this->getName()}";
-    }
-
-
-    public function setCreatedFromIp(?string $createdFromIp): self
-    {
-        $this->createdFromIp = $createdFromIp;
-
-        return $this;
-    }
-
-    public function getCreatedFromIp(): ?string
-    {
-        return $this->createdFromIp;
-    }
-
-    public function setUpdatedFromIp(?string $updatedFromIp): self
-    {
-        $this->updatedFromIp = $updatedFromIp;
-
-        return $this;
-    }
-
-    public function getUpdatedFromIp(): ?string
-    {
-        return $this->updatedFromIp;
     }
 
     public function isValid(): ?bool
@@ -169,11 +140,9 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
         return $this->valid;
     }
 
-    public function setValid(?bool $valid): self
+    public function setValid(?bool $valid): void
     {
         $this->valid = $valid;
-
-        return $this;
     }
 
     public function getId(): ?int
@@ -186,11 +155,9 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
         return $this->sn;
     }
 
-    public function setSn(?string $sn): self
+    public function setSn(?string $sn): void
     {
         $this->sn = $sn;
-
-        return $this;
     }
 
     /**
@@ -204,7 +171,7 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
     public function addCode(Code $code): self
     {
         if (!$this->codes->contains($code)) {
-            $this->codes[] = $code;
+            $this->codes->add($code);
             $code->setCoupon($this);
         }
 
@@ -228,11 +195,9 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
         return $this->name;
     }
 
-    public function setName(string $name): self
+    public function setName(string $name): void
     {
         $this->name = $name;
-
-        return $this;
     }
 
     public function getExpireDay(): ?int
@@ -240,41 +205,9 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
         return $this->expireDay;
     }
 
-    public function setExpireDay(int $expireDay): self
+    public function setExpireDay(int $expireDay): void
     {
         $this->expireDay = $expireDay;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Discount>
-     */
-    public function getDiscounts(): Collection
-    {
-        return $this->discounts;
-    }
-
-    public function addDiscount(Discount $discount): self
-    {
-        if (!$this->discounts->contains($discount)) {
-            $this->discounts[] = $discount;
-            $discount->setCoupon($this);
-        }
-
-        return $this;
-    }
-
-    public function removeDiscount(Discount $discount): self
-    {
-        if ($this->discounts->removeElement($discount)) {
-            // set the owning side to null (unless already changed)
-            if ($discount->getCoupon() === $this) {
-                $discount->setCoupon(null);
-            }
-        }
-
-        return $this;
     }
 
     public function getRemark(): ?string
@@ -282,16 +215,9 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
         return $this->remark;
     }
 
-    public function setRemark(?string $remark): self
+    public function setRemark(?string $remark): void
     {
         $this->remark = $remark;
-
-        return $this;
-    }
-
-    public function renderCodeCount(): int
-    {
-        return $this->getCodes()->count();
     }
 
     public function getStartDateTime(): ?\DateTimeImmutable
@@ -299,17 +225,15 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
         return $this->startDateTime;
     }
 
-    public function setStartDateTime(?\DateTimeInterface $startDateTime): self
+    public function setStartDateTime(?\DateTimeInterface $startDateTime): void
     {
-        if ($startDateTime === null) {
+        if (null === $startDateTime) {
             $this->startDateTime = null;
         } elseif ($startDateTime instanceof \DateTimeImmutable) {
             $this->startDateTime = $startDateTime;
         } else {
             $this->startDateTime = \DateTimeImmutable::createFromInterface($startDateTime);
         }
-
-        return $this;
     }
 
     public function getEndDateTime(): ?\DateTimeImmutable
@@ -317,64 +241,31 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
         return $this->endDateTime;
     }
 
-    public function setEndDateTime(?\DateTimeInterface $endDateTime): self
+    public function setEndDateTime(?\DateTimeInterface $endDateTime): void
     {
-        if ($endDateTime === null) {
+        if (null === $endDateTime) {
             $this->endDateTime = null;
         } elseif ($endDateTime instanceof \DateTimeImmutable) {
             $this->endDateTime = $endDateTime;
         } else {
             $this->endDateTime = \DateTimeImmutable::createFromInterface($endDateTime);
         }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Attribute>
-     */
-    public function getAttributes(): Collection
-    {
-        return $this->attributes;
-    }
-
-    public function addAttribute(Attribute $attribute, ?string $key = null): self
-    {
-        if (!$this->attributes->contains($attribute)) {
-            if (null !== $key) {
-                $this->attributes[$key] = $attribute;
-            } else {
-                $this->attributes[] = $attribute;
-            }
-
-            $attribute->setCoupon($this);
-        }
-
-        return $this;
-    }
-
-    public function removeAttribute(Attribute $attribute): self
-    {
-        if ($this->attributes->removeElement($attribute)) {
-            // set the owning side to null (unless already changed)
-            if ($attribute->getCoupon() === $this) {
-                $attribute->setCoupon(null);
-            }
-        }
-
-        return $this;
     }
 
     public function getIconImg(): ?string
     {
-        return $this->iconImg ?? ($_ENV['COUPON_DEFAULT_ICON_IMG'] ?? null);
+        if (null !== $this->iconImg) {
+            return $this->iconImg;
+        }
+
+        $defaultIcon = $_ENV['COUPON_DEFAULT_ICON_IMG'] ?? null;
+
+        return is_string($defaultIcon) ? $defaultIcon : null;
     }
 
-    public function setIconImg(?string $iconImg): self
+    public function setIconImg(?string $iconImg): void
     {
         $this->iconImg = $iconImg;
-
-        return $this;
     }
 
     public function getBackImg(): ?string
@@ -382,13 +273,14 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
         return $this->backImg;
     }
 
-    public function setBackImg(?string $backImg): self
+    public function setBackImg(?string $backImg): void
     {
         $this->backImg = $backImg;
-
-        return $this;
     }
 
+    /**
+     * @return array<string, int|string|null>
+     */
     public function toSelectItem(): array
     {
         return [
@@ -404,11 +296,9 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
         return $this->useDesc;
     }
 
-    public function setUseDesc(?string $useDesc): self
+    public function setUseDesc(?string $useDesc): void
     {
         $this->useDesc = $useDesc;
-
-        return $this;
     }
 
     public function isNeedActive(): ?bool
@@ -416,11 +306,9 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
         return $this->needActive;
     }
 
-    public function setNeedActive(?bool $needActive): self
+    public function setNeedActive(?bool $needActive): void
     {
         $this->needActive = $needActive;
-
-        return $this;
     }
 
     public function getActiveValidDay(): ?int
@@ -428,65 +316,9 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
         return $this->activeValidDay;
     }
 
-    public function setActiveValidDay(?int $activeValidDay): self
+    public function setActiveValidDay(?int $activeValidDay): void
     {
         $this->activeValidDay = $activeValidDay;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, CouponChannel>
-     */
-    public function getCouponChannels(): Collection
-    {
-        return $this->couponChannels;
-    }
-
-    public function addCouponChannel(CouponChannel $couponChannel): self
-    {
-        if (!$this->couponChannels->contains($couponChannel)) {
-            $this->couponChannels->add($couponChannel);
-            $couponChannel->setCoupon($this);
-        }
-
-        return $this;
-    }
-
-    public function removeCouponChannel(CouponChannel $couponChannel): self
-    {
-        if ($this->couponChannels->removeElement($couponChannel)) {
-            // set the owning side to null (unless already changed)
-            if ($couponChannel->getCoupon() === $this) {
-                $couponChannel->setCoupon(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Channel>
-     */
-    public function getChannels(): Collection
-    {
-        return $this->channels;
-    }
-
-    public function addChannel(Channel $channel): self
-    {
-        if (!$this->channels->contains($channel)) {
-            $this->channels->add($channel);
-        }
-
-        return $this;
-    }
-
-    public function removeChannel(Channel $channel): self
-    {
-        $this->channels->removeElement($channel);
-
-        return $this;
     }
 
     /**
@@ -519,18 +351,9 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
         return $this;
     }
 
-    public function getCategory(): ?Category
-    {
-        return $this->category;
-    }
-
-    public function setCategory(?Category $category): static
-    {
-        $this->category = $category;
-
-        return $this;
-    }
-
+    /**
+     * @return array<string, mixed>
+     */
     public function retrieveAdminArray(): array
     {
         return [
@@ -543,7 +366,6 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
             'expireDay' => $this->getExpireDay(),
             'iconImg' => $this->getIconImg(),
             'backImg' => $this->getBackImg(),
-            'discounts' => $this->getDiscounts(),
             'remark' => $this->getRemark(),
             'needActive' => $this->isNeedActive(),
             'activeValidDay' => $this->getActiveValidDay(),
@@ -553,18 +375,11 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
         ];
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function retrieveApiArray(): array
     {
-        $discounts = [];
-        foreach ($this->getDiscounts() as $discount) {
-            $discounts[] = $discount->retrieveApiArray();
-        }
-
-        $attributes = [];
-        foreach ($this->getAttributes() as $attribute) {
-            $attributes[] = $attribute->retrieveApiArray();
-        }
-
         return [
             'id' => $this->getId(),
             'createTime' => $this->getCreateTime()?->format('Y-m-d H:i:s'),
@@ -575,9 +390,7 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
             'name' => $this->getName(),
             'expireDay' => $this->getExpireDay(),
             'iconImg' => $this->getIconImg(),
-            'discounts' => $discounts,
             'remark' => $this->getRemark(),
-            'attributes' => $attributes,
             'startTime' => $this->getStartTime(),
             'endTime' => $this->getEndTime(),
         ];
@@ -588,17 +401,15 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
         return $this->startTime;
     }
 
-    public function setStartTime(?\DateTimeInterface $startTime): static
+    public function setStartTime(?\DateTimeInterface $startTime): void
     {
-        if ($startTime === null) {
+        if (null === $startTime) {
             $this->startTime = null;
         } elseif ($startTime instanceof \DateTimeImmutable) {
             $this->startTime = $startTime;
         } else {
             $this->startTime = \DateTimeImmutable::createFromInterface($startTime);
         }
-
-        return $this;
     }
 
     public function getEndTime(): ?\DateTimeImmutable
@@ -606,17 +417,15 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
         return $this->endTime;
     }
 
-    public function setEndTime(?\DateTimeInterface $endTime): static
+    public function setEndTime(?\DateTimeInterface $endTime): void
     {
-        if ($endTime === null) {
+        if (null === $endTime) {
             $this->endTime = null;
         } elseif ($endTime instanceof \DateTimeImmutable) {
             $this->endTime = $endTime;
         } else {
             $this->endTime = \DateTimeImmutable::createFromInterface($endTime);
         }
-
-        return $this;
     }
 
     public function getResourceId(): string
@@ -627,4 +436,23 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
     public function getResourceLabel(): string
     {
         return (string) $this->getName();
-    }}
+    }
+
+    public function getCommandConfig(): ?CommandConfig
+    {
+        return $this->commandConfig;
+    }
+
+    public function setCommandConfig(?CommandConfig $commandConfig): void
+    {
+        $this->commandConfig = $commandConfig;
+    }
+
+    /**
+     * 获取券码数量（用于渲染）
+     */
+    public function getRenderCodeCount(): int
+    {
+        return $this->codes->count();
+    }
+}

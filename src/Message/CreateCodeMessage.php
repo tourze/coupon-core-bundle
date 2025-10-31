@@ -9,12 +9,12 @@ class CreateCodeMessage implements AsyncMessageInterface
     /**
      * @var int 优惠券ID
      */
-    private int $couponId;
+    private int $couponId = 0;
 
     /**
      * @var int 数量
      */
-    private int $quantity;
+    private int $quantity = 0;
 
     public function getCouponId(): int
     {

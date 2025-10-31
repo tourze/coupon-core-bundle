@@ -2,24 +2,37 @@
 
 namespace Tourze\CouponCoreBundle\Tests\Message;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Tourze\CouponCoreBundle\Message\CreateCodeMessage;
 
-class CreateCodeMessageTest extends TestCase
+/**
+ * @internal
+ */
+#[CoversClass(CreateCodeMessage::class)]
+final class CreateCodeMessageTest extends TestCase
 {
-    public function testGetSetCouponId(): void
+    public function testMessageCreation(): void
     {
         $message = new CreateCodeMessage();
-        $message->setCouponId(123);
-        
-        $this->assertSame(123, $message->getCouponId());
+        $this->assertInstanceOf(CreateCodeMessage::class, $message);
     }
-    
-    public function testGetSetQuantity(): void
+
+    public function testCouponIdSetterAndGetter(): void
     {
         $message = new CreateCodeMessage();
-        $message->setQuantity(50);
-        
-        $this->assertSame(50, $message->getQuantity());
+        $couponId = 123;
+
+        $message->setCouponId($couponId);
+        $this->assertEquals($couponId, $message->getCouponId());
+    }
+
+    public function testQuantitySetterAndGetter(): void
+    {
+        $message = new CreateCodeMessage();
+        $quantity = 50;
+
+        $message->setQuantity($quantity);
+        $this->assertEquals($quantity, $message->getQuantity());
     }
 }

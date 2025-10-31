@@ -2,16 +2,18 @@
 
 namespace Tourze\CouponCoreBundle\Tests\Exception;
 
-use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 use Tourze\CouponCoreBundle\Exception\CodeNotFoundException;
+use Tourze\PHPUnitBase\AbstractExceptionTestCase;
 
-class CodeNotFoundExceptionTest extends TestCase
+/**
+ * @internal
+ */
+#[CoversClass(CodeNotFoundException::class)]
+final class CodeNotFoundExceptionTest extends AbstractExceptionTestCase
 {
-    public function testExceptionIsThrowable(): void
+    protected function getExceptionClass(): string
     {
-        $this->expectException(CodeNotFoundException::class);
-        $this->expectExceptionMessage('Test message');
-        
-        throw new CodeNotFoundException('Test message');
+        return CodeNotFoundException::class;
     }
 }

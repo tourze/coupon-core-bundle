@@ -2,24 +2,42 @@
 
 namespace Tourze\CouponCoreBundle\Tests\Procedure\Coupon;
 
-use PHPUnit\Framework\TestCase;
-use Symfony\Bundle\SecurityBundle\Security;
-use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
+use Knp\Component\Pager\PaginatorInterface;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 use Tourze\CouponCoreBundle\Procedure\Coupon\GetUserCouponList;
-use Tourze\CouponCoreBundle\Repository\CodeRepository;
-use Tourze\CouponCoreBundle\Repository\CouponRepository;
+use Tourze\JsonRPC\Core\Tests\AbstractProcedureTestCase;
 
-class GetUserCouponListTest extends TestCase
+/**
+ * @internal
+ */
+#[CoversClass(GetUserCouponList::class)]
+#[RunTestsInSeparateProcesses]
+final class GetUserCouponListTest extends AbstractProcedureTestCase
 {
+    protected function onSetUp(): void
+    {
+        // 测试设置将在每个测试方法中处理
+    }
+
     public function testCanInstantiate(): void
     {
-        $couponRepository = $this->createMock(CouponRepository::class);
-        $codeRepository = $this->createMock(CodeRepository::class);
-        $normalizer = $this->createMock(NormalizerInterface::class);
-        $security = $this->createMock(Security::class);
-        
-        $procedure = new GetUserCouponList($couponRepository, $codeRepository, $normalizer, $security);
-        
+        $procedure = self::getService(GetUserCouponList::class);
         $this->assertInstanceOf(GetUserCouponList::class, $procedure);
+    }
+
+    public function testExecute(): void
+    {
+        $procedure = self::getService(GetUserCouponList::class);
+
+        // 设置 paginator 属性
+        $paginator = self::getService(PaginatorInterface::class);
+        $procedure->paginator = $paginator;
+
+        // 由于需要用户登录，而当前测试环境没有用户，所以测试会抛出异常
+        // 这是预期的行为
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('User not authenticated');
+        $procedure->execute();
     }
 }

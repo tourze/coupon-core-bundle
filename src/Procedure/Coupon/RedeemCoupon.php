@@ -30,7 +30,7 @@ class RedeemCoupon extends LockableProcedure
     public int $type = 0;
 
     /**
-     * @var array 券码
+     * @var array<string> 券码
      */
     public array $code = [];
 
@@ -53,14 +53,16 @@ class RedeemCoupon extends LockableProcedure
             $code = $this->codeRepository->findOneBy([
                 'sn' => $item,
             ]);
-            if ($code === null) {
+            if (null === $code) {
                 throw new ApiException('券码不存在');
             }
 
             try {
                 $this->codeService->redeemCode($code);
             } catch (CodeUsedException) {
-                $errorMessage = "{$code->getCoupon()->getName()}已被使用";
+                $coupon = $code->getCoupon();
+                $couponName = $coupon?->getName() ?? '未知优惠券';
+                $errorMessage = "{$couponName}已被使用";
             } catch (HttpClientException $exception) {
                 $this->logger->error('远程核销失败', [
                     'code' => $item,
@@ -71,11 +73,13 @@ class RedeemCoupon extends LockableProcedure
                     'code' => $item,
                     'exception' => $exception,
                 ]);
-                $errorMessage = "{$code->getCoupon()->getName()}核销失败";
+                $coupon = $code->getCoupon();
+                $couponName = $coupon?->getName() ?? '未知优惠券';
+                $errorMessage = "{$couponName}核销失败";
             }
         }
 
-        if ($errorMessage !== '') {
+        if ('' !== $errorMessage) {
             throw new ApiException($errorMessage);
         }
 

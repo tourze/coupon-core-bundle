@@ -3,6 +3,7 @@
 namespace Tourze\CouponCoreBundle\Controller\Admin;
 
 use Doctrine\ORM\QueryBuilder;
+use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminCrud;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FilterCollection;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
@@ -29,7 +30,11 @@ use Symfony\Component\Form\Extension\Core\Type\EnumType;
 use Tourze\CouponCoreBundle\Entity\Code;
 use Tourze\CouponCoreBundle\Enum\CodeStatus;
 
-class CodeCrudController extends AbstractCrudController
+/**
+ * @extends AbstractCrudController<Code>
+ */
+#[AdminCrud(routePath: '/coupon/code', routeName: 'coupon_code')]
+final class CodeCrudController extends AbstractCrudController
 {
     public static function getEntityFqcn(): string
     {
@@ -47,7 +52,8 @@ class CodeCrudController extends AbstractCrudController
             ->setPageTitle('detail', fn (Code $code) => sprintf('券码详情 #%d', $code->getId()))
             ->setDefaultSort(['id' => 'DESC'])
             ->setSearchFields(['id', 'sn', 'remark'])
-            ->setHelp('index', '这里展示了所有的券码信息，包括未使用、已使用和已过期的券码。');
+            ->setHelp('index', '这里展示了所有的券码信息，包括未使用、已使用和已过期的券码。')
+        ;
     }
 
     public function configureFilters(Filters $filters): Filters
@@ -56,26 +62,23 @@ class CodeCrudController extends AbstractCrudController
             ->add(TextFilter::new('id', 'ID'))
             ->add(TextFilter::new('sn', '券码'))
             ->add(EntityFilter::new('coupon', '优惠券'))
-            ->add(EntityFilter::new('channel', '投放渠道'))
-            ->add(EntityFilter::new('gatherChannel', '领取渠道'))
-            ->add(EntityFilter::new('useChannel', '使用渠道'))
             ->add(ChoiceFilter::new('status', '状态')->setChoices(array_combine(
-                array_map(fn(CodeStatus $status) => $status->getLabel(), CodeStatus::cases()),
-                array_map(fn(CodeStatus $status) => $status->value, CodeStatus::cases())
+                array_map(fn (CodeStatus $status) => $status->getLabel(), CodeStatus::cases()),
+                array_map(fn (CodeStatus $status) => $status->value, CodeStatus::cases())
             )))
             ->add(DateTimeFilter::new('gatherTime', '领取时间'))
             ->add(DateTimeFilter::new('expireTime', '过期时间'))
             ->add(DateTimeFilter::new('useTime', '使用时间'))
             ->add(BooleanFilter::new('valid', '有效'))
             ->add(BooleanFilter::new('locked', '锁定'))
-            ;
+        ;
     }
 
     public function configureFields(string $pageName): iterable
     {
         // 基本信息
         yield FormField::addTab('基本信息')->setIcon('fa fa-info-circle');
-        yield IdField::new('id')->setMaxLength(9999);
+        yield IdField::new('id', 'ID')->setMaxLength(9999);
         yield TextField::new('sn', '券码');
         yield AssociationField::new('coupon', '优惠券');
         yield AssociationField::new('owner', '拥有用户');
@@ -83,48 +86,18 @@ class CodeCrudController extends AbstractCrudController
             ->setFormType(EnumType::class)
             ->setFormTypeOptions([
                 'class' => CodeStatus::class,
-                'choice_label' => fn(CodeStatus $status) => $status->getLabel(),
+                'choice_label' => fn (CodeStatus $status) => $status->getLabel(),
             ])
             ->formatValue(fn ($value) => $value instanceof CodeStatus ? $value->getLabel() : '')
-            ->hideOnForm();
+            ->hideOnForm()
+        ;
         yield IntegerField::new('consumeCount', '核销次数')
-            ->setRequired(false);
+            ->setRequired(false)
+        ;
         yield TextField::new('remark', '备注')
             ->setRequired(false)
-            ->hideOnIndex();
-
-        // 渠道信息
-        yield FormField::addTab('渠道信息')->setIcon('fa fa-share-alt');
-        yield AssociationField::new('channel', '投放渠道')
-            ->setFormTypeOptions([
-                'choice_label' => 'title',
-                'query_builder' => function ($repository) {
-                    return $repository->createQueryBuilder('c')
-                        ->where('c.valid = :valid')
-                        ->setParameter('valid', true)
-                        ->orderBy('c.title', 'ASC');
-                },
-            ]);
-        yield AssociationField::new('gatherChannel', '领取渠道')
-            ->setFormTypeOptions([
-                'choice_label' => 'title',
-                'query_builder' => function ($repository) {
-                    return $repository->createQueryBuilder('c')
-                        ->where('c.valid = :valid')
-                        ->setParameter('valid', true)
-                        ->orderBy('c.title', 'ASC');
-                },
-            ]);
-        yield AssociationField::new('useChannel', '使用渠道')
-            ->setFormTypeOptions([
-                'choice_label' => 'title',
-                'query_builder' => function ($repository) {
-                    return $repository->createQueryBuilder('c')
-                        ->where('c.valid = :valid')
-                        ->setParameter('valid', true)
-                        ->orderBy('c.title', 'ASC');
-                },
-            ]);
+            ->hideOnIndex()
+        ;
 
         // 时间信息
         yield FormField::addTab('时间信息')->setIcon('fa fa-clock');
@@ -152,23 +125,17 @@ class CodeCrudController extends AbstractCrudController
     {
         return $actions
             ->add(Crud::PAGE_INDEX, Action::DETAIL)
-            ->reorder(Crud::PAGE_INDEX, [Action::DETAIL, Action::EDIT, Action::DELETE])
-            ->update(Crud::PAGE_INDEX, Action::DELETE, function (Action $action) {
-                return $action->displayIf(static function (Code $code) {
-                    return $code->getStatus() === CodeStatus::UNUSED;
-                });
-            });
+            ->disable(Action::NEW, Action::EDIT)
+        ;
     }
 
     public function createIndexQueryBuilder(SearchDto $searchDto, EntityDto $entityDto, FieldCollection $fields, FilterCollection $filters): QueryBuilder
     {
         $qb = parent::createIndexQueryBuilder($searchDto, $entityDto, $fields, $filters);
+
         return $qb
             ->leftJoin('entity.coupon', 'coupon')
-            ->leftJoin('entity.channel', 'channel')
-            ->leftJoin('entity.gatherChannel', 'gatherChannel')
-            ->leftJoin('entity.useChannel', 'useChannel')
             ->leftJoin('entity.owner', 'owner')
-            ;
+        ;
     }
 }

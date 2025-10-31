@@ -3,19 +3,20 @@
 namespace Tourze\CouponCoreBundle\DataFixtures;
 
 use Doctrine\Bundle\FixturesBundle\Fixture;
+use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
-use Tourze\CouponCoreBundle\Entity\Channel;
+use Symfony\Component\DependencyInjection\Attribute\When;
 use Tourze\CouponCoreBundle\Entity\Code;
 use Tourze\CouponCoreBundle\Entity\Coupon;
 
 /**
  * 券码数据填充
- * 为不同优惠券创建测试用的券码数据，包含各种状态的券码
+ * 创建测试用的券码数据，覆盖各种状态的券码场景
  */
-class CodeFixtures extends Fixture implements DependentFixtureInterface
+#[When(env: 'dev')]
+class CodeFixtures extends Fixture implements DependentFixtureInterface, FixtureGroupInterface
 {
-    // 券码引用常量
     public const CODE_UNUSED_1 = 'code-unused-1';
     public const CODE_UNUSED_2 = 'code-unused-2';
     public const CODE_USED_1 = 'code-used-1';
@@ -25,28 +26,19 @@ class CodeFixtures extends Fixture implements DependentFixtureInterface
 
     public function load(ObjectManager $manager): void
     {
-        // 获取优惠券和渠道引用
-        $discount20Coupon = $this->getReference(CouponFixtures::COUPON_DISCOUNT_20, Coupon::class);
-        $discount50Coupon = $this->getReference(CouponFixtures::COUPON_DISCOUNT_50, Coupon::class);
-        $percent10Coupon = $this->getReference(CouponFixtures::COUPON_PERCENT_10, Coupon::class);
-        $percent15Coupon = $this->getReference(CouponFixtures::COUPON_PERCENT_15, Coupon::class);
-        $freeShippingCoupon = $this->getReference(CouponFixtures::COUPON_FREE_SHIPPING, Coupon::class);
+        $basicDiscountCoupon = $this->getReference(CouponFixtures::COUPON_BASIC_DISCOUNT, Coupon::class);
+        $shortTermCoupon = $this->getReference(CouponFixtures::COUPON_SHORT_TERM, Coupon::class);
+        $needActiveCoupon = $this->getReference(CouponFixtures::COUPON_NEED_ACTIVE, Coupon::class);
+        $longTermCoupon = $this->getReference(CouponFixtures::COUPON_LONG_TERM, Coupon::class);
+        $inactiveCoupon = $this->getReference(CouponFixtures::COUPON_INACTIVE, Coupon::class);
 
-        $appChannel = $this->getReference(ChannelFixtures::CHANNEL_APP, Channel::class);
-        $wechatChannel = $this->getReference(ChannelFixtures::CHANNEL_WECHAT, Channel::class);
-        $alipayChannel = $this->getReference(ChannelFixtures::CHANNEL_ALIPAY, Channel::class);
-        $webChannel = $this->getReference(ChannelFixtures::CHANNEL_WEB, Channel::class);
-        $offlineChannel = $this->getReference(ChannelFixtures::CHANNEL_OFFLINE, Channel::class);
-
-        // 创建未使用的券码 - 服装满减券
+        // 创建未使用的券码
         $unusedCode1 = new Code();
-        $unusedCode1->setSn('CLOTHES20240101001');
-        $unusedCode1->setCoupon($discount20Coupon);
-        $unusedCode1->setChannel($appChannel);
-        $unusedCode1->setGatherChannel($appChannel);
+        $unusedCode1->setSn('UNUSED20240101001');
+        $unusedCode1->setCoupon($basicDiscountCoupon);
         $unusedCode1->setExpireTime(new \DateTime('+30 days'));
         $unusedCode1->setConsumeCount(1);
-        $unusedCode1->setRemark('服装满减券测试码');
+        $unusedCode1->setRemark('未使用的测试券码');
         $unusedCode1->setNeedActive(false);
         $unusedCode1->setActive(true);
         $unusedCode1->setValid(true);
@@ -54,15 +46,13 @@ class CodeFixtures extends Fixture implements DependentFixtureInterface
 
         $manager->persist($unusedCode1);
 
-        // 创建未使用的券码 - 数码产品满减券（需要激活）
+        // 创建需要激活的券码
         $unusedCode2 = new Code();
-        $unusedCode2->setSn('DIGITAL20240101002');
-        $unusedCode2->setCoupon($discount50Coupon);
-        $unusedCode2->setChannel($webChannel);
-        $unusedCode2->setGatherChannel($webChannel);
+        $unusedCode2->setSn('INACTIVE20240101002');
+        $unusedCode2->setCoupon($shortTermCoupon);
         $unusedCode2->setExpireTime(new \DateTime('+15 days'));
         $unusedCode2->setConsumeCount(1);
-        $unusedCode2->setRemark('数码产品满减券测试码');
+        $unusedCode2->setRemark('需要激活的测试券码');
         $unusedCode2->setNeedActive(true);
         $unusedCode2->setActive(false);
         $unusedCode2->setValid(true);
@@ -70,18 +60,15 @@ class CodeFixtures extends Fixture implements DependentFixtureInterface
 
         $manager->persist($unusedCode2);
 
-        // 创建已使用的券码 - 餐厅折扣券
+        // 创建已使用的券码
         $usedCode1 = new Code();
-        $usedCode1->setSn('RESTAURANT20240101003');
-        $usedCode1->setCoupon($percent10Coupon);
-        $usedCode1->setChannel($wechatChannel);
-        $usedCode1->setGatherChannel($wechatChannel);
-        $usedCode1->setUseChannel($offlineChannel);
+        $usedCode1->setSn('USED20240101003');
+        $usedCode1->setCoupon($needActiveCoupon);
         $usedCode1->setGatherTime(new \DateTime('-5 days'));
         $usedCode1->setExpireTime(new \DateTime('+2 days'));
         $usedCode1->setUseTime(new \DateTime('-1 day'));
         $usedCode1->setConsumeCount(1);
-        $usedCode1->setRemark('餐厅折扣券已使用');
+        $usedCode1->setRemark('已使用的测试券码');
         $usedCode1->setNeedActive(false);
         $usedCode1->setActive(true);
         $usedCode1->setValid(true);
@@ -89,16 +76,14 @@ class CodeFixtures extends Fixture implements DependentFixtureInterface
 
         $manager->persist($usedCode1);
 
-        // 创建已过期的券码 - 外卖折扣券
+        // 创建已过期的券码
         $expiredCode1 = new Code();
-        $expiredCode1->setSn('TAKEAWAY20240101004');
-        $expiredCode1->setCoupon($percent15Coupon);
-        $expiredCode1->setChannel($appChannel);
-        $expiredCode1->setGatherChannel($appChannel);
+        $expiredCode1->setSn('EXPIRED20240101004');
+        $expiredCode1->setCoupon($longTermCoupon);
         $expiredCode1->setGatherTime(new \DateTime('-10 days'));
         $expiredCode1->setExpireTime(new \DateTime('-1 day'));
         $expiredCode1->setConsumeCount(1);
-        $expiredCode1->setRemark('外卖折扣券已过期');
+        $expiredCode1->setRemark('已过期的测试券码');
         $expiredCode1->setNeedActive(false);
         $expiredCode1->setActive(true);
         $expiredCode1->setValid(true);
@@ -106,16 +91,14 @@ class CodeFixtures extends Fixture implements DependentFixtureInterface
 
         $manager->persist($expiredCode1);
 
-        // 创建需要激活的券码 - 免配送费券
+        // 创建需要激活且未激活的券码
         $needActiveCode1 = new Code();
-        $needActiveCode1->setSn('FREESHIP20240101005');
-        $needActiveCode1->setCoupon($freeShippingCoupon);
-        $needActiveCode1->setChannel($alipayChannel);
-        $needActiveCode1->setGatherChannel($alipayChannel);
+        $needActiveCode1->setSn('NEEDACTIVE20240101005');
+        $needActiveCode1->setCoupon($inactiveCoupon);
         $needActiveCode1->setGatherTime(new \DateTime('-2 days'));
         $needActiveCode1->setExpireTime(new \DateTime('+1 day'));
         $needActiveCode1->setConsumeCount(1);
-        $needActiveCode1->setRemark('免配送费券待激活');
+        $needActiveCode1->setRemark('待激活的测试券码');
         $needActiveCode1->setNeedActive(true);
         $needActiveCode1->setActive(false);
         $needActiveCode1->setValid(true);
@@ -123,15 +106,13 @@ class CodeFixtures extends Fixture implements DependentFixtureInterface
 
         $manager->persist($needActiveCode1);
 
-        // 创建锁定的券码 - 服装满减券
+        // 创建锁定的券码
         $lockedCode1 = new Code();
         $lockedCode1->setSn('LOCKED20240101006');
-        $lockedCode1->setCoupon($discount20Coupon);
-        $lockedCode1->setChannel($offlineChannel);
-        $lockedCode1->setGatherChannel($offlineChannel);
+        $lockedCode1->setCoupon($basicDiscountCoupon);
         $lockedCode1->setExpireTime(new \DateTime('+30 days'));
         $lockedCode1->setConsumeCount(1);
-        $lockedCode1->setRemark('锁定状态的券码');
+        $lockedCode1->setRemark('锁定状态的测试券码');
         $lockedCode1->setNeedActive(false);
         $lockedCode1->setActive(true);
         $lockedCode1->setValid(true);
@@ -140,13 +121,12 @@ class CodeFixtures extends Fixture implements DependentFixtureInterface
         $manager->persist($lockedCode1);
 
         // 批量创建更多测试券码
-        $this->createBatchCodes($manager, $discount20Coupon, $appChannel, 'BATCH20240101', 10);
-        $this->createBatchCodes($manager, $percent10Coupon, $wechatChannel, 'WECHAT20240101', 15);
-        $this->createBatchCodes($manager, $freeShippingCoupon, $alipayChannel, 'ALIPAY20240101', 20);
+        $this->createBatchCodes($manager, $basicDiscountCoupon, 'BATCH20240101', 10);
+        $this->createBatchCodes($manager, $needActiveCoupon, 'PERCENT20240101', 15);
+        $this->createBatchCodes($manager, $inactiveCoupon, 'SHIP20240101', 20);
 
         $manager->flush();
 
-        // 添加引用供其他Fixture使用
         $this->addReference(self::CODE_UNUSED_1, $unusedCode1);
         $this->addReference(self::CODE_UNUSED_2, $unusedCode2);
         $this->addReference(self::CODE_USED_1, $usedCode1);
@@ -155,35 +135,28 @@ class CodeFixtures extends Fixture implements DependentFixtureInterface
         $this->addReference(self::CODE_LOCKED_1, $lockedCode1);
     }
 
-    /**
-     * 批量创建券码的辅助方法
-     */
     private function createBatchCodes(
         ObjectManager $manager,
         Coupon $coupon,
-        Channel $channel,
         string $prefix,
-        int $count
+        int $count,
     ): void {
-        for ($i = 1; $i <= $count; $i++) {
+        for ($i = 1; $i <= $count; ++$i) {
             $code = new Code();
             $code->setSn(sprintf('%s%03d', $prefix, $i));
             $code->setCoupon($coupon);
-            $code->setChannel($channel);
-            $code->setGatherChannel($channel);
-            $code->setExpireTime(new \DateTime('+' . rand(7, 60) . ' days'));
+            $code->setExpireTime(new \DateTime('+' . (string) rand(7, 60) . ' days'));
             $code->setConsumeCount(1);
             $code->setRemark(sprintf('批量生成的测试券码 #%d', $i));
-            $code->setNeedActive(rand(0, 1) === 1);
-            $code->setActive(rand(0, 1) === 1);
+            $code->setNeedActive(1 === rand(0, 1));
+            $code->setActive(1 === rand(0, 1));
             $code->setValid(true);
             $code->setLocked(false);
 
-            // 随机设置一些券码为已使用状态
-            if (rand(1, 10) <= 3) { // 30% 概率已使用
-                $code->setGatherTime(new \DateTime('-' . rand(1, 10) . ' days'));
-                $code->setUseTime(new \DateTime('-' . rand(1, 5) . ' days'));
-                $code->setUseChannel($channel);
+            // 30% 概率设置为已使用状态
+            if (rand(1, 10) <= 3) {
+                $code->setGatherTime(new \DateTime('-' . (string) rand(1, 10) . ' days'));
+                $code->setUseTime(new \DateTime('-' . (string) rand(1, 5) . ' days'));
             }
 
             $manager->persist($code);
@@ -194,7 +167,11 @@ class CodeFixtures extends Fixture implements DependentFixtureInterface
     {
         return [
             CouponFixtures::class,
-            ChannelFixtures::class,
         ];
     }
-} 
+
+    public static function getGroups(): array
+    {
+        return ['coupon', 'test'];
+    }
+}

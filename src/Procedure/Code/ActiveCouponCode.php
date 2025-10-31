@@ -48,23 +48,24 @@ class ActiveCouponCode extends LockableProcedure
             'sn' => $this->code,
             'needActive' => true,
         ]);
-        if ($code === null) {
+        if (null === $code) {
             throw new ApiException('找不到券码');
         }
 
-        if (!$code->isNeedActive()) {
+        if (true !== (bool) $code->isNeedActive()) {
             throw new ApiException('该优惠券不需要激活');
         }
 
-        if ($code->isActive()) {
+        if (true === (bool) $code->isActive()) {
             throw new ApiException('该优惠券已激活，不要重复操作');
         }
 
         $code->setActive(true);
         $code->setActiveTime(CarbonImmutable::now());
         // 激活后要重新计算时间的喔
-        if ($code->getCoupon()->getActiveValidDay() !== null && $code->getCoupon()->getActiveValidDay() > 0) {
-            $code->setExpireTime(CarbonImmutable::now()->addDays($code->getCoupon()->getActiveValidDay()));
+        $coupon = $code->getCoupon();
+        if (null !== $coupon && null !== $coupon->getActiveValidDay() && $coupon->getActiveValidDay() > 0) {
+            $code->setExpireTime(CarbonImmutable::now()->addDays($coupon->getActiveValidDay()));
         }
         $this->entityManager->persist($code);
         $this->entityManager->flush();
@@ -77,6 +78,12 @@ class ActiveCouponCode extends LockableProcedure
 
     protected function getIdempotentCacheKey(JsonRpcRequest $request): ?string
     {
-        return 'ActiveCouponCode-cache-' . $request->getParams()->get('code');
+        $params = $request->getParams();
+        if (null === $params) {
+            return null;
+        }
+        $code = $params->get('code');
+
+        return 'ActiveCouponCode-cache-' . (is_scalar($code) ? (string) $code : '');
     }
 }

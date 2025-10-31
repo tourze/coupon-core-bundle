@@ -13,12 +13,12 @@ class CodeNotFoundEvent extends Event
     /**
      * @var string SN编码
      */
-    private string $sn;
+    private string $sn = '';
 
     /**
-     * @var UserInterface 要查找的用户
+     * @var UserInterface|null 要查找的用户
      */
-    private UserInterface $user;
+    private ?UserInterface $user = null;
 
     public function getSn(): string
     {
@@ -30,7 +30,7 @@ class CodeNotFoundEvent extends Event
         $this->sn = $sn;
     }
 
-    public function getUser(): UserInterface
+    public function getUser(): ?UserInterface
     {
         return $this->user;
     }
