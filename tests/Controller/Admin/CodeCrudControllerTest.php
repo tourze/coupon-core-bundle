@@ -90,8 +90,7 @@ final class CodeCrudControllerTest extends AbstractEasyAdminControllerTestCase
 
     public function testCodeListPageAccessWithAdminUser(): void
     {
-        $client = self::createClientWithDatabase();
-        $this->loginAsAdmin($client);
+        $client = self::createAuthenticatedClient();
 
         $response = $client->request('GET', '/admin/coupon/code');
         $this->assertSame(200, $client->getResponse()->getStatusCode());
@@ -102,8 +101,7 @@ final class CodeCrudControllerTest extends AbstractEasyAdminControllerTestCase
 
     public function testCodeSearchFunctionality(): void
     {
-        $client = self::createClientWithDatabase();
-        $this->loginAsAdmin($client);
+        $client = self::createAuthenticatedClient();
 
         $crawler = $client->request('GET', '/admin/coupon/code');
         $this->assertSame(200, $client->getResponse()->getStatusCode());
@@ -116,8 +114,7 @@ final class CodeCrudControllerTest extends AbstractEasyAdminControllerTestCase
 
     public function testCodeCreateFormAccess(): void
     {
-        $client = self::createClientWithDatabase();
-        $this->loginAsAdmin($client);
+        $client = self::createAuthenticatedClient();
 
         // CodeCrudController 禁用了 NEW action，现在会抛出异常
         $this->expectException(ForbiddenActionException::class);
@@ -128,8 +125,7 @@ final class CodeCrudControllerTest extends AbstractEasyAdminControllerTestCase
 
     public function testCodeCreateFormValidation(): void
     {
-        $client = self::createClientWithDatabase();
-        $this->loginAsAdmin($client);
+        $client = self::createAuthenticatedClient();
 
         // CodeCrudController 禁用了 NEW action，现在会抛出异常
         $this->expectException(ForbiddenActionException::class);
@@ -140,8 +136,7 @@ final class CodeCrudControllerTest extends AbstractEasyAdminControllerTestCase
 
     public function testCodeEntityFqcnConfiguration(): void
     {
-        $client = self::createClientWithDatabase();
-        $this->loginAsAdmin($client);
+        $client = self::createAuthenticatedClient();
 
         $client->request('GET', '/admin/coupon/code');
         $this->assertSame(200, $client->getResponse()->getStatusCode());

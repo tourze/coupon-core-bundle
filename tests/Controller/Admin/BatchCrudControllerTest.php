@@ -57,8 +57,7 @@ final class BatchCrudControllerTest extends AbstractEasyAdminControllerTestCase
 
     public function testBatchListPageAccessWithAdminUser(): void
     {
-        $client = self::createClientWithDatabase();
-        $this->loginAsAdmin($client);
+        $client = self::createAuthenticatedClient();
 
         // 测试页面访问
         $client->request('GET', '/admin/coupon/batch');
@@ -87,8 +86,7 @@ final class BatchCrudControllerTest extends AbstractEasyAdminControllerTestCase
 
     public function testBatchSearchFunctionality(): void
     {
-        $client = self::createClientWithDatabase();
-        $this->loginAsAdmin($client);
+        $client = self::createAuthenticatedClient();
 
         // 测试页面基本元素
         $crawler = $client->request('GET', '/admin/coupon/batch');
@@ -118,8 +116,7 @@ final class BatchCrudControllerTest extends AbstractEasyAdminControllerTestCase
 
     public function testBatchCreateFormAccess(): void
     {
-        $client = self::createClientWithDatabase();
-        $this->loginAsAdmin($client);
+        $client = self::createAuthenticatedClient();
 
         // 测试表单访问
         $crawler = $client->request('GET', '/admin/coupon/batch');
@@ -147,8 +144,7 @@ final class BatchCrudControllerTest extends AbstractEasyAdminControllerTestCase
 
     public function testBatchCreateFormValidation(): void
     {
-        $client = self::createClientWithDatabase();
-        $this->loginAsAdmin($client);
+        $client = self::createAuthenticatedClient();
 
         // 测试管理界面元素
         $crawler = $client->request('GET', '/admin/coupon/batch');
@@ -178,8 +174,7 @@ final class BatchCrudControllerTest extends AbstractEasyAdminControllerTestCase
 
     public function testBatchEntityFqcnConfiguration(): void
     {
-        $client = self::createClientWithDatabase();
-        $this->loginAsAdmin($client);
+        $client = self::createAuthenticatedClient();
 
         // 测试页面访问
         $client->request('GET', '/admin/coupon/batch');
@@ -210,8 +205,7 @@ final class BatchCrudControllerTest extends AbstractEasyAdminControllerTestCase
 
     public function testValidationErrors(): void
     {
-        $client = self::createClientWithDatabase();
-        $this->loginAsAdmin($client);
+        $client = self::createAuthenticatedClient();
 
         // 访问新建批次页面 - 使用EasyAdmin的URL格式
         $crawler = $client->request('GET', '/admin/coupon/batch/new');

@@ -84,8 +84,7 @@ final class CouponCrudControllerTest extends AbstractEasyAdminControllerTestCase
 
     public function testCouponListPageAccessWithAdminUser(): void
     {
-        $client = self::createClientWithDatabase();
-        $this->loginAsAdmin($client);
+        $client = self::createAuthenticatedClient();
 
         $client->request('GET', '/admin/coupon/coupon');
         $this->assertSame(200, $client->getResponse()->getStatusCode());
@@ -96,8 +95,7 @@ final class CouponCrudControllerTest extends AbstractEasyAdminControllerTestCase
 
     public function testCouponSearchFunctionality(): void
     {
-        $client = self::createClientWithDatabase();
-        $this->loginAsAdmin($client);
+        $client = self::createAuthenticatedClient();
 
         $crawler = $client->request('GET', '/admin/coupon/coupon');
         $this->assertSame(200, $client->getResponse()->getStatusCode());
@@ -109,8 +107,7 @@ final class CouponCrudControllerTest extends AbstractEasyAdminControllerTestCase
 
     public function testCouponCreateFormAccess(): void
     {
-        $client = self::createClientWithDatabase();
-        $this->loginAsAdmin($client);
+        $client = self::createAuthenticatedClient();
 
         $crawler = $client->request('GET', '/admin/coupon/coupon');
         $this->assertSame(200, $client->getResponse()->getStatusCode());
@@ -121,8 +118,7 @@ final class CouponCrudControllerTest extends AbstractEasyAdminControllerTestCase
 
     public function testCouponCreateFormValidation(): void
     {
-        $client = self::createClientWithDatabase();
-        $this->loginAsAdmin($client);
+        $client = self::createAuthenticatedClient();
 
         $crawler = $client->request('GET', '/admin/coupon/coupon');
         $this->assertSame(200, $client->getResponse()->getStatusCode());
@@ -134,8 +130,7 @@ final class CouponCrudControllerTest extends AbstractEasyAdminControllerTestCase
 
     public function testCouponEntityFqcnConfiguration(): void
     {
-        $client = self::createClientWithDatabase();
-        $this->loginAsAdmin($client);
+        $client = self::createAuthenticatedClient();
 
         $client->request('GET', '/admin/coupon/coupon');
         $this->assertSame(200, $client->getResponse()->getStatusCode());
@@ -148,8 +143,7 @@ final class CouponCrudControllerTest extends AbstractEasyAdminControllerTestCase
 
     public function testValidationErrors(): void
     {
-        $client = self::createClientWithDatabase();
-        $this->loginAsAdmin($client);
+        $client = self::createAuthenticatedClient();
 
         // 访问新建优惠券页面 - 使用EasyAdmin的URL格式
         $crawler = $client->request('GET', '/admin/coupon/coupon/new');

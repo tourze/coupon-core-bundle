@@ -52,8 +52,7 @@ final class CouponStatCrudControllerTest extends AbstractEasyAdminControllerTest
 
     public function testCouponStatListPageAccessWithAdminUser(): void
     {
-        $client = self::createClientWithDatabase();
-        $this->loginAsAdmin($client);
+        $client = self::createAuthenticatedClient();
 
         $client->request('GET', '/admin/coupon/couponstat');
         $this->assertSame(200, $client->getResponse()->getStatusCode());
@@ -64,8 +63,7 @@ final class CouponStatCrudControllerTest extends AbstractEasyAdminControllerTest
 
     public function testCouponStatSearchFunctionality(): void
     {
-        $client = self::createClientWithDatabase();
-        $this->loginAsAdmin($client);
+        $client = self::createAuthenticatedClient();
 
         $crawler = $client->request('GET', '/admin/coupon/couponstat');
         $this->assertSame(200, $client->getResponse()->getStatusCode());
@@ -77,8 +75,7 @@ final class CouponStatCrudControllerTest extends AbstractEasyAdminControllerTest
 
     public function testCouponStatCreateFormAccess(): void
     {
-        $client = self::createClientWithDatabase();
-        $this->loginAsAdmin($client);
+        $client = self::createAuthenticatedClient();
 
         // CouponStatCrudController 禁用了 NEW action，现在会抛出异常
         $this->expectException(ForbiddenActionException::class);
@@ -89,8 +86,7 @@ final class CouponStatCrudControllerTest extends AbstractEasyAdminControllerTest
 
     public function testCouponStatCreateFormValidation(): void
     {
-        $client = self::createClientWithDatabase();
-        $this->loginAsAdmin($client);
+        $client = self::createAuthenticatedClient();
 
         // CouponStatCrudController 禁用了 NEW action，现在会抛出异常
         $this->expectException(ForbiddenActionException::class);
@@ -101,8 +97,7 @@ final class CouponStatCrudControllerTest extends AbstractEasyAdminControllerTest
 
     public function testCouponStatEntityFqcnConfiguration(): void
     {
-        $client = self::createClientWithDatabase();
-        $this->loginAsAdmin($client);
+        $client = self::createAuthenticatedClient();
 
         $client->request('GET', '/admin/coupon/couponstat');
         $this->assertSame(200, $client->getResponse()->getStatusCode());
@@ -115,8 +110,7 @@ final class CouponStatCrudControllerTest extends AbstractEasyAdminControllerTest
 
     public function testValidationErrors(): void
     {
-        $client = self::createClientWithDatabase();
-        $this->loginAsAdmin($client);
+        $client = self::createAuthenticatedClient();
 
         // CouponStatCrudController 禁用了 NEW action，现在会抛出异常
         $this->expectException(ForbiddenActionException::class);
