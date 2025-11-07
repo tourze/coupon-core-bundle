@@ -4,6 +4,7 @@ namespace Tourze\CouponCoreBundle\Tests\ValueObject;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+use Tourze\CouponCoreBundle\Enum\CouponScopeType;
 use Tourze\CouponCoreBundle\Enum\CouponType;
 use Tourze\CouponCoreBundle\ValueObject\CouponBenefitVO;
 use Tourze\CouponCoreBundle\ValueObject\CouponConditionVO;
@@ -32,7 +33,7 @@ final class FullGiftCouponVOTest extends TestCase
             'gift',
             null,
             null,
-            new CouponScopeVO(),
+            new CouponScopeVO(CouponScopeType::ALL),
             $condition,
             new CouponBenefitVO(),
             []

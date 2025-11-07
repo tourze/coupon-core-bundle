@@ -14,7 +14,13 @@ final class CouponOrderItemTest extends TestCase
 {
     public function testAllocatedDiscount(): void
     {
-        $item = new CouponOrderItem('SKU1', 2, '10.00', true, null, null, '20.00');
+        // 使用命名参数确保subtotal正确传入第9个参数位置
+        $item = new CouponOrderItem(
+            skuId: 'SKU1',
+            quantity: 2,
+            unitPrice: '10.00',
+            subtotal: '20.00'
+        );
         $discounted = $item->withAllocatedDiscount('5.00');
 
         self::assertSame('15.00', $discounted->getSubtotal());

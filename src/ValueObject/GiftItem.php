@@ -8,7 +8,7 @@ namespace Tourze\CouponCoreBundle\ValueObject;
  * 赠品项目
  *
  * @psalm-type GiftArray = array{
- *     sku_id: int,
+ *     sku_id: string|int,
  *     gtin?: string|null,
  *     quantity: int,
  *     name?: string|null
@@ -17,14 +17,14 @@ namespace Tourze\CouponCoreBundle\ValueObject;
 class GiftItem
 {
     public function __construct(
-        private readonly int $skuId,
+        private readonly string $skuId,
         private readonly int $quantity,
         private readonly ?string $gtin = null,
         private readonly ?string $name = null,
     ) {
     }
 
-    public function getSkuId(): int
+    public function getSkuId(): string
     {
         return $this->skuId;
     }
@@ -49,11 +49,11 @@ class GiftItem
      */
     public static function fromArray(array $data): self
     {
-        $skuId = $data['sku_id'] ?? 0;
+        $skuId = $data['sku_id'] ?? '';
         $quantity = $data['quantity'] ?? 0;
 
         return new self(
-            is_scalar($skuId) ? (int) $skuId : 0,
+            is_scalar($skuId) ? (string) $skuId : '',
             is_scalar($quantity) ? max(0, (int) $quantity) : 0,
             isset($data['gtin']) && is_string($data['gtin']) ? $data['gtin'] : null,
             isset($data['name']) && is_string($data['name']) ? $data['name'] : null,
