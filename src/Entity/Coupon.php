@@ -15,6 +15,7 @@ use Tourze\Arrayable\AdminArrayInterface;
 use Tourze\Arrayable\ApiArrayInterface;
 use Tourze\CouponCommandBundle\Entity\CommandConfig;
 use Tourze\CouponContracts\CouponInterface;
+use Tourze\CouponCoreBundle\Enum\CouponType;
 use Tourze\CouponCoreBundle\Repository\CouponRepository;
 use Tourze\DoctrineIndexedBundle\Attribute\IndexColumn;
 use Tourze\DoctrineIpBundle\Traits\IpTraceableAware;
@@ -57,6 +58,17 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
     #[Assert\Length(max: 255)]
     #[ORM\Column(type: Types::STRING, length: 255, options: ['comment' => '名称'])]
     private ?string $name = null;
+
+    #[Assert\NotNull]
+    #[ORM\Column(type: Types::STRING, length: 64, options: ['comment' => '优惠券类型', 'default' => 'full_reduction'])]
+    private string $type = CouponType::FULL_REDUCTION->value;
+
+    /**
+     * @var array<string, mixed>
+     */
+    #[Assert\Type(type: 'array')]
+    #[ORM\Column(type: Types::JSON, nullable: true, options: ['comment' => '优惠券配置'])]
+    private array $configuration = [];
 
     #[Assert\PositiveOrZero]
     #[ORM\Column(type: Types::INTEGER, nullable: true, options: ['comment' => '领取后过期天数'])]
@@ -198,6 +210,32 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
     public function setName(string $name): void
     {
         $this->name = $name;
+    }
+
+    public function getType(): CouponType
+    {
+        return CouponType::tryFrom($this->type ?? CouponType::FULL_REDUCTION->value) ?? CouponType::FULL_REDUCTION;
+    }
+
+    public function setType(CouponType $type): void
+    {
+        $this->type = $type->value;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function getConfiguration(): array
+    {
+        return $this->configuration;
+    }
+
+    /**
+     * @param array<string, mixed> $configuration
+     */
+    public function setConfiguration(array $configuration): void
+    {
+        $this->configuration = $configuration;
     }
 
     public function getExpireDay(): ?int
@@ -363,6 +401,7 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
             'updateTime' => $this->getUpdateTime()?->format('Y-m-d H:i:s'),
             'valid' => $this->isValid(),
             'name' => $this->getName(),
+            'type' => $this->getType()->value,
             'expireDay' => $this->getExpireDay(),
             'iconImg' => $this->getIconImg(),
             'backImg' => $this->getBackImg(),
@@ -372,6 +411,7 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
             'useDesc' => $this->getUseDesc(),
             'startTime' => $this->getStartTime(),
             'endTime' => $this->getEndTime(),
+            'configuration' => $this->getConfiguration(),
         ];
     }
 
@@ -388,11 +428,13 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
             'endDateTime' => $this->getEndDateTime()?->format('Y-m-d H:i:s'),
             'sn' => $this->getSn(),
             'name' => $this->getName(),
+            'type' => $this->getType()->value,
             'expireDay' => $this->getExpireDay(),
             'iconImg' => $this->getIconImg(),
             'remark' => $this->getRemark(),
             'startTime' => $this->getStartTime(),
             'endTime' => $this->getEndTime(),
+            'configuration' => $this->getConfiguration(),
         ];
     }
 

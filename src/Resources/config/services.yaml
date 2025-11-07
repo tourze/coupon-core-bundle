@@ -14,9 +14,24 @@ services:
     resource: '../../Procedure/'
   Tourze\CouponCoreBundle\Repository\:
     resource: '../../Repository/'
-  Tourze\CouponCoreBundle\Service\:
-    resource: '../../Service/'
-    
+  # Helper services - 不应被标记为策略
+  Tourze\CouponCoreBundle\Service\Evaluator\Helper\DiscountAllocator: ~
+  Tourze\CouponCoreBundle\Service\Evaluator\Helper\GiftCalculator: ~
+  
+  # 评估策略 - 显式定义以确保正确标记
+  Tourze\CouponCoreBundle\Service\Evaluator\FullReductionEvaluator:
+    tags: ['coupon.evaluator.strategy']
+  Tourze\CouponCoreBundle\Service\Evaluator\FullGiftEvaluator:
+    tags: ['coupon.evaluator.strategy']
+  Tourze\CouponCoreBundle\Service\Evaluator\BuyGiftEvaluator:
+    tags: ['coupon.evaluator.strategy']
+  Tourze\CouponCoreBundle\Service\Evaluator\RedeemEvaluator:
+    tags: ['coupon.evaluator.strategy']
+
+  Tourze\CouponCoreBundle\Service\CouponEvaluator:
+    arguments:
+      $strategies: !tagged_iterator coupon.evaluator.strategy
+
   Tourze\CouponCoreBundle\Service\AdminMenu:
     tags:
       - { name: tourze.easy_admin_menu.provider }
@@ -24,3 +39,10 @@ services:
   # CouponCode library service
   CouponCode\CouponCode:
     autowire: true
+    
+  # 手动注册所有其他服务
+  Tourze\CouponCoreBundle\Service\CodeService: ~
+  Tourze\CouponCoreBundle\Service\CouponService: ~
+  Tourze\CouponCoreBundle\Service\CouponResourceProvider: ~
+  Tourze\CouponCoreBundle\Service\CouponVOFactory: ~
+  Tourze\CouponCoreBundle\Service\CouponUsageLogger: ~
