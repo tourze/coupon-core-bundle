@@ -79,7 +79,7 @@ class CouponBenefitVO
     }
 
     /**
-     * @param BenefitArray $data
+     * @param array<string, mixed> $data
      */
     public static function fromArray(array $data): self
     {
@@ -128,9 +128,11 @@ class CouponBenefitVO
     {
         $items = [];
         foreach (is_array($source) ? $source : [] as $gift) {
-            if (is_array($gift) && isset($gift['sku_id'], $gift['quantity'])) {
-                $items[] = GiftItem::fromArray($gift);
+            if (!is_array($gift) || !isset($gift['sku_id'], $gift['quantity'])) {
+                continue;
             }
+            /** @var array<string, mixed> $gift */
+            $items[] = GiftItem::fromArray($gift);
         }
 
         return $items;
@@ -144,9 +146,11 @@ class CouponBenefitVO
     {
         $items = [];
         foreach (is_array($source) ? $source : [] as $item) {
-            if (is_array($item) && isset($item['sku_id'], $item['quantity'])) {
-                $items[] = RedeemItem::fromArray($item);
+            if (!is_array($item) || !isset($item['sku_id'], $item['quantity'])) {
+                continue;
             }
+            /** @var array<string, mixed> $item */
+            $items[] = RedeemItem::fromArray($item);
         }
 
         return $items;
@@ -158,7 +162,17 @@ class CouponBenefitVO
      */
     private static function normalizeMetadata(mixed $metadata): array
     {
-        return is_array($metadata) ? $metadata : [];
+        if (!is_array($metadata)) {
+            return [];
+        }
+
+        // 确保所有键都是字符串
+        $normalized = [];
+        foreach ($metadata as $key => $value) {
+            $normalized[(string) $key] = $value;
+        }
+
+        return $normalized;
     }
 
     /**

@@ -61,7 +61,7 @@ class RedeemItem
     }
 
     /**
-     * @param RedeemArray $data
+     * @param array<string, mixed> $data
      */
     public static function fromArray(array $data): self
     {
@@ -71,9 +71,12 @@ class RedeemItem
         }
         /** @var numeric-string $unitPrice */
 
+        $skuId = $data['sku_id'] ?? '';
+        $quantity = $data['quantity'] ?? 0;
+
         return new self(
-            (string) ($data['sku_id'] ?? ''),
-            isset($data['quantity']) ? max(0, (int) $data['quantity']) : 0,
+            is_scalar($skuId) ? (string) $skuId : '',
+            is_scalar($quantity) ? max(0, (int) $quantity) : 0,
             $unitPrice,
             isset($data['name']) && is_string($data['name']) ? $data['name'] : null,
         );

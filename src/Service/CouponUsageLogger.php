@@ -40,7 +40,8 @@ class CouponUsageLogger
 
         $this->entityManager->persist($usage);
 
-        $allocationRule = (string) ($metadata['allocation_rule'] ?? '');
+        $allocationRuleValue = $metadata['allocation_rule'] ?? '';
+        $allocationRule = is_scalar($allocationRuleValue) ? (string) $allocationRuleValue : '';
         foreach ($allocations as $allocation) {
             if (!is_array($allocation)) {
                 continue;

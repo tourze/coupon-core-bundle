@@ -13,7 +13,6 @@ use Symfony\Component\Serializer\Attribute\Ignore;
 use Symfony\Component\Validator\Constraints as Assert;
 use Tourze\Arrayable\AdminArrayInterface;
 use Tourze\Arrayable\ApiArrayInterface;
-use Tourze\CouponCommandBundle\Entity\CommandConfig;
 use Tourze\CouponContracts\CouponInterface;
 use Tourze\CouponCoreBundle\Enum\CouponType;
 use Tourze\CouponCoreBundle\Repository\CouponRepository;
@@ -112,11 +111,6 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
     #[Ignore]
     #[ORM\OneToMany(targetEntity: Batch::class, mappedBy: 'coupon', cascade: ['persist'])]
     private Collection $batches;
-
-    #[Ignore]
-    #[ORM\OneToOne(targetEntity: CommandConfig::class, inversedBy: 'coupon')]
-    #[ORM\JoinColumn(name: 'command_config_id', referencedColumnName: 'id', nullable: true)]
-    private ?CommandConfig $commandConfig = null;
 
     #[Assert\Type(type: \DateTimeInterface::class)]
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '开始有效时间'])]
@@ -478,16 +472,6 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
     public function getResourceLabel(): string
     {
         return (string) $this->getName();
-    }
-
-    public function getCommandConfig(): ?CommandConfig
-    {
-        return $this->commandConfig;
-    }
-
-    public function setCommandConfig(?CommandConfig $commandConfig): void
-    {
-        $this->commandConfig = $commandConfig;
     }
 
     /**

@@ -184,49 +184,50 @@ class CouponScopeVO
     }
 
     /**
-     * @param ScopeArray $data
+     * @param array<string, mixed> $data
      */
     public static function fromArray(array $data): self
     {
-        $type = CouponScopeType::tryFrom((string) ($data['type'] ?? CouponScopeType::ALL->value)) ?? CouponScopeType::ALL;
+        $typeValue = $data['type'] ?? CouponScopeType::ALL->value;
+        $type = CouponScopeType::tryFrom(is_scalar($typeValue) ? (string) $typeValue : CouponScopeType::ALL->value) ?? CouponScopeType::ALL;
 
         $includedSkuIds = array_values(array_map(
-            static fn (string|int $value): string => (string) $value,
+            static fn (mixed $value): string => is_scalar($value) ? (string) $value : '',
             is_array($data['include_skus'] ?? null) ? $data['include_skus'] : []
         ));
 
         $excludedSkuIds = array_values(array_map(
-            static fn (string|int $value): string => (string) $value,
+            static fn (mixed $value): string => is_scalar($value) ? (string) $value : '',
             is_array($data['exclude_skus'] ?? null) ? $data['exclude_skus'] : []
         ));
 
         $includedSpuIds = array_values(array_map(
-            static fn (string|int $value): string => (string) $value,
+            static fn (mixed $value): string => is_scalar($value) ? (string) $value : '',
             is_array($data['include_spus'] ?? null) ? $data['include_spus'] : []
         ));
 
         $includedCategoryIds = array_values(array_map(
-            static fn (string|int $value): string => (string) $value,
+            static fn (mixed $value): string => is_scalar($value) ? (string) $value : '',
             is_array($data['include_categories'] ?? null) ? $data['include_categories'] : []
         ));
 
         $includedGtins = array_values(array_map(
-            static fn (string $value): string => $value,
+            static fn (mixed $value): string => is_scalar($value) ? (string) $value : '',
             is_array($data['include_gtins'] ?? null) ? $data['include_gtins'] : []
         ));
 
         $excludedGtins = array_values(array_map(
-            static fn (string $value): string => $value,
+            static fn (mixed $value): string => is_scalar($value) ? (string) $value : '',
             is_array($data['exclude_gtins'] ?? null) ? $data['exclude_gtins'] : []
         ));
 
         $includedSpuGtins = array_values(array_map(
-            static fn (string $value): string => $value,
+            static fn (mixed $value): string => is_scalar($value) ? (string) $value : '',
             is_array($data['include_spu_gtins'] ?? null) ? $data['include_spu_gtins'] : []
         ));
 
         $excludedSpuGtins = array_values(array_map(
-            static fn (string $value): string => $value,
+            static fn (mixed $value): string => is_scalar($value) ? (string) $value : '',
             is_array($data['exclude_spu_gtins'] ?? null) ? $data['exclude_spu_gtins'] : []
         ));
 

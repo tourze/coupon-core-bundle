@@ -45,13 +45,16 @@ class GiftItem
     }
 
     /**
-     * @param GiftArray $data
+     * @param array<string, mixed> $data
      */
     public static function fromArray(array $data): self
     {
+        $skuId = $data['sku_id'] ?? 0;
+        $quantity = $data['quantity'] ?? 0;
+
         return new self(
-            isset($data['sku_id']) ? (int) $data['sku_id'] : 0,
-            isset($data['quantity']) ? max(0, (int) $data['quantity']) : 0,
+            is_scalar($skuId) ? (int) $skuId : 0,
+            is_scalar($quantity) ? max(0, (int) $quantity) : 0,
             isset($data['gtin']) && is_string($data['gtin']) ? $data['gtin'] : null,
             isset($data['name']) && is_string($data['name']) ? $data['name'] : null,
         );

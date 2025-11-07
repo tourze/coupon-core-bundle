@@ -7,7 +7,6 @@ use Symfony\Bundle\SecurityBundle\SecurityBundle;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 use Tourze\BundleDependency\BundleDependencyInterface;
 use Tourze\ConditionSystemBundle\ConditionSystemBundle;
-use Tourze\CouponCommandBundle\CouponCommandBundle;
 use Tourze\DoctrineIndexedBundle\DoctrineIndexedBundle;
 use Tourze\DoctrineSnowflakeBundle\DoctrineSnowflakeBundle;
 use Tourze\DoctrineUserBundle\DoctrineUserBundle;
@@ -24,7 +23,6 @@ class CouponCoreBundle extends Bundle implements BundleDependencyInterface
         return [
             DoctrineBundle::class => ['all' => true],
             ConditionSystemBundle::class => ['all' => true],
-            CouponCommandBundle::class => ['all' => true],
             DoctrineSnowflakeBundle::class => ['all' => true],
             DoctrineIndexedBundle::class => ['all' => true],
             DoctrineUserBundle::class => ['all' => true],

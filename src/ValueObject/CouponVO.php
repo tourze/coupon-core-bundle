@@ -151,9 +151,15 @@ abstract class CouponVO
 
     private static function resolveType(mixed $type): CouponType
     {
-        $resolved = CouponType::tryFrom((string) ($type ?? CouponType::FULL_REDUCTION->value));
+        $typeValue = $type ?? CouponType::FULL_REDUCTION->value;
+        if (!is_string($typeValue) && !is_int($typeValue)) {
+            $typeValue = CouponType::FULL_REDUCTION->value;
+        }
+
+        $resolved = CouponType::tryFrom((string) $typeValue);
         if (null === $resolved) {
-            throw new \InvalidArgumentException('Unsupported coupon type: ' . ($type ?? ''));
+            $displayType = is_scalar($type) ? (string) $type : gettype($type);
+            throw new \InvalidArgumentException('Unsupported coupon type: ' . $displayType);
         }
 
         return $resolved;
@@ -174,6 +180,16 @@ abstract class CouponVO
      */
     private static function normalizeMetadata(mixed $metadata): array
     {
-        return is_array($metadata) ? $metadata : [];
+        if (!is_array($metadata)) {
+            return [];
+        }
+
+        // 确保所有键都是字符串
+        $normalized = [];
+        foreach ($metadata as $key => $value) {
+            $normalized[(string) $key] = $value;
+        }
+
+        return $normalized;
     }
 }

@@ -48,7 +48,9 @@ class CouponVOFactory
      */
     public function createFromArray(array $data): CouponVO
     {
-        $type = CouponType::tryFrom((string) ($data['type'] ?? CouponType::FULL_REDUCTION->value)) ?? CouponType::FULL_REDUCTION;
+        $typeValue = $data['type'] ?? CouponType::FULL_REDUCTION->value;
+        $typeString = is_scalar($typeValue) ? (string) $typeValue : CouponType::FULL_REDUCTION->value;
+        $type = CouponType::tryFrom($typeString) ?? CouponType::FULL_REDUCTION;
 
         /** @var array{code: string, type?: string, name?: string|null, valid_from?: string|null, valid_to?: string|null, scope?: array<string, mixed>, condition?: array<string, mixed>, benefit?: array<string, mixed>, metadata?: array<string, mixed>} $data */
         return match ($type) {

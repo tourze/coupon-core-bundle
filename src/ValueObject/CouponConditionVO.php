@@ -130,7 +130,7 @@ class CouponConditionVO
     }
 
     /**
-     * @param ConditionArray $data
+     * @param array<string, mixed> $data
      */
     public static function fromArray(array $data): self
     {
@@ -140,13 +140,17 @@ class CouponConditionVO
         $prioritySkuIds = self::normalizePrioritySkuIds($data['priority_skus'] ?? []);
         $requiredSpuIds = self::parseRequiredSpuIds($data['required_spu_ids'] ?? []);
 
+        $minQuantity = $data['min_quantity'] ?? 0;
+        $maxGifts = $data['max_gifts'] ?? 0;
+        $maxRedeemQuantity = $data['max_redeem_quantity'] ?? 0;
+
         return new self(
             $thresholdAmount,
-            isset($data['min_quantity']) ? max(0, (int) $data['min_quantity']) : 0,
+            is_scalar($minQuantity) ? max(0, (int) $minQuantity) : 0,
             $buyRequirements,
-            isset($data['max_gifts']) ? max(0, (int) $data['max_gifts']) : 0,
+            is_scalar($maxGifts) ? max(0, (int) $maxGifts) : 0,
             $tiers,
-            isset($data['max_redeem_quantity']) ? max(0, (int) $data['max_redeem_quantity']) : 0,
+            is_scalar($maxRedeemQuantity) ? max(0, (int) $maxRedeemQuantity) : 0,
             $prioritySkuIds,
             (bool) ($data['no_threshold'] ?? false),
             $requiredSpuIds
@@ -214,12 +218,17 @@ class CouponConditionVO
     {
         $requirements = [];
         foreach (is_array($source) ? $source : [] as $item) {
-            if (!is_array($item) || !isset($item['spu_id'], $item['quantity'])) {
+            if (!is_array($item) || !isset($item['sku_id'], $item['quantity'])) {
+                continue;
+            }
+            $skuId = $item['sku_id'];
+            $quantity = $item['quantity'];
+            if (!is_scalar($skuId) || !is_scalar($quantity)) {
                 continue;
             }
             $requirements[] = [
-                'spu_id' => (int) $item['spu_id'],
-                'quantity' => max(0, (int) $item['quantity']),
+                'sku_id' => (int) $skuId,
+                'quantity' => max(0, (int) $quantity),
             ];
         }
 
