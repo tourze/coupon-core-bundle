@@ -35,7 +35,8 @@ final class GetCouponCodeDetailTest extends AbstractProcedureTestCase
         $normalizer = self::getService(NormalizerInterface::class);
         $security = self::getService(Security::class);
         $procedure = self::getService(GetCouponCodeDetail::class);
-        $procedure->codeId = '123';
+        // 使用一个肯定不存在的ID来测试"找不到券码"的异常情况
+        $procedure->codeId = '999999999';
 
         $this->expectException(ApiException::class);
         $this->expectExceptionMessage('找不到券码');

@@ -18,6 +18,21 @@ use Tourze\PHPUnitSymfonyWebTest\AbstractEasyAdminControllerTestCase;
 #[RunTestsInSeparateProcesses]
 final class CouponCrudControllerTest extends AbstractEasyAdminControllerTestCase
 {
+    protected function afterEasyAdminSetUp(): void
+    {
+        parent::afterEasyAdminSetUp();
+
+        // 创建 ImageField 需要的上传目录
+        $container = self::getContainer();
+        $projectDir = $container->getParameter('kernel.project_dir');
+        self::assertIsString($projectDir);
+
+        $uploadDir = $projectDir . '/public/uploads';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+    }
+
     /**
      * @return CouponCrudController
      */

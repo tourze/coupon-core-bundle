@@ -103,7 +103,7 @@ class CouponOrderItem
         /** @var numeric-string $discountedSubtotal */
         $discountedSubtotal = $discountedSubtotal;
         $quantityString = sprintf('%.0f', $this->quantity);
-        /** @var numeric-string $quantityString */
+        /** @var lowercase-string&numeric-string $quantityString */
         $quantityString = $quantityString;
 
         $effectiveUnitPrice = $this->quantity > 0
@@ -139,7 +139,7 @@ class CouponOrderItem
         $unitPrice = $unitPrice;
 
         $multiplier = sprintf('%.0f', $quantity);
-        /** @var numeric-string $multiplier */
+        /** @var lowercase-string&numeric-string $multiplier */
         $multiplier = $multiplier;
 
         $subtotal = bcmul($unitPrice, $multiplier, 2);

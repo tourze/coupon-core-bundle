@@ -84,7 +84,8 @@ class CouponBenefitVO
     public static function fromArray(array $data): self
     {
         $discountAmount = self::normalizeAmountOrNull($data['discount_amount'] ?? null);
-        $allocation = AllocationRule::tryFrom((string) ($data['allocation'] ?? AllocationRule::PROPORTIONAL->value)) ?? AllocationRule::PROPORTIONAL;
+        $allocationValue = $data['allocation'] ?? AllocationRule::PROPORTIONAL->value;
+        $allocation = AllocationRule::tryFrom(is_scalar($allocationValue) ? (string) $allocationValue : AllocationRule::PROPORTIONAL->value) ?? AllocationRule::PROPORTIONAL;
         $giftItems = self::parseGiftItems($data['gifts'] ?? []);
         $redeemItems = self::parseRedeemItems($data['redeem_items'] ?? []);
         $markOrderPaid = isset($data['mark_paid']) ? (bool) $data['mark_paid'] : false;

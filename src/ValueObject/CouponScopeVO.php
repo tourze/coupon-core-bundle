@@ -191,57 +191,35 @@ class CouponScopeVO
         $typeValue = $data['type'] ?? CouponScopeType::ALL->value;
         $type = CouponScopeType::tryFrom(is_scalar($typeValue) ? (string) $typeValue : CouponScopeType::ALL->value) ?? CouponScopeType::ALL;
 
-        $includedSkuIds = array_values(array_map(
-            static fn (mixed $value): string => is_scalar($value) ? (string) $value : '',
-            is_array($data['include_skus'] ?? null) ? $data['include_skus'] : []
-        ));
-
-        $excludedSkuIds = array_values(array_map(
-            static fn (mixed $value): string => is_scalar($value) ? (string) $value : '',
-            is_array($data['exclude_skus'] ?? null) ? $data['exclude_skus'] : []
-        ));
-
-        $includedSpuIds = array_values(array_map(
-            static fn (mixed $value): string => is_scalar($value) ? (string) $value : '',
-            is_array($data['include_spus'] ?? null) ? $data['include_spus'] : []
-        ));
-
-        $includedCategoryIds = array_values(array_map(
-            static fn (mixed $value): string => is_scalar($value) ? (string) $value : '',
-            is_array($data['include_categories'] ?? null) ? $data['include_categories'] : []
-        ));
-
-        $includedGtins = array_values(array_map(
-            static fn (mixed $value): string => is_scalar($value) ? (string) $value : '',
-            is_array($data['include_gtins'] ?? null) ? $data['include_gtins'] : []
-        ));
-
-        $excludedGtins = array_values(array_map(
-            static fn (mixed $value): string => is_scalar($value) ? (string) $value : '',
-            is_array($data['exclude_gtins'] ?? null) ? $data['exclude_gtins'] : []
-        ));
-
-        $includedSpuGtins = array_values(array_map(
-            static fn (mixed $value): string => is_scalar($value) ? (string) $value : '',
-            is_array($data['include_spu_gtins'] ?? null) ? $data['include_spu_gtins'] : []
-        ));
-
-        $excludedSpuGtins = array_values(array_map(
-            static fn (mixed $value): string => is_scalar($value) ? (string) $value : '',
-            is_array($data['exclude_spu_gtins'] ?? null) ? $data['exclude_spu_gtins'] : []
-        ));
-
         return new self(
             $type,
-            $includedSkuIds,
-            $excludedSkuIds,
-            $includedSpuIds,
-            $includedCategoryIds,
-            $includedGtins,
-            $excludedGtins,
-            $includedSpuGtins,
-            $excludedSpuGtins
+            self::normalizeStringList($data['include_skus'] ?? null),
+            self::normalizeStringList($data['exclude_skus'] ?? null),
+            self::normalizeStringList($data['include_spus'] ?? null),
+            self::normalizeStringList($data['include_categories'] ?? null),
+            self::normalizeStringList($data['include_gtins'] ?? null),
+            self::normalizeStringList($data['exclude_gtins'] ?? null),
+            self::normalizeStringList($data['include_spu_gtins'] ?? null),
+            self::normalizeStringList($data['exclude_spu_gtins'] ?? null)
         );
+    }
+
+    /**
+     * 将混合类型的数组标准化为字符串列表
+     *
+     * @param mixed $source
+     * @return list<string>
+     */
+    private static function normalizeStringList(mixed $source): array
+    {
+        if (!is_array($source)) {
+            return [];
+        }
+
+        return array_values(array_map(
+            static fn (mixed $value): string => is_scalar($value) ? (string) $value : '',
+            $source
+        ));
     }
 
     /**

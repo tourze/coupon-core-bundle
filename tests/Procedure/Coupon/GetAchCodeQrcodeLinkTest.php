@@ -29,7 +29,8 @@ final class GetAchCodeQrcodeLinkTest extends AbstractProcedureTestCase
     public function testExecuteWithInvalidCodeId(): void
     {
         $procedure = self::getService(GetAchCodeQrcodeLink::class);
-        $procedure->codeId = 123;
+        // 使用一个肯定不存在的ID来测试"找不到优惠券码"的异常情况
+        $procedure->codeId = 999999999;
 
         $this->expectException(ApiException::class);
         $this->expectExceptionMessage('找不到优惠券码');
@@ -40,7 +41,8 @@ final class GetAchCodeQrcodeLinkTest extends AbstractProcedureTestCase
     public function testExecuteWithValidCodeId(): void
     {
         $procedure = self::getService(GetAchCodeQrcodeLink::class);
-        $procedure->codeId = 123;
+        // 使用一个肯定不存在的ID来测试"找不到优惠券码"的异常情况
+        $procedure->codeId = 999999999;
 
         // 测试无效券码的场景
         $this->expectException(ApiException::class);
