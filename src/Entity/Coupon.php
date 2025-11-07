@@ -40,7 +40,7 @@ class Coupon implements \Stringable, Itemable, AdminArrayInterface, ApiArrayInte
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: Types::INTEGER, options: ['comment' => 'ID'])]
-    private ?int $id = null; // @phpstan-ignore-line property.unusedType Doctrine sets this
+    private ?int $id = null;
 
     #[SnowflakeColumn]
     #[Assert\Length(max: 100)]

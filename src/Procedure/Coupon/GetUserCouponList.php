@@ -23,10 +23,6 @@ class GetUserCouponList extends BaseProcedure
 {
     use PaginatorTrait;
 
-    /**
-     * @var array<int, int>
-     * @phpstan-ignore-next-line missingType.iterableValue
-     */
     #[MethodParam(description: '指定优惠券ID列表')]
     public array $couponIds = [];
 

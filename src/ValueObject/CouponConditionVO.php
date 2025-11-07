@@ -244,7 +244,6 @@ class CouponConditionVO
         $tiers = [];
         foreach (is_array($source) ? $source : [] as $tier) {
             if (is_array($tier) && isset($tier['threshold_amount'])) {
-                // @phpstan-ignore-next-line argument.type (FullGiftTier::fromArray handles validation internally)
                 $tiers[] = FullGiftTier::fromArray($tier);
             }
         }
