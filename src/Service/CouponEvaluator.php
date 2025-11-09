@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tourze\CouponCoreBundle\Service;
 
+use Monolog\Attribute\WithMonologChannel;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -13,14 +14,15 @@ use Tourze\CouponCoreBundle\ValueObject\CouponApplicationResult;
 use Tourze\CouponCoreBundle\ValueObject\CouponEvaluationContext;
 use Tourze\CouponCoreBundle\ValueObject\CouponVO;
 
-class CouponEvaluator
+#[WithMonologChannel(channel: 'coupon_core')]
+readonly class CouponEvaluator
 {
     /**
      * @param iterable<CouponEvaluationStrategyInterface> $strategies
      */
     public function __construct(
-        #[TaggedIterator('coupon.evaluator.strategy')] private readonly iterable $strategies,
-        private readonly ?LoggerInterface $logger = null,
+        #[TaggedIterator('coupon.evaluator.strategy')] private iterable $strategies,
+        private ?LoggerInterface $logger = null,
     ) {
     }
 
