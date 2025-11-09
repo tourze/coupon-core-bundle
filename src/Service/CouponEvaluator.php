@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tourze\CouponCoreBundle\Service;
 
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Tourze\CouponCoreBundle\Exception\CouponEvaluationException;
 use Tourze\CouponCoreBundle\Service\Evaluator\CouponEvaluationStrategyInterface;
@@ -18,7 +19,7 @@ class CouponEvaluator
      * @param iterable<CouponEvaluationStrategyInterface> $strategies
      */
     public function __construct(
-        private readonly iterable $strategies,
+        #[TaggedIterator('coupon.evaluator.strategy')] private readonly iterable $strategies,
         private readonly ?LoggerInterface $logger = null,
     ) {
     }

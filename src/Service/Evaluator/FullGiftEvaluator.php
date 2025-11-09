@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tourze\CouponCoreBundle\Service\Evaluator;
 
+use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use Tourze\CouponCoreBundle\Exception\CouponEvaluationException;
 use Tourze\CouponCoreBundle\Service\Evaluator\Helper\GiftCalculator;
 use Tourze\CouponCoreBundle\ValueObject\CouponApplicationResult;
@@ -15,9 +16,10 @@ use Tourze\CouponCoreBundle\ValueObject\FullGiftTier;
 /**
  * @internal
  */
-class FullGiftEvaluator implements CouponEvaluationStrategyInterface
+#[AutoconfigureTag(name: 'coupon.evaluator.strategy')]
+readonly class FullGiftEvaluator implements CouponEvaluationStrategyInterface
 {
-    public function __construct(private readonly GiftCalculator $giftCalculator)
+    public function __construct(private GiftCalculator $giftCalculator)
     {
     }
 

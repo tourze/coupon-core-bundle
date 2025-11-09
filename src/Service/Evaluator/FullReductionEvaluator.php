@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tourze\CouponCoreBundle\Service\Evaluator;
 
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use Tourze\CouponCoreBundle\Enum\AllocationRule;
 use Tourze\CouponCoreBundle\Exception\CouponEvaluationException;
 use Tourze\CouponCoreBundle\Service\Evaluator\Helper\DiscountAllocator;
@@ -17,11 +18,12 @@ use Tourze\CouponCoreBundle\ValueObject\FullReductionCouponVO;
 /**
  * @internal
  */
-class FullReductionEvaluator implements CouponEvaluationStrategyInterface
+#[AutoconfigureTag(name: 'coupon.evaluator.strategy')]
+readonly class FullReductionEvaluator implements CouponEvaluationStrategyInterface
 {
     public function __construct(
-        private readonly DiscountAllocator $allocator,
-        private readonly LoggerInterface $logger,
+        private DiscountAllocator $allocator,
+        private LoggerInterface $logger,
     ) {
     }
 

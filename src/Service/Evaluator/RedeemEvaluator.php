@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tourze\CouponCoreBundle\Service\Evaluator;
 
+use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use Tourze\CouponCoreBundle\Exception\CouponEvaluationException;
 use Tourze\CouponCoreBundle\ValueObject\CouponApplicationResult;
 use Tourze\CouponCoreBundle\ValueObject\CouponEvaluationContext;
@@ -13,6 +14,7 @@ use Tourze\CouponCoreBundle\ValueObject\RedeemCouponVO;
 /**
  * @internal
  */
+#[AutoconfigureTag(name: 'coupon.evaluator.strategy')]
 class RedeemEvaluator implements CouponEvaluationStrategyInterface
 {
     public function supports(CouponVO $coupon): bool
