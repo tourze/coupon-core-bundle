@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tourze\CouponCoreBundle\Service\Evaluator;
 
+use Monolog\Attribute\WithMonologChannel;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use Tourze\CouponCoreBundle\Enum\AllocationRule;
@@ -19,6 +20,7 @@ use Tourze\CouponCoreBundle\ValueObject\FullReductionCouponVO;
  * @internal
  */
 #[AutoconfigureTag(name: 'coupon.evaluator.strategy')]
+#[WithMonologChannel(channel: 'coupon_core')]
 readonly class FullReductionEvaluator implements CouponEvaluationStrategyInterface
 {
     public function __construct(
