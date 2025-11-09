@@ -7,7 +7,6 @@ namespace Tourze\CouponCoreBundle\Service\Evaluator;
 use Monolog\Attribute\WithMonologChannel;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
-use Tourze\CouponCoreBundle\Enum\AllocationRule;
 use Tourze\CouponCoreBundle\Exception\CouponEvaluationException;
 use Tourze\CouponCoreBundle\Service\Evaluator\Helper\DiscountAllocator;
 use Tourze\CouponCoreBundle\ValueObject\CouponApplicationResult;

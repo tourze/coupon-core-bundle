@@ -21,7 +21,7 @@ use Tourze\JsonRPCLogBundle\Attribute\Log;
 #[IsGranted(attribute: 'IS_AUTHENTICATED_FULLY')]
 #[MethodExpose(method: 'RedeemCoupon')]
 #[Log]
-#[WithMonologChannel(channel: 'procedure')]
+#[WithMonologChannel(channel: 'coupon_core')]
 class RedeemCoupon extends LockableProcedure
 {
     /**
