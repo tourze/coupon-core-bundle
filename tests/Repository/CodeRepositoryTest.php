@@ -5,7 +5,6 @@ namespace Tourze\CouponCoreBundle\Tests\Repository;
 use Doctrine\ORM\QueryBuilder;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
-use Symfony\Component\Security\Core\User\UserInterface;
 use Tourze\CouponCoreBundle\Entity\Code;
 use Tourze\CouponCoreBundle\Entity\Coupon;
 use Tourze\CouponCoreBundle\Repository\CodeRepository;
@@ -27,11 +26,11 @@ final class CodeRepositoryTest extends AbstractRepositoryTestCase
     public function testCreateUserCouponCodesQueryBuilder(): void
     {
         $repository = self::getService(CodeRepository::class);
-        // 使用Mock的理由：
-        // 理由 1: UserInterface 是 Symfony Security 组件的外部接口，允许Mock
-        // 理由 2: 测试需要验证 Repository 方法如何处理用户参数
-        // 理由 3: 使用 Mock 可以避免创建真实的用户实体和数据库交互
-        $user = $this->createMock(UserInterface::class);
+        // 使用 UserManagerInterface 创建真实用户
+        // 理由 1: 与项目其他测试保持一致（如 testSaveAndRemove、testFindByOwner 等）
+        // 理由 2: 使用真实用户实体能更准确地测试 Repository 行为
+        // 理由 3: 符合项目统一使用 UserManagerInterface 的规范
+        $user = $this->createNormalUser('test-query-builder@example.com', 'password123');
 
         // 测试基本用法（无筛选条件）
         $queryBuilder = $repository->createUserCouponCodesQueryBuilder($user);
