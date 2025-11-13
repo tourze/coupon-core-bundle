@@ -3,30 +3,32 @@
 namespace Tourze\CouponCoreBundle\Tests\Entity;
 
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\TestCase;
 use Tourze\CouponCoreBundle\Entity\CouponAllocationDetail;
+use Tourze\PHPUnitDoctrineEntity\AbstractEntityTestCase;
 
 /**
  * @internal
  */
 #[CoversClass(CouponAllocationDetail::class)]
-final class CouponAllocationDetailTest extends TestCase
+final class CouponAllocationDetailTest extends AbstractEntityTestCase
 {
-    public function testSetterGetter(): void
+    protected function createEntity(): object
     {
-        $detail = new CouponAllocationDetail();
-        $detail->setCouponCode('CODE');
-        $detail->setOrderId(1);
-        $detail->setOrderProductId(2);
-        $detail->setSkuId('SKU1');
-        $detail->setAllocatedAmount('5.00');
-        $detail->setAllocationRule('proportional');
+        return new CouponAllocationDetail();
+    }
 
-        self::assertSame('CODE', $detail->getCouponCode());
-        self::assertSame(1, $detail->getOrderId());
-        self::assertSame(2, $detail->getOrderProductId());
-        self::assertSame('SKU1', $detail->getSkuId());
-        self::assertSame('5.00', $detail->getAllocatedAmount());
-        self::assertSame('proportional', $detail->getAllocationRule());
+    /**
+     * 提供属性及其样本值的 Data Provider.
+     *
+     * @return iterable<array{0: string, 1: mixed}>
+     */
+    public static function propertiesProvider(): iterable
+    {
+        yield 'couponCode' => ['couponCode', 'CODE'];
+        yield 'orderId' => ['orderId', 1];
+        yield 'orderProductId' => ['orderProductId', 2];
+        yield 'skuId' => ['skuId', 'SKU1'];
+        yield 'allocatedAmount' => ['allocatedAmount', '5.00'];
+        yield 'allocationRule' => ['allocationRule', 'proportional'];
     }
 }

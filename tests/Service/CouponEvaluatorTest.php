@@ -3,9 +3,10 @@
 namespace Tourze\CouponCoreBundle\Tests\Service;
 
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 use Tourze\CouponCoreBundle\Enum\CouponType;
 use Tourze\CouponCoreBundle\Service\CouponEvaluator;
+use Tourze\PHPUnitSymfonyKernelTest\AbstractIntegrationTestCase;
 use Tourze\CouponCoreBundle\Service\Evaluator\BuyGiftEvaluator;
 use Tourze\CouponCoreBundle\Service\Evaluator\FullGiftEvaluator;
 use Tourze\CouponCoreBundle\Service\Evaluator\FullReductionEvaluator;
@@ -25,8 +26,15 @@ use Tourze\CouponCoreBundle\ValueObject\FullReductionCouponVO;
  * @internal
  */
 #[CoversClass(CouponEvaluator::class)]
-final class CouponEvaluatorTest extends TestCase
+#[RunTestsInSeparateProcesses]
+final class CouponEvaluatorTest extends AbstractIntegrationTestCase
 {
+    protected function onSetUp(): void
+    {
+        // 集成测试的设置逻辑已由父类 AbstractIntegrationTestCase 处理
+        // 这里不需要额外的设置，因为所有必需的依赖都已通过继承获得
+    }
+
     public function testEvaluateFullReduction(): void
     {
         $coupon = new FullReductionCouponVO(
@@ -45,14 +53,7 @@ final class CouponEvaluatorTest extends TestCase
             [new CouponOrderItem('SKU1', 1, '60.00', true, null, null, null, null, '60.00')]
         );
 
-        $allocator = new DiscountAllocator();
-        $giftCalculator = new GiftCalculator();
-        $evaluator = new CouponEvaluator([
-            new FullReductionEvaluator($allocator, new NullLogger()),
-            new FullGiftEvaluator($giftCalculator),
-            new RedeemEvaluator(),
-            new BuyGiftEvaluator($giftCalculator),
-        ]);
+        $evaluator = self::getService(CouponEvaluator::class);
         $result = $evaluator->evaluate($coupon, $context);
 
         self::assertSame('10.00', $result->getDiscountAmount());

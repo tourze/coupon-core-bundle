@@ -23,7 +23,7 @@ final class CouponUsageLoggerTest extends TestCase
 
         $em->expects(self::exactly(1 + 1))
             ->method('persist')
-            ->with($this->callback(static function (object $entity): bool {
+            ->with(self::callback(static function (object $entity): bool {
                 return $entity instanceof CouponUsageLog || $entity instanceof CouponAllocationDetail;
             }));
 

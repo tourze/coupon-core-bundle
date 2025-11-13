@@ -3,30 +3,34 @@
 namespace Tourze\CouponCoreBundle\Tests\Entity;
 
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\TestCase;
 use Tourze\CouponCoreBundle\Entity\CouponUsageLog;
+use Tourze\PHPUnitDoctrineEntity\AbstractEntityTestCase;
 
 /**
  * @internal
  */
 #[CoversClass(CouponUsageLog::class)]
-final class CouponUsageLogTest extends TestCase
+final class CouponUsageLogTest extends AbstractEntityTestCase
 {
-    public function testSetterGetter(): void
+    protected function createEntity(): object
     {
-        $log = new CouponUsageLog();
-        $log->setCouponCode('CODE');
-        $log->setUserIdentifier('user');
-        $log->setOrderId(1);
-        $log->setOrderNumber('NO');
-        $log->setDiscountAmount('10.00');
-        $log->setCouponType('full_reduction');
+        return new CouponUsageLog();
+    }
 
-        self::assertSame('CODE', $log->getCouponCode());
-        self::assertSame('user', $log->getUserIdentifier());
-        self::assertSame(1, $log->getOrderId());
-        self::assertSame('NO', $log->getOrderNumber());
-        self::assertSame('10.00', $log->getDiscountAmount());
-        self::assertSame('full_reduction', $log->getCouponType());
+    /**
+     * 提供属性及其样本值的 Data Provider.
+     *
+     * @return iterable<array{0: string, 1: mixed}>
+     */
+    public static function propertiesProvider(): iterable
+    {
+        yield 'couponCode' => ['couponCode', 'CODE'];
+        yield 'userIdentifier' => ['userIdentifier', 'user'];
+        yield 'orderId' => ['orderId', 1];
+        yield 'orderNumber' => ['orderNumber', 'NO'];
+        yield 'usageTime' => ['usageTime', new \DateTimeImmutable()];
+        yield 'discountAmount' => ['discountAmount', '10.00'];
+        yield 'couponType' => ['couponType', 'full_reduction'];
+        yield 'metadata' => ['metadata', ['key' => 'value']];
     }
 }

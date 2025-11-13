@@ -3,14 +3,14 @@
 namespace Tourze\CouponCoreBundle\Tests\Exception;
 
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\TestCase;
 use Tourze\CouponCoreBundle\Exception\CouponEvaluationException;
+use Tourze\PHPUnitBase\AbstractExceptionTestCase;
 
 /**
  * @internal
  */
 #[CoversClass(CouponEvaluationException::class)]
-final class CouponEvaluationExceptionTest extends TestCase
+final class CouponEvaluationExceptionTest extends AbstractExceptionTestCase
 {
     public function testExceptionMessage(): void
     {

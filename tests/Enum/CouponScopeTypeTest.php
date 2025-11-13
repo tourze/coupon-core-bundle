@@ -19,4 +19,13 @@ final class CouponScopeTypeTest extends AbstractEnumTestCase
         self::assertSame('指定SPU', CouponScopeType::SPU->getLabel());
         self::assertSame('指定品类', CouponScopeType::CATEGORY->getLabel());
     }
+
+    public function testToArray(): void
+    {
+        // Verify toArray() is called on each case
+        self::assertSame(['value' => 'all', 'label' => '全场商品'], CouponScopeType::ALL->toArray());
+        self::assertSame(['value' => 'sku', 'label' => '指定SKU'], CouponScopeType::SKU->toArray());
+        self::assertSame(['value' => 'spu', 'label' => '指定SPU'], CouponScopeType::SPU->toArray());
+        self::assertSame(['value' => 'category', 'label' => '指定品类'], CouponScopeType::CATEGORY->toArray());
+    }
 }

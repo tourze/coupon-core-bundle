@@ -9,7 +9,7 @@ namespace Tourze\CouponCoreBundle\ValueObject;
  *
  * @psalm-type TierArray = array{
  *     threshold_amount: string|float|int,
- *     gifts: array<int, array{sku_id: int, gtin?: string, quantity: int, name?: string|null}>
+ *     gifts: array<int, array{sku_id: string|int, gtin?: string, quantity: int, name?: string|null}>
  * }
  */
 class FullGiftTier

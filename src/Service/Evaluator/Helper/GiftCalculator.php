@@ -43,7 +43,7 @@ class GiftCalculator
 
     /**
      * @param list<CouponOrderItem> $eligibleItems
-     * @param list<array{sku_id?: int, spu_id?: int, quantity: int}> $requirements
+     * @param list<array{sku_id?: string|int, spu_id?: string|int, quantity: int}> $requirements
      */
     public function calculateBuyGiftSets(array $eligibleItems, array $requirements): int
     {
@@ -57,7 +57,7 @@ class GiftCalculator
     /**
      * 检测是否应该使用 SPU 级别的对比
      *
-     * @param list<array{sku_id?: int, spu_id?: int, quantity: int}> $requirements
+     * @param list<array{sku_id?: string|int, spu_id?: string|int, quantity: int}> $requirements
      */
     private function shouldUseSpuLevel(array $requirements): bool
     {
@@ -93,7 +93,7 @@ class GiftCalculator
     /**
      * 计算最小满足套数
      *
-     * @param list<array{sku_id?: int, spu_id?: int, quantity: int}> $requirements
+     * @param list<array{sku_id?: string|int, spu_id?: string|int, quantity: int}> $requirements
      * @param array<string, int> $quantityByProductId
      */
     private function calculateMinSets(array $requirements, array $quantityByProductId, bool $useSpuLevel): int

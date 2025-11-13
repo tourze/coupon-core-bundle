@@ -24,7 +24,7 @@ use Tourze\CouponCoreBundle\Enum\CouponType;
 class BuyGiftCouponVO extends CouponVO
 {
     /**
-     * @param list<array{sku_id: int, quantity: int}> $buyRequirements
+     * @param list<array{sku_id: string|int, quantity: int}> $buyRequirements
      * @param list<GiftItem> $giftItems
      */
     public function __construct(
@@ -55,7 +55,7 @@ class BuyGiftCouponVO extends CouponVO
     }
 
     /**
-     * @return list<array{sku_id: int, quantity: int}>
+     * @return list<array{sku_id: string|int, quantity: int}>
      */
     public function getBuyRequirements(): array
     {

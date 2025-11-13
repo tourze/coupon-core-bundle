@@ -30,7 +30,7 @@ final class CodeRepositoryTest extends AbstractRepositoryTestCase
         // 理由 1: 与项目其他测试保持一致（如 testSaveAndRemove、testFindByOwner 等）
         // 理由 2: 使用真实用户实体能更准确地测试 Repository 行为
         // 理由 3: 符合项目统一使用 UserManagerInterface 的规范
-        $user = $this->createNormalUser('test-query-builder@example.com', 'password123');
+        $user = $this->createDoctrineTestUser('test-query-builder@example.com', 'password123');
 
         // 测试基本用法（无筛选条件）
         $queryBuilder = $repository->createUserCouponCodesQueryBuilder($user);
@@ -65,6 +65,68 @@ final class CodeRepositoryTest extends AbstractRepositoryTestCase
         // 这里不需要额外的设置，因为所有必需的依赖都已通过继承获得
     }
 
+    /**
+     * 声明测试需要的接口实体映射
+     *
+     * 由于 Code 实体的 owner 属性关联到 UserInterface，
+     * 需要告诉测试框架生成对应的测试实体类，
+     * 以确保 Doctrine 能正确处理关联关系。
+     *
+     * @return array<class-string>
+     */
+    protected function getRequiredInterfaces(): array
+    {
+        return [\Symfony\Component\Security\Core\User\UserInterface::class];
+    }
+
+    /**
+     * 创建可被Doctrine持久化的测试用户实体
+     *
+     * 由于框架中的 createNormalUser 返回的是 InMemoryUser，
+     * 而 Code 实体需要真正的 Doctrine 实体，所以需要这个辅助方法。
+     */
+    private function createDoctrineTestUser(string $username, string $password): \Symfony\Component\Security\Core\User\UserInterface
+    {
+        // 查找已存在的用户或创建新用户
+        $em = self::getEntityManager();
+
+        // 检查是否存在动态生成的用户实体类
+        $userEntityClass = null;
+        foreach (get_declared_classes() as $class) {
+            if (str_contains($class, 'TestUserInterface') && str_contains($class, 'DoctrineResolveTargetForTest')) {
+                $userEntityClass = $class;
+                break;
+            }
+        }
+
+        if (null === $userEntityClass) {
+            // 如果没有找到动态生成的实体类，回退到InMemoryUser
+            // 虽然会导致测试失败，但至少能提供清晰的错误信息
+            return $this->createNormalUser($username, $password);
+        }
+
+        // 创建实体实例
+        $user = new $userEntityClass();
+
+        // 设置基本属性
+        if (method_exists($user, 'setUserIdentifier')) {
+            $user->setUserIdentifier($username);
+        }
+        if (method_exists($user, 'setPassword')) {
+            $user->setPassword($password);
+        }
+        if (method_exists($user, 'setRoles')) {
+            $user->setRoles(['ROLE_USER']);
+        }
+
+        // 持久化用户
+        $em->persist($user);
+        $em->flush();
+
+        self::assertInstanceOf(\Symfony\Component\Security\Core\User\UserInterface::class, $user);
+        return $user;
+    }
+
     protected function getRepository(): CodeRepository
     {
         return self::getService(CodeRepository::class);
@@ -77,7 +139,7 @@ final class CodeRepositoryTest extends AbstractRepositoryTestCase
         $coupon->setValid(true);
         $coupon->setExpireDay(30);
 
-        $user = $this->createNormalUser('test@example.com', 'password123');
+        $user = $this->createDoctrineTestUser('test@example.com', 'password123');
 
         $code = new Code();
         $code->setCoupon($coupon);
@@ -105,7 +167,7 @@ final class CodeRepositoryTest extends AbstractRepositoryTestCase
         $em->persist($coupon);
 
         // 创建一个用户
-        $user = $this->createNormalUser('test@example.com', 'password123');
+        $user = $this->createDoctrineTestUser('test@example.com', 'password123');
 
         // 创建新的Code实体
         $code = new Code();
@@ -153,7 +215,7 @@ final class CodeRepositoryTest extends AbstractRepositoryTestCase
         $em->persist($coupon);
 
         // 创建一个用户
-        $user = $this->createNormalUser('test@example.com', 'password123');
+        $user = $this->createDoctrineTestUser('test@example.com', 'password123');
 
         // 创建多个Code实体
         $code1 = new Code();
@@ -196,7 +258,7 @@ final class CodeRepositoryTest extends AbstractRepositoryTestCase
         $em->persist($coupon);
 
         // 创建一个用户
-        $user = $this->createNormalUser('test@example.com', 'password123');
+        $user = $this->createDoctrineTestUser('test@example.com', 'password123');
 
         // 创建Code实体
         $code = new Code();
@@ -237,7 +299,7 @@ final class CodeRepositoryTest extends AbstractRepositoryTestCase
         $em->persist($coupon);
 
         // 创建一个用户
-        $user = $this->createNormalUser('test@example.com', 'password123');
+        $user = $this->createDoctrineTestUser('test@example.com', 'password123');
 
         // 创建Code实体
         $code = new Code();

@@ -12,7 +12,7 @@ use Tourze\CouponCoreBundle\Enum\AllocationRule;
  * @psalm-type BenefitArray = array{
  *     discount_amount?: string|float|int,
  *     allocation?: string,
- *     gifts?: array<int, array{sku_id: int, gtin?: string|null, quantity: int, name?: string|null}>,
+ *     gifts?: array<int, array{sku_id: string|int, gtin?: string|null, quantity: int, name?: string|null}>,
  *     redeem_items?: array<int, array{sku_id: string|int, quantity: int, unit_price?: string|float|int, name?: string|null}>,
  *     mark_paid?: bool,
  *     metadata?: array<string, mixed>
